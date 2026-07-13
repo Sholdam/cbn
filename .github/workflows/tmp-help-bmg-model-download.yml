@@ -1,0 +1,31 @@
+name: Temporary Help BMG model download
+
+on:
+  push:
+    branches:
+      - tmp-model-links-help-bmg
+  workflow_dispatch:
+
+jobs:
+  package-model:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Download official Spanish Moonshine model
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p base-es
+          base='https://download.moonshine.ai/model/base-es/quantized/base-es'
+          curl -L --fail --retry 3 "$base/tokenizer.bin" -o base-es/tokenizer.bin
+          curl -L --fail --retry 3 "$base/encoder_model.ort" -o base-es/encoder_model.ort
+          curl -L --fail --retry 3 "$base/decoder_model_merged.ort" -o base-es/decoder_model_merged.ort
+          sha256sum base-es/* > base-es/SHA256SUMS.txt
+      - name: Upload model artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: moonshine-base-es
+          path: base-es
+          retention-days: 1
+          compression-level: 0
