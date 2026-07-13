@@ -1,0 +1,63 @@
+name: Temporary Help BMG faster-whisper model chunks
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  package-faster-whisper:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Download official faster-whisper tiny multilingual model
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --quiet huggingface_hub
+          python - <<'PY'
+          from huggingface_hub import snapshot_download
+          snapshot_download(
+              repo_id='Systran/faster-whisper-tiny',
+              local_dir='faster-whisper-tiny',
+              local_dir_use_symlinks=False,
+          )
+          PY
+          find faster-whisper-tiny -type f -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS.txt
+          tar -czf faster-whisper-tiny.tar.gz faster-whisper-tiny SHA256SUMS.txt
+          mkdir chunks
+          split -b 6M -d -a 2 faster-whisper-tiny.tar.gz chunks/fw-part-
+          ls -lh faster-whisper-tiny.tar.gz chunks
+      - uses: actions/upload-artifact@v4
+        with: {name: fw-part-00, path: chunks/fw-part-00, retention-days: 1, compression-level: 0, if-no-files-found: error}
+      - uses: actions/upload-artifact@v4
+        with: {name: fw-part-01, path: chunks/fw-part-01, retention-days: 1, compression-level: 0, if-no-files-found: error}
+      - uses: actions/upload-artifact@v4
+        with: {name: fw-part-02, path: chunks/fw-part-02, retention-days: 1, compression-level: 0, if-no-files-found: error}
+      - uses: actions/upload-artifact@v4
+        with: {name: fw-part-03, path: chunks/fw-part-03, retention-days: 1, compression-level: 0, if-no-files-found: error}
+      - uses: actions/upload-artifact@v4
+        with: {name: fw-part-04, path: chunks/fw-part-04, retention-days: 1, compression-level: 0, if-no-files-found: error}
+      - uses: actions/upload-artifact@v4
+        with: {name: fw-part-05, path: chunks/fw-part-05, retention-days: 1, compression-level: 0, if-no-files-found: error}
+      - uses: actions/upload-artifact@v4
+        with: {name: fw-part-06, path: chunks/fw-part-06, retention-days: 1, compression-level: 0, if-no-files-found: error}
+      - uses: actions/upload-artifact@v4
+        with: {name: fw-part-07, path: chunks/fw-part-07, retention-days: 1, compression-level: 0, if-no-files-found: error}
+      - uses: actions/upload-artifact@v4
+        with: {name: fw-part-08, path: chunks/fw-part-08, retention-days: 1, compression-level: 0, if-no-files-found: error}
+      - uses: actions/upload-artifact@v4
+        with: {name: fw-part-09, path: chunks/fw-part-09, retention-days: 1, compression-level: 0, if-no-files-found: error}
+      - uses: actions/upload-artifact@v4
+        with: {name: fw-part-10, path: chunks/fw-part-10, retention-days: 1, compression-level: 0, if-no-files-found: error}
+      - uses: actions/upload-artifact@v4
+        with: {name: fw-part-11, path: chunks/fw-part-11, retention-days: 1, compression-level: 0, if-no-files-found: error}
+      - uses: actions/upload-artifact@v4
+        with: {name: fw-part-12, path: chunks/fw-part-12, retention-days: 1, compression-level: 0, if-no-files-found: ignore}
+      - uses: actions/upload-artifact@v4
+        with: {name: fw-part-13, path: chunks/fw-part-13, retention-days: 1, compression-level: 0, if-no-files-found: ignore}
+      - uses: actions/upload-artifact@v4
+        with: {name: fw-part-14, path: chunks/fw-part-14, retention-days: 1, compression-level: 0, if-no-files-found: ignore}
+      - uses: actions/upload-artifact@v4
+        with: {name: fw-part-15, path: chunks/fw-part-15, retention-days: 1, compression-level: 0, if-no-files-found: ignore}
