@@ -1,0 +1,38 @@
+name: Temporary Help BMG Portuguese model chunks
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  package-portuguese-model:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Download and split official Vosk Brazilian Portuguese model
+        shell: bash
+        run: |
+          set -euo pipefail
+          url='https://alphacephei.com/vosk/models/vosk-model-small-pt-0.3.zip'
+          curl -L --fail --retry 3 "$url" -o vosk-model-small-pt-0.3.zip
+          sha256sum vosk-model-small-pt-0.3.zip > SHA256SUMS.txt
+          mkdir chunks
+          split -b 6M -d -a 2 vosk-model-small-pt-0.3.zip chunks/vosk-pt-part-
+          cp SHA256SUMS.txt chunks/
+          ls -lh chunks
+      - uses: actions/upload-artifact@v4
+        with: {name: vosk-pt-part-00, path: chunks/vosk-pt-part-00, retention-days: 1, compression-level: 0, if-no-files-found: error}
+      - uses: actions/upload-artifact@v4
+        with: {name: vosk-pt-part-01, path: chunks/vosk-pt-part-01, retention-days: 1, compression-level: 0, if-no-files-found: error}
+      - uses: actions/upload-artifact@v4
+        with: {name: vosk-pt-part-02, path: chunks/vosk-pt-part-02, retention-days: 1, compression-level: 0, if-no-files-found: error}
+      - uses: actions/upload-artifact@v4
+        with: {name: vosk-pt-part-03, path: chunks/vosk-pt-part-03, retention-days: 1, compression-level: 0, if-no-files-found: error}
+      - uses: actions/upload-artifact@v4
+        with: {name: vosk-pt-part-04, path: chunks/vosk-pt-part-04, retention-days: 1, compression-level: 0, if-no-files-found: error}
+      - uses: actions/upload-artifact@v4
+        with: {name: vosk-pt-part-05, path: chunks/vosk-pt-part-05, retention-days: 1, compression-level: 0, if-no-files-found: ignore}
+      - uses: actions/upload-artifact@v4
+        with: {name: vosk-pt-sha256, path: chunks/SHA256SUMS.txt, retention-days: 1}
