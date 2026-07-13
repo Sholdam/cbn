@@ -1,0 +1,58 @@
+name: Temporary Help BMG model chunks
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  package-model-chunks:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Download and split official Spanish Moonshine model
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p base-es chunks
+          base='https://download.moonshine.ai/model/base-es/quantized/base-es'
+          curl -L --fail --retry 3 "$base/tokenizer.bin" -o base-es/tokenizer.bin
+          curl -L --fail --retry 3 "$base/encoder_model.ort" -o base-es/encoder_model.ort
+          curl -L --fail --retry 3 "$base/decoder_model_merged.ort" -o base-es/decoder_model_merged.ort
+          sha256sum base-es/* > base-es/SHA256SUMS.txt
+          tar -C . -czf moonshine-base-es.tar.gz base-es
+          split -b 6M -d -a 2 moonshine-base-es.tar.gz chunks/model-part-
+          ls -lh chunks
+      - uses: actions/upload-artifact@v4
+        with: {name: model-part-00, path: chunks/model-part-00, retention-days: 1, compression-level: 0, if-no-files-found: ignore}
+      - uses: actions/upload-artifact@v4
+        with: {name: model-part-01, path: chunks/model-part-01, retention-days: 1, compression-level: 0, if-no-files-found: ignore}
+      - uses: actions/upload-artifact@v4
+        with: {name: model-part-02, path: chunks/model-part-02, retention-days: 1, compression-level: 0, if-no-files-found: ignore}
+      - uses: actions/upload-artifact@v4
+        with: {name: model-part-03, path: chunks/model-part-03, retention-days: 1, compression-level: 0, if-no-files-found: ignore}
+      - uses: actions/upload-artifact@v4
+        with: {name: model-part-04, path: chunks/model-part-04, retention-days: 1, compression-level: 0, if-no-files-found: ignore}
+      - uses: actions/upload-artifact@v4
+        with: {name: model-part-05, path: chunks/model-part-05, retention-days: 1, compression-level: 0, if-no-files-found: ignore}
+      - uses: actions/upload-artifact@v4
+        with: {name: model-part-06, path: chunks/model-part-06, retention-days: 1, compression-level: 0, if-no-files-found: ignore}
+      - uses: actions/upload-artifact@v4
+        with: {name: model-part-07, path: chunks/model-part-07, retention-days: 1, compression-level: 0, if-no-files-found: ignore}
+      - uses: actions/upload-artifact@v4
+        with: {name: model-part-08, path: chunks/model-part-08, retention-days: 1, compression-level: 0, if-no-files-found: ignore}
+      - uses: actions/upload-artifact@v4
+        with: {name: model-part-09, path: chunks/model-part-09, retention-days: 1, compression-level: 0, if-no-files-found: ignore}
+      - uses: actions/upload-artifact@v4
+        with: {name: model-part-10, path: chunks/model-part-10, retention-days: 1, compression-level: 0, if-no-files-found: ignore}
+      - uses: actions/upload-artifact@v4
+        with: {name: model-part-11, path: chunks/model-part-11, retention-days: 1, compression-level: 0, if-no-files-found: ignore}
+      - uses: actions/upload-artifact@v4
+        with: {name: model-part-12, path: chunks/model-part-12, retention-days: 1, compression-level: 0, if-no-files-found: ignore}
+      - uses: actions/upload-artifact@v4
+        with: {name: model-part-13, path: chunks/model-part-13, retention-days: 1, compression-level: 0, if-no-files-found: ignore}
+      - uses: actions/upload-artifact@v4
+        with: {name: model-part-14, path: chunks/model-part-14, retention-days: 1, compression-level: 0, if-no-files-found: ignore}
+      - uses: actions/upload-artifact@v4
+        with: {name: model-part-15, path: chunks/model-part-15, retention-days: 1, compression-level: 0, if-no-files-found: ignore}
