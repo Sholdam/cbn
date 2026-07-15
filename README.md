@@ -26,7 +26,7 @@ Veja o checkpoint completo em [`docs/HANDOFF.md`](docs/HANDOFF.md).
 
 ## Segurança
 
-Este repositório é público. Nunca versionar:
+Este repositório deve permanecer privado; ainda assim, é proibido versionar:
 
 - `.env`;
 - `TELEGRAM_API_HASH`;

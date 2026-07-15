@@ -125,6 +125,22 @@ Próximas ações:
 6. configurar secrets, backup, retenção e recuperação;
 7. executar teste com dados sintéticos antes de conectar n8n ou Appsmith.
 
+### Checkpoint de preparação no repositório — 15/07/2026
+
+Status permanece: **Em andamento**.
+
+Foi preparada, sem deploy, a fundação revisável da BKL-016:
+
+- migration com tabelas operacionais e schema privado separado;
+- `operation_id` canônico, produto fechado em FGTS/CLT e proposta vinculada à oferta;
+- RLS e papéis iniciais `admin`, `operations`, `support` e `auditor`;
+- auditoria mínima append-only e sem valores completos sensíveis;
+- buckets privados preparados, sem acesso público;
+- seed somente sintético, teste SQL e varredura estática;
+- documentação de Storage, cofre, exibição, logs, retenção, anonimização, backup e aplicação real.
+
+Ainda pendem aplicação em Supabase isolado, teste dinâmico com usuários Auth, escolha de KMS/cofre, policies finais de Storage, prazos legais, backup/restauração e validação independente. Nenhuma conta real foi conectada.
+
 ## Tarefas vivas paralelas
 
 - BKL-007 — validação regulatória e operacional;

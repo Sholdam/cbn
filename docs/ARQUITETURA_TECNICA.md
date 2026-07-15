@@ -69,6 +69,18 @@ A mudança não interrompe o fluxo principal. Ela será implementada nas tasks j
 - **BKL-035:** painel Appsmith para filas, sessões, erros e pendências;
 - **BKL-048:** KPIs operacionais e futura avaliação do Power BI.
 
+## Fundação BKL-016 preparada no código
+
+A base está modelada em três schemas:
+
+- `public`: dados operacionais mascarados, códigos, estados e referências;
+- `app_private`: somente ciphertext e referências protegidas, fora dos schemas expostos pela API;
+- `audit`: eventos mínimos append-only, sem valores sensíveis completos.
+
+As chaves ficam em KMS/cofre externo; o PostgreSQL guarda somente o ciphertext e o alias da chave. O Storage usa buckets privados, objetos nomeados por UUID/hash e URLs assinadas efêmeras. RLS nega acesso sem perfil e impede acesso direto às tabelas privadas.
+
+Essa arquitetura foi preparada em migration e testes, mas ainda não foi aplicada em projeto Supabase real. Appsmith, n8n, Gateway e Power BI não foram conectados nesta etapa.
+
 ## Sessões previstas
 
 - sessão CLT;

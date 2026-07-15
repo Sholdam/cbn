@@ -1,6 +1,6 @@
 # Handoff — CBN Crédito
 
-**Atualizado em:** 15/07/2026, após aprovação da DE-002 e alinhamento do roteiro de implantação  
+**Atualizado em:** 15/07/2026, após preparação em código da base BKL-016
 **Projeto:** CBN — operação autônoma de varredura e venda de crédito  
 **Escopo inicial:** FGTS + Crédito do Trabalhador (CLT)
 
@@ -156,6 +156,18 @@ Próximas ações:
 6. definir cofre de secrets para sessões e tokens;
 7. definir backup, retenção, anonimização e recuperação;
 8. validar tudo com dados sintéticos antes de conectar Appsmith ou n8n.
+
+### Preparação em código realizada em 15/07/2026
+
+- criada migration reversível/revisável para schemas `public`, `app_private` e `audit`;
+- criadas as estruturas mínimas operacionais, privadas, perfis e auditoria append-only;
+- RLS ativada com negação por padrão e papéis iniciais conservadores;
+- buckets privados preparados sem policy pública;
+- criado seed exclusivamente sintético;
+- criados teste SQL e varredura estática de segredo/CPF;
+- criada documentação de acesso, Storage, cofre, retenção, anonimização, backup e aplicação.
+
+A migration **não foi aplicada em Supabase real**. KMS/cofre, usuários, policies finais de Storage, backup, restauração, retenção legal e testes dinâmicos por papel permanecem pendentes. A BKL-016 continua **Em andamento** até essa validação.
 
 ## Tarefas vivas paralelas
 
