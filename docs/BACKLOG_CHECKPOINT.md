@@ -8,60 +8,39 @@ Status: **Concluído para a prova técnica inicial**.
 
 Evidências:
 
-- arquitetura de três contas confirmada manualmente;
+- arquitetura de três contas confirmada;
 - sessão MTProto autorizada;
-- envio e resposta do bot comprovados;
 - persistência após reinício comprovada;
 - retry idempotente com o mesmo `operation_id` comprovado.
 
-## Avanço da BKL-012
+## BKL-012 — mapeamento das propostas
 
-### CLT — fluxo de digitação comprovado
+### CLT
 
-Foram confirmados no fluxo observado:
+O fluxo de digitação foi confirmado até a criação e o protocolo, incluindo documento, data, COMPE, agência, conta com dígito, tipo de conta, revisão, correção e confirmação final.
 
-- escolha de banco e oferta;
-- RG;
-- órgão emissor;
-- UF emissora;
-- data de emissão em `DD/MM/AAAA`;
-- rejeição de data inválida ou futura;
-- código COMPE;
-- agência sem dígito ou opção de pular;
-- conta com dígito e separador;
-- tipo de conta;
-- revisão final;
-- opções de confirmar ou corrigir;
-- criação com número de contrato.
+### FGTS
 
-**Decisão:** o mapeamento CLT está suficiente para iniciar contratos técnicos e modelagem de dados, mantendo autorização final e idempotência.
+As consultas observadas ainda não retornaram oferta. Campos pós-oferta permanecem como **A confirmar FGTS**, sem regra inferida do CLT.
 
-### FGTS — pendência remanescente
+## BKL-013 — acompanhamento
 
-As consultas disponíveis até agora retornaram sem oferta.
-
-**Decisão:** não inventar campos pós-oferta. Aguardar cliente autorizado com oferta real e registrar o fluxo literal até a confirmação final.
-
-## Avanço da BKL-013
-
-Foram confirmados no CLT:
+No CLT foram confirmados:
 
 - proposta criada;
-- consulta por número de contrato;
-- status literal `Em análise de compliance`;
+- consulta por contrato;
+- status `Em análise de compliance`;
 - assinatura pendente;
-- motivo de aprovação automática;
-- link operacional de assinatura/coleta.
+- motivo operacional;
+- link de assinatura/coleta.
 
-**Regra:** status bruto, ação pendente, motivo e link devem ser armazenados em campos separados. Uma ação de assinatura pendente não pode apagar o status de análise, nem o contrário.
+Status, ação pendente, motivo e link são campos separados.
 
-## BKL-015 iniciada — Dicionário de Dados multiproduto
+## BKL-015 — Dicionário de Dados multiproduto
 
-Status: **Em andamento**.
+Status: **Concluído v1**.
 
-Foi criada na planilha a aba `Dicionário de Dados`, com os registros `DD-001` a `DD-072`.
-
-Entidades cobertas:
+Foi criada a aba `Dicionário de Dados`, com `DD-001` a `DD-072`, cobrindo:
 
 - Cliente;
 - Consulta;
@@ -71,55 +50,59 @@ Entidades cobertas:
 - Pendência;
 - Operação técnica.
 
-Para cada campo foram definidos:
+Foram alinhadas as abas operacionais:
 
-- nome técnico;
-- produto aplicável;
-- tipo;
-- obrigatoriedade;
-- origem;
-- destino de uso;
-- sensibilidade;
-- armazenamento;
-- validação;
-- regra de atualização;
-- estado da validação.
+- `Clientes`;
+- `Consultas`;
+- `Ofertas`;
+- `Propostas`;
+- `Interações`;
+- `Pendências`;
+- `Operações Técnicas`.
 
-### Decisões de segurança incorporadas
+### Critérios atendidos
 
-- CPF completo fica tokenizado ou referenciado em banco protegido; planilha usa apenas CPF mascarado.
-- RG, endereço e dados bancários ficam em storage criptografado.
-- Sessão Telegram fica em cofre de secrets; banco registra apenas `session_alias`.
-- Link de assinatura fica protegido e não aparece completo em planilha ou log aberto.
-- Logs e retornos brutos ficam em storage protegido, com mascaramento e retenção.
-- Idempotência usa `operation_id` persistente; MTProto usa `random_id` determinístico.
+- cada entidade possui identificador próprio;
+- Consulta, Oferta e Proposta possuem produto obrigatório;
+- FGTS e CLT possuem estados e operações independentes;
+- `operation_id` está presente nas estruturas técnicas e comerciais;
+- status original, status normalizado, ação pendente e motivo não se sobrescrevem;
+- campos sensíveis usam referências protegidas ou versões mascaradas;
+- sessão Telegram é representada apenas por `session_alias`;
+- campos FGTS não observados estão marcados como pendentes, sem regra inventada.
 
-## Tarefas vivas que continuam abertas
+### Segurança incorporada
 
-- BKL-007 — validação regulatória e operacional de FGTS/CLT;
-- BKL-011 — catálogo de produtos contínuo;
-- BKL-012 — completar o fluxo FGTS pós-oferta;
-- BKL-013 — capturar transições após assinatura, análise final, aprovação/reprovação e pagamento;
-- BKL-015 — consolidar o dicionário e alinhar as abas operacionais.
+- CPF completo: tokenização ou referência em banco protegido;
+- RG, endereço e dados bancários: storage criptografado;
+- sessão MTProto: cofre de secrets;
+- link de assinatura: referência protegida;
+- retorno bruto e logs: storage protegido e mascarado;
+- MTProto: `random_id` determinístico a partir do `operation_id`.
+
+Novos campos FGTS serão manutenção do dicionário e não reabrem a arquitetura.
 
 ## Próxima tarefa operacional
 
-### BKL-015 — alinhar as estruturas operacionais
+### BKL-016 — Definir armazenamento de dados sensíveis
 
-Próximas ações:
+Status: **Próxima**.
 
-1. revisar a versão inicial do dicionário;
-2. alinhar as abas `Clientes`, `Propostas`, `Interações` e `Pendências` às entidades e referências definidas;
-3. separar claramente o que fica no banco protegido do que pode aparecer mascarado na planilha;
-4. transformar enums e regras em contratos do n8n/Gateway;
-5. manter campos FGTS pós-oferta como `A confirmar FGTS` até surgir caso autorizado.
+Decisões necessárias:
 
-## Critério para avançar para a próxima task
+1. banco protegido para dados estruturados;
+2. criptografia ou tokenização de CPF e dados financeiros;
+3. storage de documentos e retornos brutos;
+4. cofre de secrets para sessões e tokens;
+5. perfis de acesso mínimo;
+6. retenção, anonimização e exclusão;
+7. backup e recuperação.
 
-A BKL-015 poderá ser concluída quando:
+A planilha continuará contendo apenas referências, aliases, códigos, resumos e dados mascarados.
 
-- as abas operacionais estiverem alinhadas ao dicionário;
-- cada campo sensível tiver destino seguro definido;
-- os contratos do Gateway usarem os mesmos nomes e enums;
-- não houver status único misturando FGTS e CLT;
-- os campos FGTS ainda não observados estiverem explicitamente marcados como pendentes, sem regra inventada.
+## Tarefas vivas paralelas
+
+- BKL-007 — validação regulatória e operacional;
+- BKL-011 — catálogo de produtos contínuo;
+- BKL-012 — fluxo FGTS pós-oferta;
+- BKL-013 — assinatura, análise, aprovação, pagamento ou cancelamento.
