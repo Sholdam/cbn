@@ -1,6 +1,6 @@
 # BKL-016 — Runbook de validação remota em desenvolvimento
 
-**Status:** validação remota bloqueada por grant indevido de `anon`; correção local preparada e não aplicada
+**Status:** validação remota bloqueada por grant indevido de `anon`; dry-run corretivo aprovado e aplicação pendente
 **Data:** 15/07/2026
 **Ambiente permitido:** projeto Supabase exclusivo de desenvolvimento, vazio e sem dados reais
 
@@ -79,7 +79,7 @@ A correção foi preparada em duas camadas:
 - a migration-base passou a revogar explicitamente todas as permissões das tabelas operacionais de `PUBLIC` e `anon`, protegendo instalações novas;
 - `20260716_001_bkl016_revoke_anon_operational_grants.sql` faz o hardening idempotente do projeto já migrado e reafirma somente os grants de `authenticated` previstos.
 
-Essa migration corretiva não altera dados ou policies e ainda exige novo dry-run e autorização antes de aplicação remota. A validação SQL completa deve ser repetida depois.
+Essa migration corretiva não altera dados ou policies. O dry-run executado depois da autorização listou exclusivamente `20260716_001_bkl016_revoke_anon_operational_grants.sql`. A migration ainda exige autorização separada antes da aplicação remota, e a validação SQL completa deve ser repetida depois.
 
 ## Continuação autorizada — inspeção antes do vínculo
 

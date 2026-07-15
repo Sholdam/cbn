@@ -194,7 +194,7 @@ A versão instalada da CLI oferece `supabase db push --dry-run`. O vínculo foi 
 
 Após uma terceira autorização explícita, essa migration foi aplicada por `supabase db push --linked`, sem seed. O histórico remoto passou a coincidir com o local em `20260715`, e o inspetor reportou as 13 tabelas esperadas. Nenhum usuário, fixture ou dado foi criado. A listagem dos buckets via CLI não ficou disponível; RLS, funções, grants, buckets, policies e integridades ainda precisam passar pela suíte SQL remota.
 
-Na primeira tentativa autorizada, o teste estrutural remoto falhou em `anon possui grant operacional inesperado` antes da suíte de fixtures. O ambiente remoto possui default privileges diferentes do local. A migration-base agora revoga explicitamente `PUBLIC` e `anon` nas oito tabelas operacionais; a migration incremental `20260716_001_bkl016_revoke_anon_operational_grants.sql` aplica a mesma correção ao projeto já migrado e reafirma somente os grants previstos de `authenticated`. Nenhuma dessas alterações corretivas foi aplicada remotamente sem novo dry-run.
+Na primeira tentativa autorizada, o teste estrutural remoto falhou em `anon possui grant operacional inesperado` antes da suíte de fixtures. O ambiente remoto possui default privileges diferentes do local. A migration-base agora revoga explicitamente `PUBLIC` e `anon` nas oito tabelas operacionais; a migration incremental `20260716_001_bkl016_revoke_anon_operational_grants.sql` aplica a mesma correção ao projeto já migrado e reafirma somente os grants previstos de `authenticated`. O dry-run remoto listou exclusivamente essa migration; a correção ainda não foi aplicada.
 
 A comparação preliminar de KMS/cofre foi limitada a três famílias: KMS gerenciado com envelope encryption, HashiCorp Vault Transit e serviço de secrets com criptografia no Gateway. A escolha continua pendente de custo comprovado, operação, rotação, recuperação e aprovação. Backup/PITR também não foi afirmado sem comprovação do plano do futuro projeto.
 
@@ -202,7 +202,7 @@ A comparação preliminar de KMS/cofre foi limitada a três famílias: KMS geren
 
 - a migration-base já foi aplicada no projeto remoto de desenvolvimento; qualquer correção adicional continua sujeita a dry-run e autorização explícita;
 - a validação SQL remota foi autorizada, mas precisa ser repetida integralmente depois da correção de grants;
-- migration corretiva de grants ainda precisa de dry-run, aplicação autorizada e revalidação;
+- migration corretiva de grants passou no dry-run, mas ainda precisa de aplicação autorizada e revalidação;
 - KMS/cofre, rotação e recuperação de chave não foram escolhidos;
 - prazos legais de retenção e legal hold precisam de validação;
 - policies de objetos Storage continuam deliberadamente ausentes;

@@ -176,7 +176,7 @@ Após uma terceira autorização explícita, somente `20260715_001_bkl016_secure
 
 **Bloqueio deliberado:** quarta parada antes da validação SQL remota e de fixtures sintéticas. A continuação exige nova autorização e configuração local segura da conexão PostgreSQL. RLS/Storage, limpeza, KMS e backup/restauração continuam pendentes e impedem concluir a BKL-016.
 
-A primeira validação estrutural remota encontrou grant operacional inesperado para `anon` antes da suíte de fixtures. Foi preparada uma correção explícita para revogar permissões de `PUBLIC`/`anon` nas tabelas BKL-016, tanto na migration-base quanto em migration incremental para o projeto já aplicado. O hardening permanece local até passar por dry-run e autorização separados.
+A primeira validação estrutural remota encontrou grant operacional inesperado para `anon` antes da suíte de fixtures. Foi preparada uma correção explícita para revogar permissões de `PUBLIC`/`anon` nas tabelas BKL-016, tanto na migration-base quanto em migration incremental para o projeto já aplicado. O dry-run listou somente `20260716_001_bkl016_revoke_anon_operational_grants.sql`; o hardening permanece sem aplicação até nova autorização.
 
 ## Tarefas vivas paralelas
 

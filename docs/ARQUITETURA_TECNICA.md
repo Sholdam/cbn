@@ -93,7 +93,7 @@ O runbook `docs/BKL-016_REMOTE_DEV_RUNBOOK.md` e os scripts `supabase-remote-pre
 
 Na preparação de 15/07/2026, a primeira parada foi cumprida. Depois da autorização explícita, o projeto isolado `cbn-dev` foi confirmado duas vezes, vinculado e inspecionado somente para leitura. O histórico remoto de migrations estava vazio e nenhuma tabela foi reportada. Com autorização separada, o dry-run apresentou somente a migration BKL-016 esperada; após uma terceira autorização, ela foi aplicada sem seed. O histórico local/remoto passou a coincidir e as 13 tabelas esperadas foram reportadas. A execução parou antes dos testes/fixtures; Storage, KMS/cofre, backup/restauração e retenção permanecem pendentes, e nenhuma integração n8n/Appsmith pode antecedê-los.
 
-A primeira validação estrutural remota detectou que default privileges do projeto concederam acesso operacional a `anon`, apesar da ausência de policy. A arquitetura passa a exigir revogação explícita de `PUBLIC` e `anon` em cada tabela operacional, além de RLS. Uma migration incremental foi preparada para o projeto já aplicado, mas permanece pendente de dry-run e autorização.
+A primeira validação estrutural remota detectou que default privileges do projeto concederam acesso operacional a `anon`, apesar da ausência de policy. A arquitetura passa a exigir revogação explícita de `PUBLIC` e `anon` em cada tabela operacional, além de RLS. O dry-run da migration incremental para o projeto já aplicado listou somente a correção esperada; sua aplicação permanece pendente de autorização.
 
 ## Sessões previstas
 
