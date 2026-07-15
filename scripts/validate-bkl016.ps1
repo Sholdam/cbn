@@ -214,6 +214,16 @@ if (Test-Path -LiteralPath 'supabase\tests\bkl016_remote_validation.sql') {
   }
 }
 
+if (Test-Path -LiteralPath 'scripts\supabase-remote-validate.ps1') {
+  $remoteValidator = Get-Content -Raw -LiteralPath 'scripts\supabase-remote-validate.ps1'
+  if ($remoteValidator -notmatch [regex]::Escape('PromptForDatabasePassword')) {
+    $failures.Add('Validador remoto nao oferece prompt local protegido para a senha.')
+  }
+  if ($remoteValidator -notmatch [regex]::Escape('ZeroFreeBSTR')) {
+    $failures.Add('Validador remoto nao limpa a senha convertida da memoria nativa.')
+  }
+}
+
 if ($failures.Count -gt 0) {
   $failures | ForEach-Object { Write-Error $_ }
   exit 1

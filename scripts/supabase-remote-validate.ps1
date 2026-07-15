@@ -5,7 +5,8 @@ param(
   [switch]$SyntheticDataConfirmed,
   [switch]$MigrationDryRunReviewed,
   [string[]]$ProductionProjectRefs = @(),
-  [string]$DatabaseUrlVariable = 'CBN_REMOTE_DATABASE_URL'
+  [string]$DatabaseUrlVariable = 'CBN_REMOTE_DATABASE_URL',
+  [switch]$PromptForDatabasePassword
 )
 
 $ErrorActionPreference = 'Stop'
@@ -30,29 +31,61 @@ if ($DatabaseUrlVariable -cnotmatch '^[A-Z][A-Z0-9_]{2,80}$') {
 }
 
 $databaseUrl = [Environment]::GetEnvironmentVariable($DatabaseUrlVariable, 'Process')
-if ([string]::IsNullOrWhiteSpace($databaseUrl)) {
-  Write-Error "Defina a conexao remota somente na variavel local $DatabaseUrlVariable; nao use arquivo versionado nem cole a credencial no chat."
+$securePassword = $null
+$passwordPointer = [IntPtr]::Zero
+
+if ([string]::IsNullOrWhiteSpace($databaseUrl) -and -not $PromptForDatabasePassword) {
+  Write-Error "Defina a conexao remota somente na variavel local $DatabaseUrlVariable ou use -PromptForDatabasePassword; nao cole credencial no chat."
   exit 1
 }
 
 try {
-  $uri = [Uri]$databaseUrl
-  if ($uri.Scheme -notin @('postgres', 'postgresql')) {
-    throw 'scheme'
-  }
-  $separator = $uri.UserInfo.IndexOf(':')
-  if ($separator -lt 1 -or [string]::IsNullOrWhiteSpace($uri.Host)) {
-    throw 'userinfo'
+  if ($PromptForDatabasePassword) {
+    if (-not [string]::IsNullOrWhiteSpace($databaseUrl)) {
+      Write-Error 'Escolha somente um mecanismo de credencial: variavel local ou prompt protegido.'
+      exit 1
+    }
+
+    $poolerPath = Join-Path $repoRoot 'supabase\.temp\pooler-url'
+    if (-not (Test-Path -LiteralPath $poolerPath -PathType Leaf)) {
+      throw 'pooler'
+    }
+    $uri = [Uri](Get-Content -Raw -LiteralPath $poolerPath).Trim()
+    if ($uri.Scheme -notin @('postgres', 'postgresql') -or
+        [string]::IsNullOrWhiteSpace($uri.Host) -or
+        [string]::IsNullOrWhiteSpace($uri.UserInfo)) {
+      throw 'pooler-format'
+    }
+
+    $pgUser = [Uri]::UnescapeDataString(($uri.UserInfo -split ':', 2)[0])
+    $securePassword = Read-Host 'Digite a senha do banco cbn-dev (entrada oculta)' -AsSecureString
+    $passwordPointer = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($securePassword)
+    $pgPassword = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($passwordPointer)
+    if ([string]::IsNullOrWhiteSpace($pgPassword)) { throw 'empty-password' }
+  } else {
+    $uri = [Uri]$databaseUrl
+    if ($uri.Scheme -notin @('postgres', 'postgresql')) { throw 'scheme' }
+    $separator = $uri.UserInfo.IndexOf(':')
+    if ($separator -lt 1 -or [string]::IsNullOrWhiteSpace($uri.Host)) {
+      throw 'userinfo'
+    }
+    $pgUser = [Uri]::UnescapeDataString($uri.UserInfo.Substring(0, $separator))
+    $pgPassword = [Uri]::UnescapeDataString($uri.UserInfo.Substring($separator + 1))
   }
 
-  $pgUser = [Uri]::UnescapeDataString($uri.UserInfo.Substring(0, $separator))
-  $pgPassword = [Uri]::UnescapeDataString($uri.UserInfo.Substring($separator + 1))
+  $pgHost = $uri.Host
   $pgDatabase = [Uri]::UnescapeDataString($uri.AbsolutePath.TrimStart('/'))
   if ([string]::IsNullOrWhiteSpace($pgDatabase)) { $pgDatabase = 'postgres' }
   $pgPort = if ($uri.IsDefaultPort) { '5432' } else { $uri.Port.ToString() }
 } catch {
-  Write-Error 'A URL de conexao local nao possui formato PostgreSQL valido; o valor foi omitido.'
+  Write-Error 'A conexao local ou a senha nao pode ser preparada; valores omitidos.'
   exit 1
+} finally {
+  if ($passwordPointer -ne [IntPtr]::Zero) {
+    [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($passwordPointer)
+    $passwordPointer = [IntPtr]::Zero
+  }
+  $securePassword = $null
 }
 
 if (-not (Get-Command psql -ErrorAction SilentlyContinue)) {
@@ -66,7 +99,7 @@ foreach ($name in @('PGHOST', 'PGPORT', 'PGDATABASE', 'PGUSER', 'PGPASSWORD', 'P
 }
 
 try {
-  [Environment]::SetEnvironmentVariable('PGHOST', $uri.Host, 'Process')
+  [Environment]::SetEnvironmentVariable('PGHOST', $pgHost, 'Process')
   [Environment]::SetEnvironmentVariable('PGPORT', $pgPort, 'Process')
   [Environment]::SetEnvironmentVariable('PGDATABASE', $pgDatabase, 'Process')
   [Environment]::SetEnvironmentVariable('PGUSER', $pgUser, 'Process')

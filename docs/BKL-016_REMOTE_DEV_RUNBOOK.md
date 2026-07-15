@@ -32,7 +32,7 @@ Após uma terceira autorização explícita, `supabase db push --linked` aplicou
 ## Controles preparados
 
 - `scripts/supabase-remote-preflight.ps1` bloqueia branch incorreta, árvore suja, ambiente sem marcador, alvo vazio ou de produção conhecido, dados não confirmados como sintéticos, vínculo sem confirmação, migration sem dry-run revisado, `.env` versionado, padrões de segredo/CPF e schema privado exposto.
-- `scripts/supabase-remote-validate.ps1` exige todos os controles, vínculo local correspondente e conexão PostgreSQL guardada somente em variável de processo. Ele executa verificações estruturais sem imprimir a conexão e depois a suíte transacional que termina em `ROLLBACK`.
+- `scripts/supabase-remote-validate.ps1` exige todos os controles, vínculo local correspondente e credencial PostgreSQL somente em memória. O modo recomendado pede a senha em entrada oculta e combina com o pooler local ignorado, sem imprimir ou persistir o valor. Ele executa verificações estruturais e depois a suíte transacional que termina em `ROLLBACK`.
 - `scripts/supabase-remote-cleanup.ps1` aceita apenas um manifesto ignorado em `supabase/.temp`, IDs explícitos e objetos com bucket permitido e nome UUID/hash. A limpeza exige uma segunda confirmação e aborta se o registro não tiver marcador sintético.
 - `supabase/tests/bkl016_remote_validation.sql` verifica migration, RLS, papéis, grants, funções, PostgREST, buckets, policies, integridades, snapshot, auditoria e padrões aparentes de dado real ou segredo.
 
@@ -130,7 +130,7 @@ Mesmo com o preflight aprovado, o `db push` exige nova autorização humana expl
 
 Não executar `supabase/seed.sql` no projeto remoto. A suíte SQL cria fixtures exclusivamente sintéticas dentro de uma transação e termina com `ROLLBACK`.
 
-A URL PostgreSQL com senha deve existir somente na variável de processo `CBN_REMOTE_DATABASE_URL`, preenchida por mecanismo seguro local. Não colocar o valor no comando, em arquivo, log ou relatório.
+A credencial pode existir somente em memória. O modo recomendado é `-PromptForDatabasePassword`, que lê o endereço sem senha de `supabase/.temp/pooler-url` e pede a senha em entrada oculta. Como alternativa automatizada, a URL completa pode existir somente na variável de processo `CBN_REMOTE_DATABASE_URL`. Não colocar senha ou URL em comando, arquivo versionado, log ou relatório.
 
 Depois de migration autorizada e aplicada:
 
@@ -138,7 +138,8 @@ Depois de migration autorizada e aplicada:
 powershell.exe -ExecutionPolicy Bypass -File .\scripts\supabase-remote-validate.ps1 `
   -RemoteTargetConfirmed `
   -SyntheticDataConfirmed `
-  -MigrationDryRunReviewed
+  -MigrationDryRunReviewed `
+  -PromptForDatabasePassword
 ```
 
 Marcadores finais esperados:
