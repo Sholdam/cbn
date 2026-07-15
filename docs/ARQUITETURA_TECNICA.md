@@ -21,6 +21,54 @@ Provas concluídas em 12/07/2026:
 
 Somente contingência. Não deve ser a base do MVP enquanto MTProto permanecer estável.
 
+## Arquitetura de dados e sistema interno — DE-002
+
+A arquitetura aprovada para a camada operacional é:
+
+```text
+Meta / WhatsApp / Telegram
+            ↓
+           n8n
+            ↓
+        Gateway CBN
+            ↓
+ Supabase / PostgreSQL protegido
+            ↓
+      Appsmith interno
+            ↓
+ Power BI opcional no futuro
+```
+
+### Responsabilidades por componente
+
+- **Supabase/PostgreSQL:** fonte principal de clientes, consultas, ofertas, propostas, interações, pendências, estados, locks, auditoria e referências seguras.
+- **Appsmith:** interface interna da equipe para consulta e operação autorizada.
+- **n8n/Gateway:** regras de negócio, validações, integrações, idempotência, filas, retries e efeitos externos.
+- **Google Sheets:** apoio temporário, exportação, contingência e leitura mascarada; não será a fonte de verdade.
+- **Power BI:** dashboards gerenciais futuros, somente leitura e preferencialmente sobre views agregadas e mascaradas.
+
+### Regras obrigatórias
+
+1. Nenhuma credencial administrativa do Supabase fica no navegador ou no Appsmith.
+2. A service role não pode ser exposta no cliente.
+3. Operações críticas passam por API/n8n/Gateway com menor privilégio.
+4. RLS deve permanecer ativa nas tabelas expostas.
+5. CPF completo, documentos, dados bancários, links e retornos brutos ficam em armazenamento protegido.
+6. O Appsmith não substitui a máquina de estados; apenas apresenta ações válidas.
+7. O Power BI não pode criar, corrigir ou atualizar propostas.
+8. O primeiro ambiente será de desenvolvimento e usará apenas dados sintéticos.
+
+## Implantação progressiva
+
+A mudança não interrompe o fluxo principal. Ela será implementada nas tasks já existentes:
+
+- **BKL-016:** schema, criptografia/tokenização, RLS, backup, storage e secrets;
+- **BKL-018:** autenticação e perfis no Supabase/Appsmith;
+- **BKL-020:** trilha de auditoria no PostgreSQL;
+- **BKL-024:** memória e máquina de estados persistidas;
+- **BKL-035:** painel Appsmith para filas, sessões, erros e pendências;
+- **BKL-048:** KPIs operacionais e futura avaliação do Power BI.
+
 ## Sessões previstas
 
 - sessão CLT;
@@ -31,14 +79,14 @@ Cada sessão possui fila exclusiva e somente uma operação ativa.
 
 ## Contrato interno do Gateway
 
-O atendimento e o CRM chamam operações internas, por exemplo:
+O atendimento e o sistema interno chamam operações internas, por exemplo:
 
 - `consultar_clt`;
 - `consultar_fgts`;
 - `criar_proposta`;
 - `consultar_status`.
 
-O Gateway converte a operação para API, MTProto ou contingência sem expor essa decisão ao agente comercial.
+O Gateway converte a operação para API, MTProto ou contingência sem expor essa decisão ao agente comercial ou ao Appsmith.
 
 ## Idempotência
 
@@ -97,6 +145,8 @@ Registrar:
 - decisão de retry;
 - origem da alteração.
 
+A trilha canônica ficará no PostgreSQL protegido. O Appsmith exibirá somente o necessário para operação; o Sheets poderá receber resumo exportado.
+
 Nunca registrar segredo ou documento completo.
 
 ## Segurança
@@ -106,4 +156,6 @@ Nunca registrar segredo ou documento completo.
 - revogação e rotação documentadas;
 - logs mascarados;
 - permissões mínimas;
+- RLS no banco;
+- backups e recuperação testados;
 - nenhuma credencial no GitHub.
