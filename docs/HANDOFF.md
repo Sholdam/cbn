@@ -1,6 +1,6 @@
 # Handoff — CBN Crédito
 
-**Atualizado em:** 15/07/2026, após mapeamento do fluxo CLT de proposta e primeiros status pós-criação  
+**Atualizado em:** 15/07/2026, após criação do Dicionário de Dados multiproduto v1  
 **Projeto:** CBN — operação autônoma de varredura e venda de crédito  
 **Escopo inicial:** FGTS + Crédito do Trabalhador (CLT)
 
@@ -17,6 +17,7 @@ Construir uma operação autônoma com captação pela Meta, atendimento no What
 5. Cada operação terá `operation_id` persistente para impedir duplicidade em timeout ou retry.
 6. Proposta real somente com autorização final expressa do cliente/operador.
 7. Status bruto, motivo e ação pendente devem ser armazenados separadamente quando o sistema devolver informações simultâneas.
+8. CPF, RG, endereço, dados bancários, sessão Telegram e links operacionais ficam fora de planilhas e logs abertos. As camadas operacionais usam referências, aliases e versões mascaradas.
 
 ## Checkpoint técnico concluído em 12/07/2026
 
@@ -58,13 +59,13 @@ O fluxo observado ficou confirmado nesta ordem:
 5. data de emissão em `DD/MM/AAAA`, com rejeição de data inválida ou futura;
 6. código COMPE do banco;
 7. agência sem dígito, com opção de pular quando o fluxo permitir;
-8. número da conta com dígito;
+8. número da conta com dígito e separador para o dígito verificador;
 9. tipo de conta;
 10. revisão final dos dados;
 11. opção de confirmar e enviar ou corrigir;
 12. criação da proposta com retorno de número de contrato.
 
-O resumo final observado inclui dados de documento, endereço e conta bancária. A documentação registra apenas a estrutura e as validações, nunca os valores reais do cliente.
+O endereço não foi perguntado no fluxo observado; veio automaticamente no resumo cadastral. A automação só deve solicitar endereço quando o sistema pedir correção ou quando um fluxo futuro o exigir literalmente.
 
 ## Checkpoint BKL-013 — primeiros status CLT
 
@@ -86,14 +87,14 @@ O sistema pode devolver simultaneamente:
 - um motivo operacional;
 - um link.
 
-Esses campos não podem se sobrescrever. O modelo recomendado é manter, no mínimo:
+Esses campos não podem se sobrescrever. O modelo mantém, no mínimo:
 
 - `status_raw`;
 - `status_normalizado`;
 - `acao_pendente`;
 - `motivo_raw`;
-- `link_assinatura`;
-- `consultado_em`.
+- `link_assinatura_ref`;
+- `last_checked_at`.
 
 ## Situação do FGTS
 
@@ -106,6 +107,43 @@ O fluxo de consulta foi confirmado, incluindo:
 - retorno de cliente sem oferta.
 
 Ainda não apareceu um cliente autorizado com oferta FGTS disponível. Portanto, os campos pós-oferta e a confirmação final permanecem como **A confirmar em atendimento**, sem inventar regras.
+
+## Checkpoint BKL-015 — Dicionário de Dados v1
+
+Foi criada na planilha a aba `Dicionário de Dados`, com os registros `DD-001` a `DD-072`.
+
+Entidades definidas:
+
+1. Cliente;
+2. Consulta;
+3. Oferta;
+4. Proposta;
+5. Interação;
+6. Pendência;
+7. Operação técnica.
+
+Cada campo registra:
+
+- entidade e nome técnico;
+- produto aplicável;
+- tipo e obrigatoriedade;
+- origem e destino de uso;
+- nível de sensibilidade;
+- local de armazenamento;
+- regra de validação;
+- momento de atualização;
+- estado de validação.
+
+### Regras de segurança do modelo
+
+- CPF completo: referência segura/tokenizada; planilha recebe somente versão mascarada.
+- RG, endereço e conta bancária: armazenamento criptografado; nunca em documentação pública.
+- Sessão MTProto: cofre de secrets; banco guarda somente `session_alias`.
+- Link de assinatura: referência protegida; não gravar URL completa em planilha ou log aberto.
+- Retorno bruto e logs: storage protegido, retenção controlada e mascaramento obrigatório.
+- Retry: o mesmo `operation_id` é reutilizado e o `random_id` é determinístico quando a rota for MTProto.
+
+A BKL-015 está **Em andamento**. A versão atual já permite iniciar o alinhamento das abas operacionais, mas os campos FGTS pós-oferta continuam marcados como **A confirmar FGTS**.
 
 ## Decisão técnica atual
 
@@ -125,29 +163,31 @@ A **BKL-014** está concluída no escopo de decisão e prova técnica inicial.
 - Não registrar CPF, RG, endereço, conta bancária, número real de contrato ou link operacional em documentação pública.
 - O repositório é público; todos os arquivos enviados devem ser revisados para não conter segredos.
 
-## Próxima tarefa ao retomar
+## Próxima tarefa operacional
 
-A **BKL-012** permanece aberta apenas para:
+### BKL-015 — consolidar o modelo de dados
 
-1. capturar os prompts de endereço que não apareceram integralmente;
-2. mapear o primeiro fluxo FGTS com oferta real;
-3. manter o bloqueio técnico da confirmação final;
-4. registrar somente evidências mascaradas.
+Próximos passos:
 
-Em paralelo, a **BKL-013** deve acompanhar a proposta CLT já criada até:
+1. revisar a versão inicial do dicionário;
+2. alinhar as abas `Clientes`, `Propostas`, `Interações` e `Pendências` às novas entidades e referências;
+3. definir quais campos ficam somente no banco protegido e quais versões mascaradas podem aparecer na planilha;
+4. transformar os enums do dicionário em contratos do n8n/Gateway;
+5. manter BKL-012 viva para validar campos FGTS quando surgir oferta real.
 
-1. assinatura;
-2. análise final;
-3. aprovação ou reprovação;
-4. pagamento ou cancelamento.
+### Tarefas vivas paralelas
 
-Depois de amadurecer BKL-012 e BKL-013, iniciar a **BKL-015 — dicionário definitivo de dados multiproduto**.
+- BKL-007 — validação regulatória e operacional de FGTS/CLT;
+- BKL-011 — catálogo de produtos contínuo;
+- BKL-012 — fluxo FGTS pós-oferta;
+- BKL-013 — transições após assinatura, análise, aprovação/reprovação e pagamento.
 
-## Arquivos técnicos salvos neste repositório
+## Arquivos técnicos e documentos salvos neste repositório
 
 - `telegram-gateway/src/auth.js`
 - `telegram-gateway/src/check-session.js`
 - `telegram-gateway/src/idempotency-test.js`
+- `docs/DICIONARIO_DADOS.md`
 - `.env.example` sem credenciais
 
 ## Critério para não perder contexto
@@ -155,8 +195,9 @@ Depois de amadurecer BKL-012 e BKL-013, iniciar a **BKL-015 — dicionário defi
 Antes de executar qualquer nova etapa:
 
 1. abrir este handoff;
-2. conferir BKL-012 e BKL-013 na planilha operacional;
-3. não gerar nova sessão Telegram sem necessidade;
-4. não colocar segredo ou dado de cliente em código, print ou chat;
-5. não criar proposta real sem autorização final;
-6. tratar status, ação pendente e motivo como campos separados.
+2. conferir BKL-015 e a aba `Dicionário de Dados`;
+3. tratar BKL-012 e BKL-013 como tarefas vivas não bloqueantes;
+4. não gerar nova sessão Telegram sem necessidade;
+5. não colocar segredo ou dado de cliente em código, print ou chat;
+6. não criar proposta real sem autorização final;
+7. tratar status, ação pendente e motivo como campos separados.
