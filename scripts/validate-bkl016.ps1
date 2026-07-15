@@ -162,6 +162,58 @@ if ($rollback -notmatch "(?is)set_config\('storage\.allow_delete_query',\s*'true
   $failures.Add('Rollback nao libera/remover buckets vazios de forma protegida.')
 }
 
+$remoteArtifacts = @(
+  'docs\BKL-016_REMOTE_DEV_RUNBOOK.md',
+  'scripts\supabase-remote-preflight.ps1',
+  'scripts\supabase-remote-validate.ps1',
+  'scripts\supabase-remote-cleanup.ps1',
+  'supabase\tests\bkl016_remote_validation.sql'
+)
+foreach ($artifact in $remoteArtifacts) {
+  if (-not (Test-Path -LiteralPath $artifact -PathType Leaf)) {
+    $failures.Add("Artefato de preparacao remota ausente: $artifact")
+  }
+}
+
+if (Test-Path -LiteralPath 'scripts\supabase-remote-preflight.ps1') {
+  $remotePreflight = Get-Content -Raw -LiteralPath 'scripts\supabase-remote-preflight.ps1'
+  foreach ($requiredGate in @(
+    'codex/bkl-016-remote-dev',
+    'CBN_ENVIRONMENT',
+    'RemoteTargetConfirmed',
+    'SyntheticDataConfirmed',
+    'MigrationDryRunReviewed',
+    'CBN_PRODUCTION_PROJECT_REFS',
+    'app_private',
+    'audit'
+  )) {
+    if ($remotePreflight -notmatch [regex]::Escape($requiredGate)) {
+      $failures.Add("Gate remoto obrigatorio ausente: $requiredGate")
+    }
+  }
+}
+
+if (Test-Path -LiteralPath 'supabase\tests\bkl016_remote_validation.sql') {
+  $remoteDatabaseTests = Get-Content -Raw -LiteralPath 'supabase\tests\bkl016_remote_validation.sql'
+  foreach ($requiredRemoteCheck in @(
+    'supabase_migrations.schema_migrations',
+    'relrowsecurity',
+    'search_path=""',
+    'storage.buckets',
+    'storage.objects',
+    'consultations_operation_owner_product_fk',
+    'proposals_operation_owner_product_fk',
+    'proposals_final_authorization_evidence_payload_ref_fk',
+    'offers_protect_snapshot',
+    'audit_events_append_only',
+    'BKL-016 remote structural checks passed'
+  )) {
+    if ($remoteDatabaseTests -notmatch [regex]::Escape($requiredRemoteCheck)) {
+      $failures.Add("Teste remoto obrigatorio ausente: $requiredRemoteCheck")
+    }
+  }
+}
+
 if ($failures.Count -gt 0) {
   $failures | ForEach-Object { Write-Error $_ }
   exit 1

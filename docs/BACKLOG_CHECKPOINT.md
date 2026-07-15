@@ -117,13 +117,13 @@ Decisões já tomadas:
 
 Próximas ações:
 
-1. criar projeto Supabase isolado de desenvolvimento;
-2. transformar o dicionário de dados em schema SQL;
-3. configurar RLS e menor privilégio;
-4. definir criptografia/tokenização;
-5. separar banco, storage de documentos e logs;
-6. configurar secrets, backup, retenção e recuperação;
-7. executar teste com dados sintéticos antes de conectar n8n ou Appsmith.
+1. o usuário criar/selecionar projeto Supabase isolado de desenvolvimento e informar apenas o project ref não secreto;
+2. executar preflight e inspeção sem escrita após autorização explícita;
+3. executar `db push --dry-run`, revisar e parar novamente antes da aplicação;
+4. aplicar/validar migration, RLS, Storage e integridades somente após segunda autorização;
+5. remover fixtures/objetos sintéticos por manifesto explícito e revalidar;
+6. decidir KMS/cofre e comprovar backup/restauração conforme o plano real;
+7. manter n8n e Appsmith desconectados até aprovação independente.
 
 ### Checkpoint de preparação no repositório — 15/07/2026
 
@@ -157,6 +157,20 @@ Os bloqueios encontrados na primeira revisão foram corrigidos no código:
 - privilégios de `anon` e o caminho backend para ciphertext foram documentados.
 
 Em 15/07/2026, migration e seed foram aplicados em Supabase local descartável. A suíte completa passou duas vezes, antes e depois do rollback/reaplicação. O rollback removeu toda a estrutura BKL-016 e buckets vazios, preservou um bucket com objeto sintético e não deixou funções ou constraints quebradas. Nenhum projeto remoto foi vinculado ou acessado.
+
+### Checkpoint da preparação remota — 15/07/2026
+
+Status permanece: **Em andamento**.
+
+- branch `codex/bkl-016-remote-dev` criada a partir da `main` atualizada;
+- ferramentas disponíveis: Docker 29.6.1, Compose 5.3.0, Supabase CLI 2.109.1 e psql 17.10;
+- autenticação da CLI inativa, projeto não escolhido e vínculo local ausente;
+- runbook remoto, preflight fail-closed, validador SQL/PowerShell e limpeza sintética por manifesto preparados;
+- a CLI instalada oferece `db push --dry-run`;
+- metadados de vínculo continuam ignorados e schemas privados continuam fora do PostgREST local;
+- nenhuma conexão a banco/projeto remoto, migration, usuário, fixture, objeto, n8n ou Appsmith foi criada.
+
+**Bloqueio deliberado:** aguardar o usuário criar/selecionar um projeto exclusivo de desenvolvimento e fornecer somente confirmação e project ref não secreto. O trabalho deve permanecer parado antes de `supabase link`, `db push` ou alteração remota. Validação remota, Storage, limpeza, KMS e backup/restauração continuam pendentes e impedem concluir a BKL-016.
 
 ## Tarefas vivas paralelas
 

@@ -1,6 +1,6 @@
 # BKL-016 — Armazenamento de dados sensíveis
 
-**Status:** Em andamento — migration, seed, RLS, rollback e reaplicação validados em Supabase local descartável; nada aplicado em Supabase real
+**Status:** Em andamento — validação local concluída e fase remota preparada com gates; nenhum projeto remoto vinculado ou alterado
 **Data:** 15/07/2026
 **Escopo desta entrega:** fundação local, dados sintéticos e políticas conservadoras
 
@@ -178,9 +178,26 @@ Em 15/07/2026, a migration e o seed foram aplicados por `supabase db reset` em s
 
 O rollback foi executado após inserir um objeto sintético no Storage: schemas, tabelas, funções, constraints e buckets vazios foram removidos; o bucket com objeto permaneceu. Um novo `supabase db reset` reaplicou migration e seed, e a suíte completa passou novamente. Nenhum projeto remoto foi vinculado ou acessado.
 
+## Preparação remota de desenvolvimento
+
+Em 15/07/2026, foi criada a branch `codex/bkl-016-remote-dev` a partir da `main` atualizada. O diagnóstico confirmou Docker 29.6.1, Compose 5.3.0, Supabase CLI 2.109.1 e psql 17.10. A CLI não estava autenticada, nenhum projeto foi escolhido e não existia vínculo local.
+
+Foram preparados:
+
+- `docs/BKL-016_REMOTE_DEV_RUNBOOK.md`, com parada antes do vínculo e segunda parada antes de escrita;
+- preflight fail-closed para ambiente, branch, árvore, alvo, dados sintéticos, segredo, dry-run e exposição PostgREST;
+- validador remoto estrutural e execução da suíte transacional com saída sanitizada;
+- limpeza restrita a manifesto ignorado, IDs explícitos e objetos sintéticos UUID/hash;
+- teste SQL remoto para migration, RLS, papéis, grants, buckets, policies, integridades, snapshot, auditoria e padrões aparentes de dado real/segredo.
+
+A versão instalada da CLI oferece `supabase db push --dry-run`. Mesmo assim, nenhum `supabase link`, dry-run remoto, `db push`, SQL remoto, usuário ou objeto foi executado. O próximo passo depende de o usuário criar/selecionar um projeto exclusivo de desenvolvimento e informar somente a confirmação e o project ref não secreto.
+
+A comparação preliminar de KMS/cofre foi limitada a três famílias: KMS gerenciado com envelope encryption, HashiCorp Vault Transit e serviço de secrets com criptografia no Gateway. A escolha continua pendente de custo comprovado, operação, rotação, recuperação e aprovação. Backup/PITR também não foi afirmado sem comprovação do plano do futuro projeto.
+
 ## Riscos restantes
 
 - aplicação em projeto Supabase remoto permanece deliberadamente não executada;
+- autenticação da CLI, criação/seleção do projeto e autorização humana ainda estão pendentes;
 - KMS/cofre, rotação e recuperação de chave não foram escolhidos;
 - prazos legais de retenção e legal hold precisam de validação;
 - policies de objetos Storage continuam deliberadamente ausentes;

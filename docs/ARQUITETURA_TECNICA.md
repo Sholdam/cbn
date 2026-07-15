@@ -85,6 +85,14 @@ Propostas exigem `final_authorization_evidence_payload_ref` válido e protegido.
 
 Essa arquitetura foi preparada em migration e testes, mas ainda não foi aplicada em projeto Supabase real. Appsmith, n8n, Gateway e Power BI não foram conectados nesta etapa.
 
+### Gate para o primeiro ambiente remoto
+
+A fase remota deve usar somente projeto Supabase isolado e claramente marcado como desenvolvimento. O fluxo possui dois gates humanos: primeiro antes de `supabase link`; depois do vínculo somente leitura e de `supabase db push --dry-run`, novamente antes de qualquer aplicação.
+
+O runbook `docs/BKL-016_REMOTE_DEV_RUNBOOK.md` e os scripts `supabase-remote-preflight.ps1`, `supabase-remote-validate.ps1` e `supabase-remote-cleanup.ps1` bloqueiam branch/árvore inadequadas, alvo não confirmado, possível produção, dados não sintéticos, segredo, schema privado exposto e migration sem revisão. A limpeza aceita apenas manifesto local ignorado com IDs e objetos sintéticos explícitos.
+
+Na preparação de 15/07/2026, a CLI não estava autenticada e nenhum vínculo remoto existia. A execução parou antes de qualquer acesso ou alteração remota. A escolha final de KMS/cofre, a comprovação de backup/restauração e a validação jurídica de retenção permanecem decisões separadas; nenhuma integração n8n/Appsmith pode antecedê-las.
+
 ## Sessões previstas
 
 - sessão CLT;

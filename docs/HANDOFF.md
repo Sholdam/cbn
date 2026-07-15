@@ -1,6 +1,6 @@
 # Handoff — CBN Crédito
 
-**Atualizado em:** 15/07/2026, após integração da DE-003 e correções da revisão técnica BKL-016
+**Atualizado em:** 15/07/2026, após preparação segura da fase remota de desenvolvimento da BKL-016
 **Projeto:** CBN — operação autônoma de varredura e venda de crédito  
 **Escopo inicial:** FGTS + Crédito do Trabalhador (CLT)
 
@@ -181,15 +181,14 @@ Decisão inicial aprovada:
 
 Próximas ações:
 
-1. executar `docs/PROMPT_CODEX_BKL-016.md` em branch própria;
-2. criar ambiente Supabase isolado de desenvolvimento somente após revisão do código;
-3. transformar o dicionário em schema SQL;
-4. definir criptografia/tokenização de CPF e dados financeiros;
-5. separar banco, storage de documentos e logs;
-6. configurar RLS e menor privilégio;
-7. definir cofre de secrets para sessões e tokens;
-8. definir backup, retenção, anonimização e recuperação;
-9. validar tudo com dados sintéticos antes de conectar Appsmith ou n8n.
+1. o usuário cria ou seleciona manualmente um projeto Supabase exclusivo de desenvolvimento, vazio e sem integrações;
+2. o usuário confirma somente a criação e o project ref não secreto;
+3. após autorização explícita, executar o preflight na fase `LinkInspection` e conferir o alvo duas vezes;
+4. vincular somente ao projeto confirmado, inspecionar sem alterar e executar `supabase db push --dry-run`;
+5. parar novamente para revisão e nova autorização antes de qualquer migration remota;
+6. validar RLS, Storage e integridades somente com transações/fixtures sintéticas removíveis;
+7. registrar a decisão de KMS/cofre, backup, retenção, anonimização e recuperação;
+8. manter Appsmith e n8n desconectados durante toda esta tarefa.
 
 ### Preparação em código realizada em 15/07/2026
 
@@ -219,6 +218,20 @@ A migration **não foi aplicada em Supabase real**. KMS/cofre, usuários reais, 
 
 Em 15/07/2026, migration, seed, suíte SQL/RLS, rollback com preservação de bucket contendo objeto e reaplicação foram aprovados em Supabase local descartável. A suíte terminou duas vezes com `BKL-016 database and RLS checks passed`. Nenhum projeto remoto foi vinculado, e nenhum deploy foi realizado.
 
+### Preparação da fase remota realizada em 15/07/2026
+
+- criada a branch `codex/bkl-016-remote-dev` a partir da `main` atualizada por fast-forward;
+- diagnóstico confirmou Docker 29.6.1, Compose 5.3.0, Supabase CLI 2.109.1 e psql 17.10;
+- a CLI Supabase não está autenticada e nenhum projeto foi selecionado automaticamente;
+- não existe vínculo local em `supabase/.temp` ou `supabase/.branches`, e ambos permanecem ignorados;
+- criado `docs/BKL-016_REMOTE_DEV_RUNBOOK.md` com duas paradas humanas e proibição de credenciais no chat;
+- criados preflight, validador remoto, limpeza por manifesto sintético e teste estrutural remoto;
+- o preflight falha de forma segura sem ambiente, alvo, confirmação e revisão do dry-run;
+- `app_private` e `audit` continuam fora da lista local de schemas expostos;
+- `.gitignore` já protegia os metadados locais da CLI e não precisou ser alterado.
+
+**Ponto exato de retomada:** parada obrigatória antes de `supabase link`, `db push` ou qualquer alteração remota. O usuário deve criar/selecionar o projeto isolado e informar apenas a confirmação e o project ref não secreto. A BKL-016 continua **Em andamento**; migration remota, RLS/Storage remoto, limpeza, backup/restauração e decisão final de KMS não foram executados.
+
 ## Tarefas vivas paralelas
 
 - BKL-007 — validação regulatória e operacional;
@@ -235,6 +248,11 @@ Em 15/07/2026, migration, seed, suíte SQL/RLS, rollback com preservação de bu
 - `docs/BACKLOG_CHECKPOINT.md`
 - `docs/ARQUITETURA_TECNICA.md`
 - `docs/PROMPT_CODEX_BKL-016.md`
+- `docs/PROMPT_CODEX_BKL-016_REMOTE_DEV.md`
+- `docs/BKL-016_REMOTE_DEV_RUNBOOK.md`
+- `scripts/supabase-remote-preflight.ps1`
+- `scripts/supabase-remote-validate.ps1`
+- `scripts/supabase-remote-cleanup.ps1`
 - `.env.example` sem credenciais
 
 ## Regras para retomar
@@ -243,8 +261,8 @@ Em 15/07/2026, migration, seed, suíte SQL/RLS, rollback com preservação de bu
 2. estimar o esforço da próxima atividade em escala de 1 a 10;
 3. se o esforço for 7 ou maior, criar prompt para o Codex antes da execução;
 4. continuar pela BKL-016;
-5. revisar a entrega do Codex antes de criar o Supabase real;
-6. montar primeiro o Supabase de desenvolvimento, sem dados reais;
+5. revisar a preparação remota e criar/selecionar somente um Supabase de desenvolvimento isolado, sem dados reais;
+6. informar ao Codex apenas a confirmação e o project ref não secreto, nunca senha ou token;
 7. implementar Appsmith progressivamente nas tarefas correspondentes, sem parar o fluxo principal;
 8. manter BKL-012 e BKL-013 como tarefas vivas não bloqueantes;
 9. não gerar nova sessão Telegram sem necessidade;
