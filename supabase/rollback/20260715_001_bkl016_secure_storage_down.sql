@@ -21,6 +21,13 @@ alter table if exists public.proposals
 drop schema if exists app_private cascade;
 drop schema if exists audit cascade;
 
+-- Remove explicitamente as FKs compostas de propriedade da operacao antes das
+-- tabelas publicas; isso tambem documenta a dependencia que o rollback desfaz.
+alter table if exists public.proposals
+  drop constraint if exists proposals_operation_owner_product_fk;
+alter table if exists public.consultations
+  drop constraint if exists consultations_operation_owner_product_fk;
+
 -- Agora as tabelas publicas podem ser removidas na ordem inversa das FKs.
 drop table if exists public.pending_items;
 drop table if exists public.interactions;
@@ -45,6 +52,9 @@ do $$
 begin
   if to_regclass('storage.buckets') is not null
      and to_regclass('storage.objects') is not null then
+    -- O Supabase bloqueia DELETE SQL direto por padrao. A liberacao e local a
+    -- esta transacao e continua protegida pelo predicado de bucket vazio.
+    perform set_config('storage.allow_delete_query', 'true', true);
     delete from storage.buckets b
     where b.id in (
       'cbn-documents-private', 'cbn-raw-payloads-private',
@@ -53,6 +63,7 @@ begin
     and not exists (
       select 1 from storage.objects o where o.bucket_id = b.id
     );
+    perform set_config('storage.allow_delete_query', 'false', true);
   end if;
 end $$;
 

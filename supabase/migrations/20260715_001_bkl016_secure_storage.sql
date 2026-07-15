@@ -104,6 +104,9 @@ create table if not exists public.technical_operations (
   retention_until timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
+  constraint technical_operations_owner_product_uk unique (
+    operation_id, client_id, product
+  ),
   constraint technical_operations_session_alias_ck check (
     length(btrim(session_alias)) between 1 and 80
   )
@@ -123,8 +126,7 @@ create table if not exists public.consultations (
   id uuid primary key default extensions.gen_random_uuid(),
   client_id uuid not null references public.clients(id) on delete restrict,
   product public.credit_product not null,
-  operation_id uuid not null unique
-    references public.technical_operations(operation_id) on delete restrict,
+  operation_id uuid not null unique,
   status_raw text,
   status_normalized text not null default 'RECEIVED',
   pending_action text,
@@ -139,6 +141,10 @@ create table if not exists public.consultations (
   anonymized_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
+  constraint consultations_operation_owner_product_fk
+    foreign key (operation_id, client_id, product)
+    references public.technical_operations(operation_id, client_id, product)
+    on delete restrict,
   constraint consultations_pending_action_ck check (
     pending_action is null or pending_action ~ '^[A-Z0-9_:-]{1,80}$'
   )
@@ -235,8 +241,7 @@ create table if not exists public.proposals (
   client_id uuid not null references public.clients(id) on delete restrict,
   offer_id uuid not null,
   product public.credit_product not null,
-  operation_id uuid not null unique
-    references public.technical_operations(operation_id) on delete restrict,
+  operation_id uuid not null unique,
   protocol_masked text,
   status_raw text,
   status_normalized text not null default 'CREATED',
@@ -258,6 +263,10 @@ create table if not exists public.proposals (
   constraint proposals_offer_client_product_fk
     foreign key (offer_id, client_id, product)
     references public.offers(id, client_id, product) on delete restrict,
+  constraint proposals_operation_owner_product_fk
+    foreign key (operation_id, client_id, product)
+    references public.technical_operations(operation_id, client_id, product)
+    on delete restrict,
   constraint proposals_pending_action_ck check (
     pending_action is null or pending_action ~ '^[A-Z0-9_:-]{1,80}$'
   ),

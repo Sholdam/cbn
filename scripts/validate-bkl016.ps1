@@ -87,6 +87,15 @@ if ($migration -notmatch '(?i)regexp_replace\(phone_masked.+\)\s*!~\s*''\^\[0-9\
 if ($migration -notmatch '(?i)regexp_replace\(cpf_masked.+\)\s*!~\s*''\^\[0-9\]\{11\}\$''') {
   $failures.Add('cpf_masked nao bloqueia CPF completo com formatacao.')
 }
+if ($migration -notmatch '(?is)constraint\s+technical_operations_owner_product_uk\s+unique\s*\(\s*operation_id\s*,\s*client_id\s*,\s*product\s*\)') {
+  $failures.Add('Operacao tecnica nao possui chave candidata de cliente/produto.')
+}
+if ($migration -notmatch '(?is)constraint\s+consultations_operation_owner_product_fk\s+foreign key\s*\(\s*operation_id\s*,\s*client_id\s*,\s*product\s*\)\s*references\s+public\.technical_operations\s*\(\s*operation_id\s*,\s*client_id\s*,\s*product\s*\)\s*on delete restrict') {
+  $failures.Add('Consulta nao possui FK composta para o contexto da operacao.')
+}
+if ($migration -notmatch '(?is)constraint\s+proposals_operation_owner_product_fk\s+foreign key\s*\(\s*operation_id\s*,\s*client_id\s*,\s*product\s*\)\s*references\s+public\.technical_operations\s*\(\s*operation_id\s*,\s*client_id\s*,\s*product\s*\)\s*on delete restrict') {
+  $failures.Add('Proposta nao possui FK composta para o contexto da operacao.')
+}
 if ($migration -notmatch '(?i)final_authorization_evidence_payload_ref\s+uuid\s+not\s+null') {
   $failures.Add('Referencia obrigatoria da evidencia final protegida nao foi encontrada.')
 }
@@ -126,6 +135,11 @@ foreach ($requiredCheck in @(
   'get_client_sensitive_summary',
   'Snapshot de oferta e imutavel',
   'final_authorization_evidence_payload_ref',
+  'Consulta com operacao do mesmo dono/produto nao foi criada',
+  'Consulta aceitou operation_id de outro cliente',
+  'Consulta aceitou operation_id de outro produto',
+  'Proposta aceitou operation_id de outro cliente',
+  'Proposta aceitou operation_id de outro produto',
   'Proposta com evidencia do mesmo dono nao foi criada',
   'Evidencia de outro cliente foi aceita',
   'Evidencia de outra operacao foi aceita',
@@ -143,6 +157,9 @@ $privateSchemaDrop = $rollback.IndexOf('drop schema if exists app_private cascad
 $proposalDrop = $rollback.IndexOf('drop table if exists public.proposals;')
 if ($privateSchemaDrop -lt 0 -or $proposalDrop -lt 0 -or $privateSchemaDrop -gt $proposalDrop) {
   $failures.Add('Rollback nao remove app_private antes das tabelas publicas dependentes.')
+}
+if ($rollback -notmatch "(?is)set_config\('storage\.allow_delete_query',\s*'true',\s*true\).*?delete\s+from\s+storage\.buckets.*?not\s+exists\s*\(\s*select\s+1\s+from\s+storage\.objects") {
+  $failures.Add('Rollback nao libera/remover buckets vazios de forma protegida.')
 }
 
 if ($failures.Count -gt 0) {

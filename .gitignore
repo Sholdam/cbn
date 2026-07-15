@@ -1,0 +1,3 @@
+# Supabase CLI local runtime state; never version or treat as a remote link.
+supabase/.branches/
+supabase/.temp/

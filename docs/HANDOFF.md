@@ -201,7 +201,7 @@ Próximas ações:
 - criados teste SQL e varredura estática de segredo/CPF;
 - criada documentação de acesso, Storage, cofre, retenção, anonimização, backup e aplicação.
 
-A migration **não foi aplicada em Supabase real**. KMS/cofre, usuários, policies finais de Storage, backup, restauração, retenção legal e testes dinâmicos por papel permanecem pendentes. A BKL-016 continua **Em andamento** até essa validação.
+A migration **não foi aplicada em Supabase real**. KMS/cofre, usuários reais, policies finais de Storage, backup, restauração e retenção legal permanecem pendentes. A BKL-016 continua **Em andamento** até essas validações e revisão independente.
 
 ### Correções da revisão técnica preparadas
 
@@ -210,12 +210,14 @@ A migration **não foi aplicada em Supabase real**. KMS/cofre, usuários, polici
 - proposta exige evidência de autorização vinculada a `app_private.protected_payloads`;
 - a FK da autorização final compara payload, cliente, operação e tipo; uma evidência de outro dono não pode ser reutilizada;
 - a evidência final nasce ligada ao cliente e à operação antes da proposta, evitando dependência circular;
+- consultas e propostas validam `operation_id`, cliente e produto por FK composta, impedindo reutilização cruzada de operação;
+- rollback local respeita a proteção do Supabase Storage e remove somente buckets vazios;
 - rollback reordenado para remover dependências privadas antes das tabelas públicas;
 - testes SQL passaram a usar usuários Auth sintéticos, troca de role/claims e operações reais de RLS;
 - `anon` perdeu permissões de execução desnecessárias;
 - escrita futura de ciphertext foi definida como conexão PostgreSQL backend dedicada, fora do PostgREST.
 
-As validações estáticas podem ser executadas nesta branch. Migration, rollback e testes SQL ainda não devem ser declarados aprovados até execução com Supabase CLI/PostgreSQL local.
+Em 15/07/2026, migration, seed, suíte SQL/RLS, rollback com preservação de bucket contendo objeto e reaplicação foram aprovados em Supabase local descartável. A suíte terminou duas vezes com `BKL-016 database and RLS checks passed`. Nenhum projeto remoto foi vinculado, e nenhum deploy foi realizado.
 
 ## Tarefas vivas paralelas
 

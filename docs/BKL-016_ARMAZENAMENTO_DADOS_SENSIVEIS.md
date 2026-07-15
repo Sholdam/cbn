@@ -1,6 +1,6 @@
 # BKL-016 — Armazenamento de dados sensíveis
 
-**Status:** Em andamento — base e correções da revisão técnica preparadas no código, ainda não aplicadas nem validadas em Supabase real
+**Status:** Em andamento — migration, seed, RLS, rollback e reaplicação validados em Supabase local descartável; nada aplicado em Supabase real
 **Data:** 15/07/2026
 **Escopo desta entrega:** fundação local, dados sintéticos e políticas conservadoras
 
@@ -22,15 +22,17 @@ A base separa quatro destinos com responsabilidades diferentes:
 As tabelas `public` são:
 
 - `clients`: identificação operacional; `cpf_masked` e `phone_masked` exigem `*` e rejeitam sequências numéricas completas mesmo com formatação;
-- `technical_operations`: `operation_id` canônico, fila, estado, retry e `session_alias`;
-- `consultations`: uma consulta por produto e operação;
+- `technical_operations`: `operation_id` canônico, fila, estado, retry, `session_alias` e chave candidata de contexto `(operation_id, client_id, product)`;
+- `consultations`: uma consulta por produto e operação, com FK composta que impede usar operação de outro cliente ou produto;
 - `offers`: snapshot da condição retornada;
-- `proposals`: sempre vinculada a uma oferta coerente em cliente/produto e a `final_authorization_evidence_payload_ref` cujo payload possui o mesmo `client_id`, o mesmo `operation_id` e o tipo canônico `FINAL_AUTHORIZATION_EVIDENCE`;
+- `proposals`: sempre vinculada a uma oferta e operação coerentes em cliente/produto e a `final_authorization_evidence_payload_ref` cujo payload possui o mesmo `client_id`, o mesmo `operation_id` e o tipo canônico `FINAL_AUTHORIZATION_EVIDENCE`;
 - `interactions`: linha do tempo com resumo mascarado;
 - `pending_items`: ação e motivo em campos separados;
 - `user_profiles`: papel interno ligado ao Supabase Auth.
 
 FGTS e CLT usam o tipo fechado `credit_product`. O `operation_id` é chave primária de `technical_operations` e as entidades que executam efeitos externos o referenciam. Status bruto, status normalizado, ação pendente e motivo mascarado permanecem independentes.
+
+Consultas e propostas referenciam `technical_operations` por `(operation_id, client_id, product)`. O PostgreSQL rejeita a associação mesmo quando o UUID da operação existe, mas pertence a outro cliente ou produto; essa integridade não depende do Gateway, n8n ou Appsmith.
 
 Exclusões físicas são restritas por chaves estrangeiras. `retention_until` orienta a rotina futura de retenção e `anonymized_at` registra anonimização controlada sem remover a trilha obrigatória.
 
@@ -165,19 +167,20 @@ No projeto real, habilitar backups gerenciados/PITR conforme o plano Supabase, r
 14. Configurar backup/PITR, retenção e um teste de restauração.
 15. Só depois planejar conexões de n8n/Appsmith em tarefas próprias.
 
-## Validação local preparada
+## Validação local executada
 
-- `supabase/tests/bkl016_secure_storage_test.sql`: fixtures Auth sintéticas para admin, operations, support, auditor e usuário sem perfil; troca efetiva de role/claims; acesso de anon; isolamento privado; permissões reais; máscaras; oferta imutável; evidência positiva do mesmo cliente/operação/tipo; rejeição de evidência de outro cliente, outra operação, tipo incorreto ou UUID inexistente; e auditoria append-only;
+- `supabase/tests/bkl016_secure_storage_test.sql`: fixtures Auth sintéticas para admin, operations, support, auditor e usuário sem perfil; troca efetiva de role/claims; acesso de anon; isolamento privado; permissões reais; máscaras; oferta imutável; vínculos positivos de operação; rejeição de operação de outro cliente/produto em consulta e proposta; evidência positiva do mesmo cliente/operação/tipo; rejeição de evidência de outro cliente, outra operação, tipo incorreto ou UUID inexistente; e auditoria append-only;
 - `scripts/validate-bkl016.ps1`: estrutura esperada, invariantes da revisão, seed sintético, ausência recursiva de `.env`, padrões de segredo, sessão, token, chave, JWT e CPF completo;
 - `supabase/seed.sql`: cliente, operações, consulta, oferta, evidência protegida e proposta claramente sintéticos; a evidência é inserida antes da proposta para provar o ciclo válido.
-- `supabase/rollback/20260715_001_bkl016_secure_storage_down.sql`: rollback manual e destrutivo somente para desenvolvimento limpo; buckets com objetos não são apagados silenciosamente.
+- `supabase/rollback/20260715_001_bkl016_secure_storage_down.sql`: rollback manual e destrutivo somente para desenvolvimento limpo; libera a proteção de exclusão do Storage apenas dentro da transação e somente para buckets vazios; buckets com objetos não são apagados silenciosamente.
 
-Se Docker/Supabase CLI não estiverem disponíveis, o teste de banco ficará preparado, mas não executado. Isso deve ser registrado como limitação, sem marcar BKL-016 como concluída.
+Em 15/07/2026, a migration e o seed foram aplicados por `supabase db reset` em stack local descartável. A suíte SQL terminou com `BKL-016 database and RLS checks passed`, cobrindo anon, usuário sem perfil, support, operations, auditor, admin, schema privado, funções `SECURITY DEFINER`, máscaras, snapshot, integridade de operação/evidência e auditoria append-only.
+
+O rollback foi executado após inserir um objeto sintético no Storage: schemas, tabelas, funções, constraints e buckets vazios foram removidos; o bucket com objeto permaneceu. Um novo `supabase db reset` reaplicou migration e seed, e a suíte completa passou novamente. Nenhum projeto remoto foi vinculado ou acessado.
 
 ## Riscos restantes
 
-- migration ainda não executada em uma instância Supabase limpa;
-- testes dinâmicos por papel estão preparados, mas ainda precisam ser executados em Supabase local;
+- aplicação em projeto Supabase remoto permanece deliberadamente não executada;
 - KMS/cofre, rotação e recuperação de chave não foram escolhidos;
 - prazos legais de retenção e legal hold precisam de validação;
 - policies de objetos Storage continuam deliberadamente ausentes;

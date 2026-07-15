@@ -322,6 +322,14 @@ insert into public.technical_operations (
   ('83000000-0000-4000-8000-000000000006',
    '83000000-0000-4000-8000-000000000016',
    '82000000-0000-4000-8000-000000000001', 'FGTS',
+   'CRIAR_PROPOSTA', 'synthetic-fgts-alias'),
+  ('83000000-0000-4000-8000-000000000007',
+   '83000000-0000-4000-8000-000000000017',
+   '82000000-0000-4000-8000-000000000009', 'FGTS',
+   'CRIAR_PROPOSTA', 'synthetic-other-client-alias'),
+  ('83000000-0000-4000-8000-000000000008',
+   '83000000-0000-4000-8000-000000000018',
+   '82000000-0000-4000-8000-000000000001', 'CLT',
    'CRIAR_PROPOSTA', 'synthetic-fgts-alias');
 
 insert into app_private.protected_payloads (
@@ -342,15 +350,41 @@ insert into app_private.protected_payloads (
    '82000000-0000-4000-8000-000000000001',
    '83000000-0000-4000-8000-000000000003',
    'SYNTHETIC_GENERIC_PAYLOAD', decode('00', 'hex'),
+   'synthetic-kms-key-ref', 'synthetic-v1', now() + interval '1 day'),
+  ('85000000-0000-4000-8000-000000000006',
+   '82000000-0000-4000-8000-000000000001',
+   '83000000-0000-4000-8000-000000000007',
+   'FINAL_AUTHORIZATION_EVIDENCE', decode('53594e544845544943', 'hex'),
+   'synthetic-kms-key-ref', 'synthetic-v1', now() + interval '1 day'),
+  ('85000000-0000-4000-8000-000000000007',
+   '82000000-0000-4000-8000-000000000001',
+   '83000000-0000-4000-8000-000000000008',
+   'FINAL_AUTHORIZATION_EVIDENCE', decode('53594e544845544943', 'hex'),
    'synthetic-kms-key-ref', 'synthetic-v1', now() + interval '1 day');
 
--- Positivo: a fixture inicial prova que cliente, operacao e tipo coincidentes
--- permitem criar a proposta depois da evidencia.
+-- Positivo: consulta e proposta usam operacoes do mesmo cliente/produto; a
+-- proposta tambem usa evidencia coincidente e criada anteriormente.
 do $$
 begin
   if not exists (
     select 1
+    from public.consultations c
+    join public.technical_operations o
+      on o.operation_id = c.operation_id
+     and o.client_id = c.client_id
+     and o.product = c.product
+    where c.id = '84000000-0000-4000-8000-000000000001'
+  ) then
+    raise exception 'Consulta com operacao do mesmo dono/produto nao foi criada';
+  end if;
+
+  if not exists (
+    select 1
     from public.proposals p
+    join public.technical_operations o
+      on o.operation_id = p.operation_id
+     and o.client_id = p.client_id
+     and o.product = p.product
     join app_private.protected_payloads e
       on e.id = p.final_authorization_evidence_payload_ref
      and e.client_id = p.client_id
@@ -362,8 +396,68 @@ begin
   end if;
 end $$;
 
+-- Negativos: consulta nao pode reutilizar operacao de outro cliente/produto.
 do $$
 begin
+  begin
+    insert into public.consultations (
+      id, client_id, product, operation_id, status_normalized, session_alias
+    ) values (
+      '84000000-0000-4000-8000-000000000007',
+      '82000000-0000-4000-8000-000000000001', 'FGTS',
+      '83000000-0000-4000-8000-000000000007',
+      'SYNTHETIC_REJECTED', 'synthetic-fgts-alias'
+    );
+    raise exception 'Consulta aceitou operation_id de outro cliente';
+  exception when foreign_key_violation then null;
+  end;
+
+  begin
+    insert into public.consultations (
+      id, client_id, product, operation_id, status_normalized, session_alias
+    ) values (
+      '84000000-0000-4000-8000-000000000008',
+      '82000000-0000-4000-8000-000000000001', 'FGTS',
+      '83000000-0000-4000-8000-000000000008',
+      'SYNTHETIC_REJECTED', 'synthetic-fgts-alias'
+    );
+    raise exception 'Consulta aceitou operation_id de outro produto';
+  exception when foreign_key_violation then null;
+  end;
+end $$;
+
+do $$
+begin
+  begin
+    insert into public.proposals (
+      id, client_id, offer_id, product, operation_id,
+      final_authorization_evidence_payload_ref, authorized_at
+    ) values (
+      '86000000-0000-4000-8000-000000000008',
+      '82000000-0000-4000-8000-000000000001',
+      '84000000-0000-4000-8000-000000000002', 'FGTS',
+      '83000000-0000-4000-8000-000000000007',
+      '85000000-0000-4000-8000-000000000006', now()
+    );
+    raise exception 'Proposta aceitou operation_id de outro cliente';
+  exception when foreign_key_violation then null;
+  end;
+
+  begin
+    insert into public.proposals (
+      id, client_id, offer_id, product, operation_id,
+      final_authorization_evidence_payload_ref, authorized_at
+    ) values (
+      '86000000-0000-4000-8000-000000000009',
+      '82000000-0000-4000-8000-000000000001',
+      '84000000-0000-4000-8000-000000000002', 'FGTS',
+      '83000000-0000-4000-8000-000000000008',
+      '85000000-0000-4000-8000-000000000007', now()
+    );
+    raise exception 'Proposta aceitou operation_id de outro produto';
+  exception when foreign_key_violation then null;
+  end;
+
   begin
     insert into public.proposals (
       id, client_id, offer_id, product, operation_id,

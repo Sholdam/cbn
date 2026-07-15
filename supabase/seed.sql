@@ -56,6 +56,9 @@ insert into public.consultations (
   '2026-08-14T12:00:00Z'
 ) on conflict (id) do nothing;
 
+-- client_id e product repetem exatamente o dono/produto da operacao acima;
+-- a FK composta impede reaproveitar operation_id de outro contexto.
+
 insert into public.offers (
   id, consultation_id, client_id, product, operation_id,
   lender_code, lender_name, plan_code, term_count,
@@ -76,7 +79,8 @@ insert into public.offers (
   '2026-07-16T12:00:00Z'
 ) on conflict (id) do nothing;
 
--- A operacao de criacao da proposta e independente da operacao de consulta.
+-- A operacao de criacao da proposta e independente da operacao de consulta,
+-- mas pertence ao mesmo cliente e produto declarados na proposta.
 insert into public.technical_operations (
   operation_id, correlation_id, client_id, product, action,
   session_alias, state, attempt_count, gateway_version,

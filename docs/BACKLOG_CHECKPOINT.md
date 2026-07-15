@@ -139,7 +139,7 @@ Foi preparada, sem deploy, a fundação revisável da BKL-016:
 - seed somente sintético, teste SQL e varredura estática;
 - documentação de Storage, cofre, exibição, logs, retenção, anonimização, backup e aplicação real.
 
-Ainda pendem aplicação em Supabase isolado, teste dinâmico com usuários Auth, escolha de KMS/cofre, policies finais de Storage, prazos legais, backup/restauração e validação independente. Nenhuma conta real foi conectada.
+Ainda pendem escolha de KMS/cofre, policies finais de Storage, prazos legais, backup/restauração, ambiente remoto isolado e validação independente. Nenhuma conta real foi conectada.
 
 ### Revisão técnica da fundação
 
@@ -150,11 +150,13 @@ Os bloqueios encontrados na primeira revisão foram corrigidos no código:
 - evidência final da proposta passou a referenciar payload protegido obrigatório;
 - a integridade da evidência final foi fechada por FK composta de payload, cliente, operação e tipo;
 - evidências finais exigem cliente/operação desde a criação e podem preceder a proposta sem ciclo;
+- consultas e propostas agora exigem que `operation_id`, cliente e produto coincidam com a operação técnica;
+- rollback foi ajustado à proteção nativa do Storage para preservar buckets que contenham objetos;
 - rollback respeita as FKs cruzadas entre `public` e `app_private`;
 - suíte SQL agora exercita RLS com usuários/roles sintéticos reais;
 - privilégios de `anon` e o caminho backend para ciphertext foram documentados.
 
-Foram preparados casos SQL positivos e negativos para impedir evidência inexistente, de tipo incorreto, de outro cliente ou de outra operação. Os testes SQL continuam **não executados** até existir Supabase local. A BKL-016 permanece **Em andamento**.
+Em 15/07/2026, migration e seed foram aplicados em Supabase local descartável. A suíte completa passou duas vezes, antes e depois do rollback/reaplicação. O rollback removeu toda a estrutura BKL-016 e buckets vazios, preservou um bucket com objeto sintético e não deixou funções ou constraints quebradas. Nenhum projeto remoto foi vinculado ou acessado.
 
 ## Tarefas vivas paralelas
 
