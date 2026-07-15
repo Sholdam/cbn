@@ -1,14 +1,14 @@
 # BKL-016 — Runbook de validação remota em desenvolvimento
 
-**Status:** preparação local concluída; parada obrigatória ativa antes de qualquer vínculo ou alteração remota
+**Status:** projeto `cbn-dev` vinculado e inspecionado somente para leitura; parada obrigatória ativa antes do dry-run
 **Data:** 15/07/2026
 **Ambiente permitido:** projeto Supabase exclusivo de desenvolvimento, vazio e sem dados reais
 
 ## Limite desta execução
 
-Este runbook foi preparado sem `supabase link`, `db push`, migration remota, usuário remoto ou objeto remoto. A CLI não está autenticada, nenhum projeto foi selecionado e não existe marcador local de vínculo em `supabase/.temp` ou `supabase/.branches`.
+O runbook foi inicialmente preparado sem acesso remoto. Após a primeira autorização explícita, a CLI foi autenticada localmente, o projeto `cbn-dev` foi confirmado duas vezes pelo ref não secreto e o `supabase link` foi concluído. O marcador local corresponde ao alvo confirmado e permanece ignorado pelo Git.
 
-Os comandos das seções posteriores à parada são instruções para uma continuação autorizada. Eles não foram executados nesta etapa.
+A inspeção somente leitura mostrou histórico remoto de migrations vazio, migration local `20260715` pendente e nenhuma tabela reportada pelo inspetor. Não foram executados `db push --dry-run`, `db push`, SQL remoto, migration, seed, usuário, fixture ou objeto. Os comandos posteriores à segunda parada continuam sendo instruções para uma continuação autorizada.
 
 ## Diagnóstico registrado
 
@@ -20,9 +20,9 @@ Os comandos das seções posteriores à parada são instruções para uma contin
 | Docker Compose | 5.3.0 |
 | Supabase CLI | 2.109.1 |
 | psql | 17.10 |
-| Autenticação Supabase CLI | inativa |
-| Projeto de desenvolvimento identificável | não verificável sem autenticação; nenhum projeto foi escolhido |
-| Vínculo local | ausente |
+| Autenticação Supabase CLI | ativa, realizada interativamente pelo usuário |
+| Projeto de desenvolvimento identificável | `cbn-dev`, alvo confirmado duas vezes; ref omitido no documento |
+| Vínculo local | presente, correspondente ao alvo e ignorado pelo Git |
 | Schemas expostos localmente | `app_private` e `audit` não aparecem em `api.schemas` |
 
 `supabase db push --help` confirmou que a CLI instalada oferece `--dry-run`. Nenhuma conexão remota foi iniciada para essa verificação.
@@ -41,7 +41,7 @@ O preflight possui fases diferentes para evitar uma dependência circular:
 
 O modo padrão é `RemoteWrite`, portanto executar o script sem parâmetros falha de forma segura.
 
-## PARADA OBRIGATÓRIA — ação manual
+## Primeira parada obrigatória — concluída
 
 Não executar ainda `supabase link`, `supabase db push`, SQL remoto, criação de usuário ou upload.
 
@@ -54,7 +54,11 @@ O usuário deve:
 5. autenticar a Supabase CLI localmente de forma interativa, se desejar, sem enviar token ao chat;
 6. informar somente que o projeto foi criado e o **project ref não secreto**.
 
-A continuação exige autorização explícita. Senha, URL de banco, token, JWT, `service_role` e chaves não devem ser enviados.
+A criação do projeto, autenticação local e autorização do vínculo foram concluídas sem compartilhar senha, URL de banco, token, JWT, `service_role` ou chave.
+
+## SEGUNDA PARADA OBRIGATÓRIA — antes do dry-run
+
+O alvo está vinculado e a inspeção somente leitura foi aprovada. Não executar ainda `supabase db push --dry-run` nem qualquer escrita. A continuação exige autorização explícita separada para o dry-run. Mesmo depois do dry-run, uma terceira confirmação será necessária antes de aplicar a migration.
 
 ## Continuação autorizada — inspeção antes do vínculo
 

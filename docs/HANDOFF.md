@@ -222,15 +222,17 @@ Em 15/07/2026, migration, seed, suíte SQL/RLS, rollback com preservação de bu
 
 - criada a branch `codex/bkl-016-remote-dev` a partir da `main` atualizada por fast-forward;
 - diagnóstico confirmou Docker 29.6.1, Compose 5.3.0, Supabase CLI 2.109.1 e psql 17.10;
-- a CLI Supabase não está autenticada e nenhum projeto foi selecionado automaticamente;
-- não existe vínculo local em `supabase/.temp` ou `supabase/.branches`, e ambos permanecem ignorados;
+- a CLI Supabase foi autenticada interativamente pelo usuário e o projeto isolado `cbn-dev` foi confirmado duas vezes pelo ref não secreto;
+- o vínculo local corresponde ao alvo confirmado e seus metadados permanecem ignorados em `supabase/.temp`/`.branches`;
 - criado `docs/BKL-016_REMOTE_DEV_RUNBOOK.md` com duas paradas humanas e proibição de credenciais no chat;
 - criados preflight, validador remoto, limpeza por manifesto sintético e teste estrutural remoto;
 - o preflight falha de forma segura sem ambiente, alvo, confirmação e revisão do dry-run;
 - `app_private` e `audit` continuam fora da lista local de schemas expostos;
 - `.gitignore` já protegia os metadados locais da CLI e não precisou ser alterado.
 
-**Ponto exato de retomada:** parada obrigatória antes de `supabase link`, `db push` ou qualquer alteração remota. O usuário deve criar/selecionar o projeto isolado e informar apenas a confirmação e o project ref não secreto. A BKL-016 continua **Em andamento**; migration remota, RLS/Storage remoto, limpeza, backup/restauração e decisão final de KMS não foram executados.
+Após autorização, o `supabase link` foi concluído sem senha em argumento. A inspeção somente leitura confirmou histórico remoto de migrations vazio, migration local `20260715` pendente e nenhuma tabela reportada pelo inspetor. Nenhum dry-run, SQL, migration, usuário, fixture ou objeto foi aplicado.
+
+**Ponto exato de retomada:** segunda parada obrigatória antes de `supabase db push --dry-run`. O dry-run exige autorização separada; uma terceira confirmação será exigida antes de qualquer aplicação. A BKL-016 continua **Em andamento**; migration remota, RLS/Storage remoto, limpeza, backup/restauração e decisão final de KMS não foram executados.
 
 ## Tarefas vivas paralelas
 

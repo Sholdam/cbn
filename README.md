@@ -15,7 +15,7 @@ A decisão técnica está registrada em [`docs/ARQUITETURA_TECNICA.md`](docs/ARQ
 
 ## Próximo ponto de retomada
 
-A **BKL-016** teve migration, seed, rollback e testes de RLS validados em Supabase local descartável. A preparação da fase remota está na branch `codex/bkl-016-remote-dev`, com runbook e gates conservadores; nenhum projeto remoto foi vinculado ou alterado.
+A **BKL-016** teve migration, seed, rollback e testes de RLS validados em Supabase local descartável. A preparação da fase remota está na branch `codex/bkl-016-remote-dev`; o projeto isolado `cbn-dev` foi vinculado e inspecionado somente para leitura, sem migration ou dado remoto.
 
 BKL-012 e BKL-013 permanecem tarefas vivas paralelas. Nenhuma proposta real pode ser confirmada sem autorização expressa e evidência protegida válida.
 

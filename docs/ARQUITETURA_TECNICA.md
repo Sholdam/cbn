@@ -91,7 +91,7 @@ A fase remota deve usar somente projeto Supabase isolado e claramente marcado co
 
 O runbook `docs/BKL-016_REMOTE_DEV_RUNBOOK.md` e os scripts `supabase-remote-preflight.ps1`, `supabase-remote-validate.ps1` e `supabase-remote-cleanup.ps1` bloqueiam branch/árvore inadequadas, alvo não confirmado, possível produção, dados não sintéticos, segredo, schema privado exposto e migration sem revisão. A limpeza aceita apenas manifesto local ignorado com IDs e objetos sintéticos explícitos.
 
-Na preparação de 15/07/2026, a CLI não estava autenticada e nenhum vínculo remoto existia. A execução parou antes de qualquer acesso ou alteração remota. A escolha final de KMS/cofre, a comprovação de backup/restauração e a validação jurídica de retenção permanecem decisões separadas; nenhuma integração n8n/Appsmith pode antecedê-las.
+Na preparação de 15/07/2026, a primeira parada foi cumprida. Depois da autorização explícita, o projeto isolado `cbn-dev` foi confirmado duas vezes, vinculado e inspecionado somente para leitura. O histórico remoto de migrations estava vazio e nenhuma tabela foi reportada; a execução parou novamente antes do dry-run. A escolha final de KMS/cofre, a comprovação de backup/restauração e a validação jurídica de retenção permanecem decisões separadas; nenhuma integração n8n/Appsmith pode antecedê-las.
 
 ## Sessões previstas
 

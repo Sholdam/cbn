@@ -1,6 +1,6 @@
 # BKL-016 — Armazenamento de dados sensíveis
 
-**Status:** Em andamento — validação local concluída e fase remota preparada com gates; nenhum projeto remoto vinculado ou alterado
+**Status:** Em andamento — validação local concluída; `cbn-dev` vinculado e inspecionado sem escrita; dry-run remoto pendente
 **Data:** 15/07/2026
 **Escopo desta entrega:** fundação local, dados sintéticos e políticas conservadoras
 
@@ -180,7 +180,7 @@ O rollback foi executado após inserir um objeto sintético no Storage: schemas,
 
 ## Preparação remota de desenvolvimento
 
-Em 15/07/2026, foi criada a branch `codex/bkl-016-remote-dev` a partir da `main` atualizada. O diagnóstico confirmou Docker 29.6.1, Compose 5.3.0, Supabase CLI 2.109.1 e psql 17.10. A CLI não estava autenticada, nenhum projeto foi escolhido e não existia vínculo local.
+Em 15/07/2026, foi criada a branch `codex/bkl-016-remote-dev` a partir da `main` atualizada. O diagnóstico confirmou Docker 29.6.1, Compose 5.3.0, Supabase CLI 2.109.1 e psql 17.10. Depois da primeira parada, o usuário criou o projeto isolado `cbn-dev`, autenticou a CLI localmente e autorizou o vínculo ao ref não secreto confirmado.
 
 Foram preparados:
 
@@ -190,14 +190,14 @@ Foram preparados:
 - limpeza restrita a manifesto ignorado, IDs explícitos e objetos sintéticos UUID/hash;
 - teste SQL remoto para migration, RLS, papéis, grants, buckets, policies, integridades, snapshot, auditoria e padrões aparentes de dado real/segredo.
 
-A versão instalada da CLI oferece `supabase db push --dry-run`. Mesmo assim, nenhum `supabase link`, dry-run remoto, `db push`, SQL remoto, usuário ou objeto foi executado. O próximo passo depende de o usuário criar/selecionar um projeto exclusivo de desenvolvimento e informar somente a confirmação e o project ref não secreto.
+A versão instalada da CLI oferece `supabase db push --dry-run`. O vínculo foi concluído sem senha em argumento; o alvo foi verificado duas vezes e a inspeção somente leitura mostrou histórico remoto vazio, migration local `20260715` pendente e nenhuma tabela reportada. Nenhum dry-run, `db push`, SQL remoto, usuário, fixture ou objeto foi executado. O próximo passo depende de autorização separada para o dry-run.
 
 A comparação preliminar de KMS/cofre foi limitada a três famílias: KMS gerenciado com envelope encryption, HashiCorp Vault Transit e serviço de secrets com criptografia no Gateway. A escolha continua pendente de custo comprovado, operação, rotação, recuperação e aprovação. Backup/PITR também não foi afirmado sem comprovação do plano do futuro projeto.
 
 ## Riscos restantes
 
 - aplicação em projeto Supabase remoto permanece deliberadamente não executada;
-- autenticação da CLI, criação/seleção do projeto e autorização humana ainda estão pendentes;
+- dry-run e segunda autorização de escrita ainda estão pendentes;
 - KMS/cofre, rotação e recuperação de chave não foram escolhidos;
 - prazos legais de retenção e legal hold precisam de validação;
 - policies de objetos Storage continuam deliberadamente ausentes;

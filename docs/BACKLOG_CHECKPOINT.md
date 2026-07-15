@@ -164,13 +164,15 @@ Status permanece: **Em andamento**.
 
 - branch `codex/bkl-016-remote-dev` criada a partir da `main` atualizada;
 - ferramentas disponíveis: Docker 29.6.1, Compose 5.3.0, Supabase CLI 2.109.1 e psql 17.10;
-- autenticação da CLI inativa, projeto não escolhido e vínculo local ausente;
+- CLI autenticada interativamente, projeto isolado `cbn-dev` confirmado duas vezes e vínculo local correspondente;
 - runbook remoto, preflight fail-closed, validador SQL/PowerShell e limpeza sintética por manifesto preparados;
 - a CLI instalada oferece `db push --dry-run`;
 - metadados de vínculo continuam ignorados e schemas privados continuam fora do PostgREST local;
 - nenhuma conexão a banco/projeto remoto, migration, usuário, fixture, objeto, n8n ou Appsmith foi criada.
 
-**Bloqueio deliberado:** aguardar o usuário criar/selecionar um projeto exclusivo de desenvolvimento e fornecer somente confirmação e project ref não secreto. O trabalho deve permanecer parado antes de `supabase link`, `db push` ou alteração remota. Validação remota, Storage, limpeza, KMS e backup/restauração continuam pendentes e impedem concluir a BKL-016.
+Após a primeira autorização, o vínculo foi concluído e a inspeção somente leitura encontrou histórico remoto de migrations vazio, migration local `20260715` pendente e nenhuma tabela reportada. Nenhum dry-run ou objeto remoto foi criado.
+
+**Bloqueio deliberado:** aguardar autorização separada antes de `supabase db push --dry-run`; depois do dry-run, parar novamente antes de qualquer aplicação. Validação remota, Storage, limpeza, KMS e backup/restauração continuam pendentes e impedem concluir a BKL-016.
 
 ## Tarefas vivas paralelas
 
