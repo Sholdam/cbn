@@ -170,9 +170,9 @@ Status permanece: **Em andamento**.
 - metadados de vínculo continuam ignorados e schemas privados continuam fora do PostgREST local;
 - nenhuma conexão a banco/projeto remoto, migration, usuário, fixture, objeto, n8n ou Appsmith foi criada.
 
-Após a primeira autorização, o vínculo foi concluído e a inspeção somente leitura encontrou histórico remoto de migrations vazio, migration local `20260715` pendente e nenhuma tabela reportada. Nenhum dry-run ou objeto remoto foi criado.
+Após a primeira autorização, o vínculo foi concluído e a inspeção somente leitura encontrou histórico remoto de migrations vazio, migration local `20260715` pendente e nenhuma tabela reportada. Após autorização separada, o dry-run listou somente `20260715_001_bkl016_secure_storage.sql` e não alterou o projeto.
 
-**Bloqueio deliberado:** aguardar autorização separada antes de `supabase db push --dry-run`; depois do dry-run, parar novamente antes de qualquer aplicação. Validação remota, Storage, limpeza, KMS e backup/restauração continuam pendentes e impedem concluir a BKL-016.
+**Bloqueio deliberado:** terceira parada antes de `supabase db push`. A aplicação exige nova autorização explícita. Validação remota, Storage, limpeza, KMS e backup/restauração continuam pendentes e impedem concluir a BKL-016.
 
 ## Tarefas vivas paralelas
 

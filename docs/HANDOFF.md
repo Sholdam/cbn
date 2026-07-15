@@ -230,9 +230,9 @@ Em 15/07/2026, migration, seed, suíte SQL/RLS, rollback com preservação de bu
 - `app_private` e `audit` continuam fora da lista local de schemas expostos;
 - `.gitignore` já protegia os metadados locais da CLI e não precisou ser alterado.
 
-Após autorização, o `supabase link` foi concluído sem senha em argumento. A inspeção somente leitura confirmou histórico remoto de migrations vazio, migration local `20260715` pendente e nenhuma tabela reportada pelo inspetor. Nenhum dry-run, SQL, migration, usuário, fixture ou objeto foi aplicado.
+Após autorização, o `supabase link` foi concluído sem senha em argumento. A inspeção somente leitura confirmou histórico remoto de migrations vazio, migration local `20260715` pendente e nenhuma tabela reportada pelo inspetor. Com autorização separada, `supabase db push --dry-run --linked` listou somente `20260715_001_bkl016_secure_storage.sql` e não fez escrita.
 
-**Ponto exato de retomada:** segunda parada obrigatória antes de `supabase db push --dry-run`. O dry-run exige autorização separada; uma terceira confirmação será exigida antes de qualquer aplicação. A BKL-016 continua **Em andamento**; migration remota, RLS/Storage remoto, limpeza, backup/restauração e decisão final de KMS não foram executados.
+**Ponto exato de retomada:** terceira parada obrigatória antes de `supabase db push`. Uma nova autorização explícita é obrigatória para aplicar a migration. A BKL-016 continua **Em andamento**; migration remota, RLS/Storage remoto, limpeza, backup/restauração e decisão final de KMS não foram executados.
 
 ## Tarefas vivas paralelas
 

@@ -1,6 +1,6 @@
 # BKL-016 — Runbook de validação remota em desenvolvimento
 
-**Status:** projeto `cbn-dev` vinculado e inspecionado somente para leitura; parada obrigatória ativa antes do dry-run
+**Status:** dry-run revisado e aprovado; terceira parada obrigatória ativa antes da aplicação
 **Data:** 15/07/2026
 **Ambiente permitido:** projeto Supabase exclusivo de desenvolvimento, vazio e sem dados reais
 
@@ -8,7 +8,7 @@
 
 O runbook foi inicialmente preparado sem acesso remoto. Após a primeira autorização explícita, a CLI foi autenticada localmente, o projeto `cbn-dev` foi confirmado duas vezes pelo ref não secreto e o `supabase link` foi concluído. O marcador local corresponde ao alvo confirmado e permanece ignorado pelo Git.
 
-A inspeção somente leitura mostrou histórico remoto de migrations vazio, migration local `20260715` pendente e nenhuma tabela reportada pelo inspetor. Não foram executados `db push --dry-run`, `db push`, SQL remoto, migration, seed, usuário, fixture ou objeto. Os comandos posteriores à segunda parada continuam sendo instruções para uma continuação autorizada.
+A inspeção somente leitura mostrou histórico remoto de migrations vazio, migration local `20260715` pendente e nenhuma tabela reportada pelo inspetor. Após autorização separada, `supabase db push --dry-run --linked` terminou sem escrita e listou somente `20260715_001_bkl016_secure_storage.sql`. Não foram executados `db push` real, SQL remoto, migration, seed, usuário, fixture ou objeto.
 
 ## Diagnóstico registrado
 
@@ -56,9 +56,13 @@ O usuário deve:
 
 A criação do projeto, autenticação local e autorização do vínculo foram concluídas sem compartilhar senha, URL de banco, token, JWT, `service_role` ou chave.
 
-## SEGUNDA PARADA OBRIGATÓRIA — antes do dry-run
+## Segunda parada obrigatória — concluída
 
-O alvo está vinculado e a inspeção somente leitura foi aprovada. Não executar ainda `supabase db push --dry-run` nem qualquer escrita. A continuação exige autorização explícita separada para o dry-run. Mesmo depois do dry-run, uma terceira confirmação será necessária antes de aplicar a migration.
+O usuário autorizou exclusivamente o dry-run. O comando foi executado sem `--include-seed`, não alterou o banco e apresentou somente a migration BKL-016 esperada.
+
+## TERCEIRA PARADA OBRIGATÓRIA — antes da aplicação
+
+Não executar `supabase db push`, SQL remoto, migration, seed ou criação de fixture sem nova autorização explícita. O preflight de `RemoteWrite` pode comprovar prontidão local, mas não concede autorização de escrita.
 
 ## Continuação autorizada — inspeção antes do vínculo
 
@@ -202,8 +206,8 @@ Após autorização, registrar evidência do plano no painel e preparar exporta�
 
 ## Checklist antes de encerrar a fase remota
 
-- [ ] projeto isolado confirmado duas vezes;
-- [ ] dry-run revisado e segunda autorização registrada;
+- [x] projeto isolado confirmado duas vezes;
+- [x] dry-run revisado e segunda autorização registrada;
 - [ ] migration aplicada sem seed remoto;
 - [ ] validação remota completa aprovada;
 - [ ] buckets privados e ausência de policy pública confirmados;
