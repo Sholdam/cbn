@@ -57,10 +57,19 @@ create table if not exists public.clients (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   constraint clients_phone_masked_ck check (
-    phone_masked is null or phone_masked ~ '^[+]?[0-9* -]{6,24}$'
+    phone_masked is null or (
+      phone_masked ~ '^[+]?[0-9* ()-]{6,24}$'
+      and position('*' in phone_masked) > 0
+      and regexp_replace(phone_masked, '[^0-9]', '', 'g') !~ '^[0-9]{10,13}$'
+    )
   ),
   constraint clients_cpf_masked_ck check (
-    cpf_masked is null or cpf_masked ~ '^[0-9*.-]{8,18}$'
+    cpf_masked is null or (
+      cpf_masked ~ '^[0-9*.-]{8,18}$'
+      and position('*' in cpf_masked) > 0
+      and cpf_masked !~ '[0-9]{11}'
+      and regexp_replace(cpf_masked, '[^0-9]', '', 'g') !~ '^[0-9]{11}$'
+    )
   )
 );
 
@@ -234,7 +243,8 @@ create table if not exists public.proposals (
   pending_action text,
   pending_reason_masked text,
   signing_link_ref uuid,
-  final_authorization_evidence_ref uuid not null,
+  final_authorization_evidence_payload_ref uuid not null,
+  final_authorization_evidence_type text not null default 'FINAL_AUTHORIZATION_EVIDENCE',
   authorized_at timestamptz not null,
   created_externally_at timestamptz,
   last_checked_at timestamptz,
@@ -250,6 +260,9 @@ create table if not exists public.proposals (
     references public.offers(id, client_id, product) on delete restrict,
   constraint proposals_pending_action_ck check (
     pending_action is null or pending_action ~ '^[A-Z0-9_:-]{1,80}$'
+  ),
+  constraint proposals_final_authorization_evidence_type_ck check (
+    final_authorization_evidence_type = 'FINAL_AUTHORIZATION_EVIDENCE'
   )
 );
 
@@ -274,8 +287,8 @@ create table if not exists public.interactions (
   retention_until timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  constraint pending_items_action_code_ck check (
-    pending_action ~ '^[A-Z0-9_:-]{1,80}$'
+  constraint interactions_event_type_ck check (
+    event_type ~ '^[A-Z0-9_:-]{1,80}$'
   )
 );
 
@@ -298,7 +311,10 @@ create table if not exists public.pending_items (
   resolved_at timestamptz,
   retention_until timestamptz,
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  constraint pending_items_pending_action_ck check (
+    pending_action ~ '^[A-Z0-9_:-]{1,80}$'
+  )
 );
 
 create index if not exists pending_items_queue_idx
@@ -363,6 +379,7 @@ create table if not exists app_private.protected_payloads (
   anonymized_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
+  constraint protected_payloads_id_type_uk unique (id, payload_type),
   constraint protected_payload_owner_ck check (
     num_nonnulls(client_id, proposal_id, operation_id) >= 1
   )
@@ -416,6 +433,19 @@ alter table public.proposals
   add constraint proposals_signing_link_ref_fk
   foreign key (signing_link_ref)
   references app_private.protected_payloads(id) on delete set null;
+
+alter table public.proposals
+  drop constraint if exists proposals_final_authorization_evidence_payload_ref_fk;
+alter table public.proposals
+  add constraint proposals_final_authorization_evidence_payload_ref_fk
+  foreign key (
+    final_authorization_evidence_payload_ref,
+    final_authorization_evidence_type
+  )
+  references app_private.protected_payloads(id, payload_type) on delete restrict;
+
+comment on column public.proposals.final_authorization_evidence_payload_ref is
+  'Evidencia protegida obrigatoria da autorizacao final; nunca texto, link ou dado bruto.';
 
 -- Trilha minima append-only. Metadata aceita somente codigos/estados nao sensiveis.
 create table if not exists audit.events (
@@ -506,9 +536,11 @@ $$;
 
 revoke all on function app_private.current_user_role() from public;
 revoke all on function app_private.has_app_role(public.app_role[]) from public;
-grant execute on function app_private.current_user_role() to anon, authenticated;
-grant execute on function app_private.has_app_role(public.app_role[]) to anon, authenticated;
-grant usage on schema app_private to anon, authenticated;
+revoke all on function app_private.current_user_role() from anon;
+revoke all on function app_private.has_app_role(public.app_role[]) from anon;
+grant execute on function app_private.current_user_role() to authenticated;
+grant execute on function app_private.has_app_role(public.app_role[]) to authenticated;
+grant usage on schema app_private to authenticated;
 
 -- RLS ativa inclusive nas tabelas privadas. Ausencia de policy privada = negacao.
 alter table public.user_profiles enable row level security;
@@ -809,6 +841,7 @@ end;
 $$;
 
 revoke all on function app_private.get_client_sensitive_summary(uuid, text) from public;
+revoke all on function app_private.get_client_sensitive_summary(uuid, text) from anon;
 grant execute on function app_private.get_client_sensitive_summary(uuid, text) to authenticated;
 
 -- Auditor acessa somente resumo nao sensivel por view security-invoker.
@@ -834,6 +867,11 @@ to authenticated;
 
 revoke all on all tables in schema app_private from public, anon, authenticated;
 revoke all on all sequences in schema app_private from public, anon, authenticated;
+
+-- Nenhum papel da API grava diretamente no schema privado. Nesta fase, somente
+-- o owner da migration pode carregar fixtures cifradas. No ambiente real,
+-- n8n/Gateway usarao uma credencial PostgreSQL backend dedicada e sem LOGIN
+-- via PostgREST; a criacao dessa credencial depende do projeto e fica fora da migration.
 
 -- Buckets seguros. Sem policy em storage.objects: clientes nao acessam objetos.
 -- URLs assinadas devem ser geradas sob demanda por backend e nunca persistidas.

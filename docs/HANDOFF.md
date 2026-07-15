@@ -1,6 +1,6 @@
 # Handoff — CBN Crédito
 
-**Atualizado em:** 15/07/2026, após integração da DE-003 e preparação em código da BKL-016
+**Atualizado em:** 15/07/2026, após integração da DE-003 e correções da revisão técnica BKL-016
 **Projeto:** CBN — operação autônoma de varredura e venda de crédito  
 **Escopo inicial:** FGTS + Crédito do Trabalhador (CLT)
 
@@ -202,6 +202,18 @@ Próximas ações:
 - criada documentação de acesso, Storage, cofre, retenção, anonimização, backup e aplicação.
 
 A migration **não foi aplicada em Supabase real**. KMS/cofre, usuários, policies finais de Storage, backup, restauração, retenção legal e testes dinâmicos por papel permanecem pendentes. A BKL-016 continua **Em andamento** até essa validação.
+
+### Correções da revisão técnica preparadas
+
+- corrigida a constraint de `interactions.event_type`;
+- máscaras de CPF e telefone agora exigem `*` e rejeitam sequências completas;
+- proposta exige evidência de autorização vinculada a `app_private.protected_payloads`;
+- rollback reordenado para remover dependências privadas antes das tabelas públicas;
+- testes SQL passaram a usar usuários Auth sintéticos, troca de role/claims e operações reais de RLS;
+- `anon` perdeu permissões de execução desnecessárias;
+- escrita futura de ciphertext foi definida como conexão PostgreSQL backend dedicada, fora do PostgREST.
+
+As validações estáticas podem ser executadas nesta branch. Migration, rollback e testes SQL ainda não devem ser declarados aprovados até execução com Supabase CLI/PostgreSQL local.
 
 ## Tarefas vivas paralelas
 

@@ -6,18 +6,26 @@ begin;
 
 drop view if exists public.audit_event_summaries;
 
+-- Quebra primeiro as referencias public -> app_private. As referencias no
+-- sentido inverso desaparecem quando o schema privado e removido.
+alter table if exists public.consultations
+  drop constraint if exists consultations_protected_payload_ref_fk;
+alter table if exists public.technical_operations
+  drop constraint if exists technical_operations_protected_log_ref_fk;
+alter table if exists public.proposals
+  drop constraint if exists proposals_signing_link_ref_fk;
+alter table if exists public.proposals
+  drop constraint if exists proposals_final_authorization_evidence_payload_ref_fk;
+
+drop schema if exists app_private cascade;
+drop schema if exists audit cascade;
+
+-- Agora as tabelas publicas podem ser removidas na ordem inversa das FKs.
 drop table if exists public.pending_items;
 drop table if exists public.interactions;
 drop table if exists public.proposals;
 drop table if exists public.offers;
 drop table if exists public.consultations;
-
-alter table if exists public.technical_operations
-  drop constraint if exists technical_operations_protected_log_ref_fk;
-
-drop schema if exists app_private cascade;
-drop schema if exists audit cascade;
-
 drop table if exists public.technical_operations;
 drop table if exists public.clients;
 drop table if exists public.user_profiles;

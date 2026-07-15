@@ -79,6 +79,10 @@ A base está modelada em três schemas:
 
 As chaves ficam em KMS/cofre externo; o PostgreSQL guarda somente o ciphertext e o alias da chave. O Storage usa buckets privados, objetos nomeados por UUID/hash e URLs assinadas efêmeras. RLS nega acesso sem perfil e impede acesso direto às tabelas privadas.
 
+Nenhum papel PostgREST grava diretamente em `app_private`. A escrita/leitura de ciphertext por n8n/Gateway usará futuramente uma credencial PostgreSQL backend dedicada, guardada no cofre e limitada por grants, sem adicionar o schema privado a `api.schemas`. O Appsmith continuará apenas na API operacional e nunca receberá `service_role`.
+
+Propostas exigem `final_authorization_evidence_payload_ref` válido e protegido. Máscaras operacionais de CPF/telefone devem conter `*` e não podem preservar a sequência numérica completa.
+
 Essa arquitetura foi preparada em migration e testes, mas ainda não foi aplicada em projeto Supabase real. Appsmith, n8n, Gateway e Power BI não foram conectados nesta etapa.
 
 ## Sessões previstas

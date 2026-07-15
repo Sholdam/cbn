@@ -141,6 +141,19 @@ Foi preparada, sem deploy, a fundação revisável da BKL-016:
 
 Ainda pendem aplicação em Supabase isolado, teste dinâmico com usuários Auth, escolha de KMS/cofre, policies finais de Storage, prazos legais, backup/restauração e validação independente. Nenhuma conta real foi conectada.
 
+### Revisão técnica da fundação
+
+Os bloqueios encontrados na primeira revisão foram corrigidos no código:
+
+- constraint inválida de Interação substituída por validação de `event_type`;
+- campos mascarados exigem asterisco e rejeitam CPF/telefone completos;
+- evidência final da proposta passou a referenciar payload protegido obrigatório;
+- rollback respeita as FKs cruzadas entre `public` e `app_private`;
+- suíte SQL agora exercita RLS com usuários/roles sintéticos reais;
+- privilégios de `anon` e o caminho backend para ciphertext foram documentados.
+
+Os testes SQL continuam **não executados** até existir Supabase local. A BKL-016 permanece **Em andamento**.
+
 ## Tarefas vivas paralelas
 
 - BKL-007 — validação regulatória e operacional;

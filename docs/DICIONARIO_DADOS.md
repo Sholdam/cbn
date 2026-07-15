@@ -86,7 +86,7 @@ Campos centrais:
 - `motivo_raw`;
 - `link_assinatura_ref`;
 - referências de documento, conta e endereço;
-- evidência de autorização final;
+- `final_authorization_evidence_payload_ref`, obrigatório e vinculado a payload protegido do tipo `FINAL_AUTHORIZATION_EVIDENCE`;
 - horários de criação, consulta, assinatura, aprovação e pagamento.
 
 Status, ação pendente, motivo e link são independentes.
@@ -167,7 +167,7 @@ Ações previstas:
 
 - consentimento de consulta não autoriza proposta;
 - cada proposta exige confirmação final expressa;
-- sem evidência, o Gateway bloqueia `CRIAR_PROPOSTA`.
+- sem evidência protegida válida, o banco e o Gateway bloqueiam `CRIAR_PROPOSTA`.
 
 ### Status
 
