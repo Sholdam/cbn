@@ -1,6 +1,6 @@
 # BKL-016 — Armazenamento de dados sensíveis
 
-**Status:** Em andamento — validação local concluída; `cbn-dev` vinculado; dry-run aprovado; aplicação remota pendente
+**Status:** Em andamento — migration aplicada em `cbn-dev` sem seed; validação remota de RLS/Storage pendente
 **Data:** 15/07/2026
 **Escopo desta entrega:** fundação local, dados sintéticos e políticas conservadoras
 
@@ -190,14 +190,16 @@ Foram preparados:
 - limpeza restrita a manifesto ignorado, IDs explícitos e objetos sintéticos UUID/hash;
 - teste SQL remoto para migration, RLS, papéis, grants, buckets, policies, integridades, snapshot, auditoria e padrões aparentes de dado real/segredo.
 
-A versão instalada da CLI oferece `supabase db push --dry-run`. O vínculo foi concluído sem senha em argumento; o alvo foi verificado duas vezes e a inspeção somente leitura mostrou histórico remoto vazio, migration local `20260715` pendente e nenhuma tabela reportada. Com autorização separada, o dry-run listou somente `20260715_001_bkl016_secure_storage.sql` e confirmou que nada seria aplicado nessa execução. Nenhum `db push` real, SQL remoto, usuário, fixture ou objeto foi executado.
+A versão instalada da CLI oferece `supabase db push --dry-run`. O vínculo foi concluído sem senha em argumento; o alvo foi verificado duas vezes e a inspeção somente leitura mostrou histórico remoto vazio, migration local `20260715` pendente e nenhuma tabela reportada. Com autorização separada, o dry-run listou somente `20260715_001_bkl016_secure_storage.sql`.
+
+Após uma terceira autorização explícita, essa migration foi aplicada por `supabase db push --linked`, sem seed. O histórico remoto passou a coincidir com o local em `20260715`, e o inspetor reportou as 13 tabelas esperadas. Nenhum usuário, fixture ou dado foi criado. A listagem dos buckets via CLI não ficou disponível; RLS, funções, grants, buckets, policies e integridades ainda precisam passar pela suíte SQL remota.
 
 A comparação preliminar de KMS/cofre foi limitada a três famílias: KMS gerenciado com envelope encryption, HashiCorp Vault Transit e serviço de secrets com criptografia no Gateway. A escolha continua pendente de custo comprovado, operação, rotação, recuperação e aprovação. Backup/PITR também não foi afirmado sem comprovação do plano do futuro projeto.
 
 ## Riscos restantes
 
 - aplicação em projeto Supabase remoto permanece deliberadamente não executada;
-- aplicação da migration e autorização explícita de escrita ainda estão pendentes;
+- validação SQL remota e fixtures sintéticas ainda dependem de autorização explícita;
 - KMS/cofre, rotação e recuperação de chave não foram escolhidos;
 - prazos legais de retenção e legal hold precisam de validação;
 - policies de objetos Storage continuam deliberadamente ausentes;

@@ -1,6 +1,6 @@
 # BKL-016 — Runbook de validação remota em desenvolvimento
 
-**Status:** dry-run revisado e aprovado; terceira parada obrigatória ativa antes da aplicação
+**Status:** migration aplicada sem seed; quarta parada obrigatória ativa antes da validação remota
 **Data:** 15/07/2026
 **Ambiente permitido:** projeto Supabase exclusivo de desenvolvimento, vazio e sem dados reais
 
@@ -8,7 +8,9 @@
 
 O runbook foi inicialmente preparado sem acesso remoto. Após a primeira autorização explícita, a CLI foi autenticada localmente, o projeto `cbn-dev` foi confirmado duas vezes pelo ref não secreto e o `supabase link` foi concluído. O marcador local corresponde ao alvo confirmado e permanece ignorado pelo Git.
 
-A inspeção somente leitura mostrou histórico remoto de migrations vazio, migration local `20260715` pendente e nenhuma tabela reportada pelo inspetor. Após autorização separada, `supabase db push --dry-run --linked` terminou sem escrita e listou somente `20260715_001_bkl016_secure_storage.sql`. Não foram executados `db push` real, SQL remoto, migration, seed, usuário, fixture ou objeto.
+A inspeção somente leitura mostrou histórico remoto de migrations vazio, migration local `20260715` pendente e nenhuma tabela reportada pelo inspetor. Após autorização separada, `supabase db push --dry-run --linked` terminou sem escrita e listou somente `20260715_001_bkl016_secure_storage.sql`.
+
+Após uma terceira autorização explícita, `supabase db push --linked` aplicou somente essa migration, sem `--include-seed`. O histórico local/remoto passou a mostrar `20260715` nos dois lados e o inspetor reportou as 13 tabelas esperadas em `public`, `app_private` e `audit`. Os avisos `IF EXISTS` eram esperados para um projeto vazio. Nenhum usuário, fixture ou dado foi criado. A listagem de Storage pela CLI não ficou disponível; buckets e policies continuam pendentes de comprovação pelo validador SQL.
 
 ## Diagnóstico registrado
 
@@ -60,9 +62,13 @@ A criação do projeto, autenticação local e autorização do vínculo foram c
 
 O usuário autorizou exclusivamente o dry-run. O comando foi executado sem `--include-seed`, não alterou o banco e apresentou somente a migration BKL-016 esperada.
 
-## TERCEIRA PARADA OBRIGATÓRIA — antes da aplicação
+## Terceira parada obrigatória — concluída
 
-Não executar `supabase db push`, SQL remoto, migration, seed ou criação de fixture sem nova autorização explícita. O preflight de `RemoteWrite` pode comprovar prontidão local, mas não concede autorização de escrita.
+O usuário autorizou somente a migration BKL-016, sem seed. A aplicação e a verificação de leitura foram concluídas sem criar dados.
+
+## QUARTA PARADA OBRIGATÓRIA — antes da validação remota
+
+Não executar a suíte SQL, criar usuários Auth sintéticos, inserir fixtures transacionais ou objetos Storage sem nova autorização explícita. A validação precisa de conexão PostgreSQL configurada somente na sessão local; senha ou URL não devem ser enviadas ao chat.
 
 ## Continuação autorizada — inspeção antes do vínculo
 
@@ -208,7 +214,7 @@ Após autorização, registrar evidência do plano no painel e preparar exporta�
 
 - [x] projeto isolado confirmado duas vezes;
 - [x] dry-run revisado e segunda autorização registrada;
-- [ ] migration aplicada sem seed remoto;
+- [x] migration aplicada sem seed remoto;
 - [ ] validação remota completa aprovada;
 - [ ] buckets privados e ausência de policy pública confirmados;
 - [ ] fixtures persistentes e objetos sintéticos removidos;

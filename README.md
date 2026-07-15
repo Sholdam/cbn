@@ -15,7 +15,7 @@ A decisão técnica está registrada em [`docs/ARQUITETURA_TECNICA.md`](docs/ARQ
 
 ## Próximo ponto de retomada
 
-A **BKL-016** teve migration, seed, rollback e testes de RLS validados em Supabase local descartável. Na branch `codex/bkl-016-remote-dev`, o projeto isolado `cbn-dev` foi vinculado, inspecionado e teve o dry-run aprovado com uma única migration esperada; nenhuma migration ou dado remoto foi aplicado.
+A **BKL-016** teve migration, seed, rollback e testes de RLS validados em Supabase local descartável. Na branch `codex/bkl-016-remote-dev`, a única migration aprovada foi aplicada no projeto isolado `cbn-dev`, sem seed; a validação remota de RLS/Storage e as fixtures transacionais ainda estão pendentes.
 
 BKL-012 e BKL-013 permanecem tarefas vivas paralelas. Nenhuma proposta real pode ser confirmada sem autorização expressa e evidência protegida válida.
 

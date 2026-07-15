@@ -172,7 +172,9 @@ Status permanece: **Em andamento**.
 
 Após a primeira autorização, o vínculo foi concluído e a inspeção somente leitura encontrou histórico remoto de migrations vazio, migration local `20260715` pendente e nenhuma tabela reportada. Após autorização separada, o dry-run listou somente `20260715_001_bkl016_secure_storage.sql` e não alterou o projeto.
 
-**Bloqueio deliberado:** terceira parada antes de `supabase db push`. A aplicação exige nova autorização explícita. Validação remota, Storage, limpeza, KMS e backup/restauração continuam pendentes e impedem concluir a BKL-016.
+Após uma terceira autorização explícita, somente `20260715_001_bkl016_secure_storage.sql` foi aplicada, sem seed. Histórico local/remoto coincidem em `20260715`, e as 13 tabelas esperadas foram reportadas. Nenhum usuário, fixture ou dado foi criado; Storage ainda não foi comprovado pela suíte SQL.
+
+**Bloqueio deliberado:** quarta parada antes da validação SQL remota e de fixtures sintéticas. A continuação exige nova autorização e configuração local segura da conexão PostgreSQL. RLS/Storage, limpeza, KMS e backup/restauração continuam pendentes e impedem concluir a BKL-016.
 
 ## Tarefas vivas paralelas
 

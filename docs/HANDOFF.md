@@ -232,7 +232,9 @@ Em 15/07/2026, migration, seed, suíte SQL/RLS, rollback com preservação de bu
 
 Após autorização, o `supabase link` foi concluído sem senha em argumento. A inspeção somente leitura confirmou histórico remoto de migrations vazio, migration local `20260715` pendente e nenhuma tabela reportada pelo inspetor. Com autorização separada, `supabase db push --dry-run --linked` listou somente `20260715_001_bkl016_secure_storage.sql` e não fez escrita.
 
-**Ponto exato de retomada:** terceira parada obrigatória antes de `supabase db push`. Uma nova autorização explícita é obrigatória para aplicar a migration. A BKL-016 continua **Em andamento**; migration remota, RLS/Storage remoto, limpeza, backup/restauração e decisão final de KMS não foram executados.
+Após uma terceira autorização explícita, `supabase db push --linked` aplicou somente `20260715_001_bkl016_secure_storage.sql`, sem seed. O histórico local/remoto passou a coincidir em `20260715` e o inspetor reportou as 13 tabelas BKL-016 esperadas. Nenhum usuário, fixture ou dado foi criado. A leitura de Storage pela CLI não ficou disponível e ainda precisa ser comprovada pelo validador SQL.
+
+**Ponto exato de retomada:** quarta parada obrigatória antes da suíte SQL remota e de qualquer fixture sintética. Uma nova autorização explícita é obrigatória. A BKL-016 continua **Em andamento**; RLS/Storage remoto, limpeza, backup/restauração e decisão final de KMS ainda não foram validados.
 
 ## Tarefas vivas paralelas
 
