@@ -1,6 +1,6 @@
 # Handoff — CBN Crédito
 
-**Atualizado em:** 15/07/2026, após conclusão da BKL-015 e alinhamento das estruturas operacionais  
+**Atualizado em:** 15/07/2026, após aprovação da DE-002 e alinhamento do roteiro de implantação  
 **Projeto:** CBN — operação autônoma de varredura e venda de crédito  
 **Escopo inicial:** FGTS + Crédito do Trabalhador (CLT)
 
@@ -18,6 +18,23 @@ Construir uma operação autônoma com captação pela Meta, atendimento no What
 6. Proposta real somente com autorização final expressa do cliente/operador.
 7. Status bruto, status normalizado, ação pendente, motivo e link são campos independentes.
 8. CPF, RG, endereço, dados bancários, sessão Telegram e links operacionais ficam fora de planilhas e logs abertos.
+9. **Supabase/PostgreSQL será a fonte principal de dados e memória operacional.**
+10. **Appsmith será o sistema interno da equipe**, usado para clientes, consultas, ofertas, propostas, pendências, filas e monitoramento.
+11. **n8n e Gateway continuam responsáveis por regras, integrações e execução.** A interface não deve concentrar lógica crítica.
+12. **Power BI será opcional e somente analítico**, após existir volume real e dados confiáveis. Não será CRM nem sistema operacional.
+
+## DE-002 — Supabase + Appsmith + n8n; Power BI analítico
+
+A implantação será progressiva, sem interromper a construção do fluxo principal:
+
+- BKL-016: Supabase/PostgreSQL, criptografia, tokenização, RLS, backup e secrets;
+- BKL-018: Supabase Auth/RLS e perfis equivalentes no Appsmith;
+- BKL-020: trilha de auditoria canônica no PostgreSQL;
+- BKL-024: memória e máquina de estados persistidas na base;
+- BKL-035: tela Appsmith de monitoramento operacional;
+- BKL-048: indicadores no Appsmith e avaliação posterior do Power BI.
+
+O protótipo começa em ambiente isolado, sem dados reais. O Google Sheets permanece como apoio, exportação e contingência durante a transição.
 
 ## Checkpoint técnico concluído
 
@@ -118,19 +135,27 @@ Campos FGTS ainda não observados entram como manutenção do dicionário, sem r
 
 ## Próxima tarefa
 
-### BKL-016 — Definir armazenamento de dados sensíveis
+### BKL-016 — Base protegida e fundação do sistema interno
 
-Precisamos decidir e documentar:
+**Status: Em andamento.**
 
-1. banco de dados protegido;
-2. criptografia e tokenização;
-3. cofre de secrets;
-4. separação entre banco, storage de documentos e logs;
-5. política de retenção e exclusão;
-6. perfis de acesso mínimo;
-7. backup e recuperação.
+Decisão inicial aprovada:
 
-A planilha e os logs abertos continuarão recebendo somente referências, aliases, códigos, resumos e dados mascarados.
+- Supabase/PostgreSQL como base principal;
+- Appsmith como interface interna futura;
+- Sheets como apoio temporário;
+- Power BI somente depois, para dashboards gerenciais.
+
+Próximas ações:
+
+1. criar ambiente Supabase isolado de desenvolvimento;
+2. transformar o dicionário em schema SQL;
+3. definir criptografia/tokenização de CPF e dados financeiros;
+4. separar banco, storage de documentos e logs;
+5. configurar RLS e menor privilégio;
+6. definir cofre de secrets para sessões e tokens;
+7. definir backup, retenção, anonimização e recuperação;
+8. validar tudo com dados sintéticos antes de conectar Appsmith ou n8n.
 
 ## Tarefas vivas paralelas
 
@@ -146,13 +171,16 @@ A planilha e os logs abertos continuarão recebendo somente referências, aliase
 - `telegram-gateway/src/idempotency-test.js`
 - `docs/DICIONARIO_DADOS.md`
 - `docs/BACKLOG_CHECKPOINT.md`
+- `docs/ARQUITETURA_TECNICA.md`
 - `.env.example` sem credenciais
 
 ## Regras para retomar
 
 1. abrir este handoff;
-2. iniciar pela BKL-016;
-3. manter BKL-012 e BKL-013 como tarefas vivas não bloqueantes;
-4. não gerar nova sessão Telegram sem necessidade;
-5. não registrar segredo ou dado completo de cliente em código, planilha, print ou chat;
-6. não criar proposta sem autorização final expressa.
+2. continuar pela BKL-016;
+3. montar primeiro o Supabase de desenvolvimento, sem dados reais;
+4. implementar Appsmith progressivamente nas tarefas correspondentes, sem parar o fluxo principal;
+5. manter BKL-012 e BKL-013 como tarefas vivas não bloqueantes;
+6. não gerar nova sessão Telegram sem necessidade;
+7. não registrar segredo ou dado completo de cliente em código, planilha, print ou chat;
+8. não criar proposta sem autorização final expressa.
