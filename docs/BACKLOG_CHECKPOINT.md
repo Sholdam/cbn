@@ -125,6 +125,39 @@ Próximas ações:
 6. configurar secrets, backup, retenção e recuperação;
 7. executar teste com dados sintéticos antes de conectar n8n ou Appsmith.
 
+### Checkpoint de preparação no repositório — 15/07/2026
+
+Status permanece: **Em andamento**.
+
+Foi preparada, sem deploy, a fundação revisável da BKL-016:
+
+- migration com tabelas operacionais e schema privado separado;
+- `operation_id` canônico, produto fechado em FGTS/CLT e proposta vinculada à oferta;
+- RLS e papéis iniciais `admin`, `operations`, `support` e `auditor`;
+- auditoria mínima append-only e sem valores completos sensíveis;
+- buckets privados preparados, sem acesso público;
+- seed somente sintético, teste SQL e varredura estática;
+- documentação de Storage, cofre, exibição, logs, retenção, anonimização, backup e aplicação real.
+
+Ainda pendem escolha de KMS/cofre, policies finais de Storage, prazos legais, backup/restauração, ambiente remoto isolado e validação independente. Nenhuma conta real foi conectada.
+
+### Revisão técnica da fundação
+
+Os bloqueios encontrados na primeira revisão foram corrigidos no código:
+
+- constraint inválida de Interação substituída por validação de `event_type`;
+- campos mascarados exigem asterisco e rejeitam CPF/telefone completos;
+- evidência final da proposta passou a referenciar payload protegido obrigatório;
+- a integridade da evidência final foi fechada por FK composta de payload, cliente, operação e tipo;
+- evidências finais exigem cliente/operação desde a criação e podem preceder a proposta sem ciclo;
+- consultas e propostas agora exigem que `operation_id`, cliente e produto coincidam com a operação técnica;
+- rollback foi ajustado à proteção nativa do Storage para preservar buckets que contenham objetos;
+- rollback respeita as FKs cruzadas entre `public` e `app_private`;
+- suíte SQL agora exercita RLS com usuários/roles sintéticos reais;
+- privilégios de `anon` e o caminho backend para ciphertext foram documentados.
+
+Em 15/07/2026, migration e seed foram aplicados em Supabase local descartável. A suíte completa passou duas vezes, antes e depois do rollback/reaplicação. O rollback removeu toda a estrutura BKL-016 e buckets vazios, preservou um bucket com objeto sintético e não deixou funções ou constraints quebradas. Nenhum projeto remoto foi vinculado ou acessado.
+
 ## Tarefas vivas paralelas
 
 - BKL-007 — validação regulatória e operacional;

@@ -1,6 +1,6 @@
 # Handoff — CBN Crédito
 
-**Atualizado em:** 15/07/2026, após aprovação da DE-003 — escalonamento por esforço ao Codex  
+**Atualizado em:** 15/07/2026, após integração da DE-003 e correções da revisão técnica BKL-016
 **Projeto:** CBN — operação autônoma de varredura e venda de crédito  
 **Escopo inicial:** FGTS + Crédito do Trabalhador (CLT)
 
@@ -190,6 +190,34 @@ Próximas ações:
 7. definir cofre de secrets para sessões e tokens;
 8. definir backup, retenção, anonimização e recuperação;
 9. validar tudo com dados sintéticos antes de conectar Appsmith ou n8n.
+
+### Preparação em código realizada em 15/07/2026
+
+- criada migration reversível/revisável para schemas `public`, `app_private` e `audit`;
+- criadas as estruturas mínimas operacionais, privadas, perfis e auditoria append-only;
+- RLS ativada com negação por padrão e papéis iniciais conservadores;
+- buckets privados preparados sem policy pública;
+- criado seed exclusivamente sintético;
+- criados teste SQL e varredura estática de segredo/CPF;
+- criada documentação de acesso, Storage, cofre, retenção, anonimização, backup e aplicação.
+
+A migration **não foi aplicada em Supabase real**. KMS/cofre, usuários reais, policies finais de Storage, backup, restauração e retenção legal permanecem pendentes. A BKL-016 continua **Em andamento** até essas validações e revisão independente.
+
+### Correções da revisão técnica preparadas
+
+- corrigida a constraint de `interactions.event_type`;
+- máscaras de CPF e telefone agora exigem `*` e rejeitam sequências completas;
+- proposta exige evidência de autorização vinculada a `app_private.protected_payloads`;
+- a FK da autorização final compara payload, cliente, operação e tipo; uma evidência de outro dono não pode ser reutilizada;
+- a evidência final nasce ligada ao cliente e à operação antes da proposta, evitando dependência circular;
+- consultas e propostas validam `operation_id`, cliente e produto por FK composta, impedindo reutilização cruzada de operação;
+- rollback local respeita a proteção do Supabase Storage e remove somente buckets vazios;
+- rollback reordenado para remover dependências privadas antes das tabelas públicas;
+- testes SQL passaram a usar usuários Auth sintéticos, troca de role/claims e operações reais de RLS;
+- `anon` perdeu permissões de execução desnecessárias;
+- escrita futura de ciphertext foi definida como conexão PostgreSQL backend dedicada, fora do PostgREST.
+
+Em 15/07/2026, migration, seed, suíte SQL/RLS, rollback com preservação de bucket contendo objeto e reaplicação foram aprovados em Supabase local descartável. A suíte terminou duas vezes com `BKL-016 database and RLS checks passed`. Nenhum projeto remoto foi vinculado, e nenhum deploy foi realizado.
 
 ## Tarefas vivas paralelas
 
