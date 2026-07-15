@@ -118,11 +118,13 @@ select set_config('app.change_origin', 'system', true);
 -- Fixtures operacionais, privadas e de auditoria.
 insert into public.clients (
   id, display_name, phone_masked, cpf_masked, lead_source, journey_state
-) values (
-  '82000000-0000-4000-8000-000000000001',
-  '[SYNTHETIC TEST] RLS Fixture', '+55 ** *****-0000',
-  '***.***.***-00', 'synthetic_rls_test', 'TEST_READY'
-);
+) values
+  ('82000000-0000-4000-8000-000000000001',
+   '[SYNTHETIC TEST] RLS Fixture', '+55 ** *****-0000',
+   '***.***.***-00', 'synthetic_rls_test', 'TEST_READY'),
+  ('82000000-0000-4000-8000-000000000009',
+   '[SYNTHETIC TEST] Other client', '+55 ** *****-0009',
+   '***.***.***-09', 'synthetic_ownership_test', 'TEST_READY');
 
 insert into public.technical_operations (
   operation_id, correlation_id, client_id, product, action,
@@ -301,7 +303,7 @@ begin
   end;
 end $$;
 
--- Proposta exige oferta coerente e evidencia protegida valida.
+-- Proposta exige oferta coerente e evidencia protegida do mesmo dono.
 insert into public.technical_operations (
   operation_id, correlation_id, client_id, product, action, session_alias
 ) values
@@ -316,7 +318,49 @@ insert into public.technical_operations (
   ('83000000-0000-4000-8000-000000000005',
    '83000000-0000-4000-8000-000000000015',
    '82000000-0000-4000-8000-000000000001', 'FGTS',
+   'CRIAR_PROPOSTA', 'synthetic-fgts-alias'),
+  ('83000000-0000-4000-8000-000000000006',
+   '83000000-0000-4000-8000-000000000016',
+   '82000000-0000-4000-8000-000000000001', 'FGTS',
    'CRIAR_PROPOSTA', 'synthetic-fgts-alias');
+
+insert into app_private.protected_payloads (
+  id, client_id, operation_id, payload_type, ciphertext,
+  encryption_key_ref, encryption_version, retention_until
+) values
+  ('85000000-0000-4000-8000-000000000003',
+   '82000000-0000-4000-8000-000000000009',
+   '83000000-0000-4000-8000-000000000003',
+   'FINAL_AUTHORIZATION_EVIDENCE', decode('53594e544845544943', 'hex'),
+   'synthetic-kms-key-ref', 'synthetic-v1', now() + interval '1 day'),
+  ('85000000-0000-4000-8000-000000000004',
+   '82000000-0000-4000-8000-000000000001',
+   '83000000-0000-4000-8000-000000000006',
+   'FINAL_AUTHORIZATION_EVIDENCE', decode('53594e544845544943', 'hex'),
+   'synthetic-kms-key-ref', 'synthetic-v1', now() + interval '1 day'),
+  ('85000000-0000-4000-8000-000000000005',
+   '82000000-0000-4000-8000-000000000001',
+   '83000000-0000-4000-8000-000000000003',
+   'SYNTHETIC_GENERIC_PAYLOAD', decode('00', 'hex'),
+   'synthetic-kms-key-ref', 'synthetic-v1', now() + interval '1 day');
+
+-- Positivo: a fixture inicial prova que cliente, operacao e tipo coincidentes
+-- permitem criar a proposta depois da evidencia.
+do $$
+begin
+  if not exists (
+    select 1
+    from public.proposals p
+    join app_private.protected_payloads e
+      on e.id = p.final_authorization_evidence_payload_ref
+     and e.client_id = p.client_id
+     and e.operation_id = p.operation_id
+     and e.payload_type = p.final_authorization_evidence_type
+    where p.id = '86000000-0000-4000-8000-000000000001'
+  ) then
+    raise exception 'Proposta com evidencia do mesmo dono nao foi criada';
+  end if;
+end $$;
 
 do $$
 begin
@@ -344,9 +388,39 @@ begin
       '82000000-0000-4000-8000-000000000001',
       '84000000-0000-4000-8000-000000000002', 'FGTS',
       '83000000-0000-4000-8000-000000000003',
-      '85000000-0000-4000-8000-000000000002', now()
+      '85000000-0000-4000-8000-000000000005', now()
     );
-    raise exception 'Payload generico foi aceito como evidencia final';
+    raise exception 'Evidencia de tipo incorreto foi aceita';
+  exception when foreign_key_violation then null;
+  end;
+
+  begin
+    insert into public.proposals (
+      id, client_id, offer_id, product, operation_id,
+      final_authorization_evidence_payload_ref, authorized_at
+    ) values (
+      '86000000-0000-4000-8000-000000000006',
+      '82000000-0000-4000-8000-000000000001',
+      '84000000-0000-4000-8000-000000000002', 'FGTS',
+      '83000000-0000-4000-8000-000000000003',
+      '85000000-0000-4000-8000-000000000003', now()
+    );
+    raise exception 'Evidencia de outro cliente foi aceita';
+  exception when foreign_key_violation then null;
+  end;
+
+  begin
+    insert into public.proposals (
+      id, client_id, offer_id, product, operation_id,
+      final_authorization_evidence_payload_ref, authorized_at
+    ) values (
+      '86000000-0000-4000-8000-000000000007',
+      '82000000-0000-4000-8000-000000000001',
+      '84000000-0000-4000-8000-000000000002', 'FGTS',
+      '83000000-0000-4000-8000-000000000003',
+      '85000000-0000-4000-8000-000000000004', now()
+    );
+    raise exception 'Evidencia de outra operacao foi aceita';
   exception when foreign_key_violation then null;
   end;
 

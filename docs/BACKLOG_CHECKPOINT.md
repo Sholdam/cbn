@@ -148,11 +148,13 @@ Os bloqueios encontrados na primeira revisão foram corrigidos no código:
 - constraint inválida de Interação substituída por validação de `event_type`;
 - campos mascarados exigem asterisco e rejeitam CPF/telefone completos;
 - evidência final da proposta passou a referenciar payload protegido obrigatório;
+- a integridade da evidência final foi fechada por FK composta de payload, cliente, operação e tipo;
+- evidências finais exigem cliente/operação desde a criação e podem preceder a proposta sem ciclo;
 - rollback respeita as FKs cruzadas entre `public` e `app_private`;
 - suíte SQL agora exercita RLS com usuários/roles sintéticos reais;
 - privilégios de `anon` e o caminho backend para ciphertext foram documentados.
 
-Os testes SQL continuam **não executados** até existir Supabase local. A BKL-016 permanece **Em andamento**.
+Foram preparados casos SQL positivos e negativos para impedir evidência inexistente, de tipo incorreto, de outro cliente ou de outra operação. Os testes SQL continuam **não executados** até existir Supabase local. A BKL-016 permanece **Em andamento**.
 
 ## Tarefas vivas paralelas
 

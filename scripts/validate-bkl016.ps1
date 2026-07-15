@@ -40,8 +40,20 @@ $seed = Get-Content -Raw -LiteralPath 'supabase\seed.sql'
 if ($seed -notmatch '(?i)synthetic') {
   $failures.Add('O seed nao esta claramente identificado como sintetico.')
 }
-if ($seed -match '(?i)insert\s+into\s+(?:auth\.users|app_private\.)') {
-  $failures.Add('O seed nao deve criar usuario Auth nem dado privado.')
+if ($seed -match '(?i)insert\s+into\s+auth\.users') {
+  $failures.Add('O seed nao deve criar usuario Auth.')
+}
+$privateSeedTargets = [regex]::Matches(
+  $seed, '(?i)insert\s+into\s+app_private\.([a-z_]+)'
+) | ForEach-Object { $_.Groups[1].Value.ToLowerInvariant() } | Sort-Object -Unique
+foreach ($target in $privateSeedTargets) {
+  if ($target -ne 'protected_payloads') {
+    $failures.Add("Seed privado fora do escopo sintetico permitido: $target")
+  }
+}
+if ($seed -notmatch '(?is)insert\s+into\s+app_private\.protected_payloads.*?FINAL_AUTHORIZATION_EVIDENCE' -or
+    $seed -notmatch '(?is)insert\s+into\s+public\.proposals.*?final_authorization_evidence_payload_ref') {
+  $failures.Add('Seed nao comprova evidencia sintetica criada antes da proposta.')
 }
 
 $migration = Get-Content -Raw -LiteralPath 'supabase\migrations\20260715_001_bkl016_secure_storage.sql'
@@ -78,8 +90,14 @@ if ($migration -notmatch '(?i)regexp_replace\(cpf_masked.+\)\s*!~\s*''\^\[0-9\]\
 if ($migration -notmatch '(?i)final_authorization_evidence_payload_ref\s+uuid\s+not\s+null') {
   $failures.Add('Referencia obrigatoria da evidencia final protegida nao foi encontrada.')
 }
-if ($migration -notmatch '(?is)foreign key\s*\(\s*final_authorization_evidence_payload_ref\s*,\s*final_authorization_evidence_type\s*\).*?references\s+app_private\.protected_payloads\(id,\s*payload_type\)\s+on delete restrict') {
-  $failures.Add('Evidencia final nao possui FK conservadora para protected_payloads.')
+if ($migration -notmatch '(?is)constraint\s+protected_payloads_evidence_ownership_uk\s+unique\s*\(\s*id\s*,\s*client_id\s*,\s*operation_id\s*,\s*payload_type\s*\)') {
+  $failures.Add('Payload protegido nao possui chave unica composta de propriedade.')
+}
+if ($migration -notmatch '(?is)foreign key\s*\(\s*final_authorization_evidence_payload_ref\s*,\s*client_id\s*,\s*operation_id\s*,\s*final_authorization_evidence_type\s*\).*?references\s+app_private\.protected_payloads\s*\(\s*id\s*,\s*client_id\s*,\s*operation_id\s*,\s*payload_type\s*\)\s+on delete restrict') {
+  $failures.Add('Evidencia final nao possui FK composta de payload, cliente, operacao e tipo.')
+}
+if ($migration -notmatch '(?is)protected_payloads_final_authorization_owner_ck\s+check\s*\(.*?FINAL_AUTHORIZATION_EVIDENCE.*?client_id\s+is\s+not\s+null.*?operation_id\s+is\s+not\s+null') {
+  $failures.Add('Evidencia final pode nascer sem cliente ou operacao.')
 }
 if ($migration -match '(?im)^\s*grant\s+execute\b.*\bto\s+anon\b') {
   $failures.Add('anon recebeu EXECUTE explicito desnecessario.')
@@ -108,6 +126,11 @@ foreach ($requiredCheck in @(
   'get_client_sensitive_summary',
   'Snapshot de oferta e imutavel',
   'final_authorization_evidence_payload_ref',
+  'Proposta com evidencia do mesmo dono nao foi criada',
+  'Evidencia de outro cliente foi aceita',
+  'Evidencia de outra operacao foi aceita',
+  'Evidencia de tipo incorreto foi aceita',
+  'Proposta sem evidencia protegida valida foi aceita',
   'rollback;'
 )) {
   if ($databaseTests -notmatch [regex]::Escape($requiredCheck)) {

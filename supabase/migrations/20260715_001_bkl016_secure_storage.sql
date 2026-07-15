@@ -379,7 +379,13 @@ create table if not exists app_private.protected_payloads (
   anonymized_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  constraint protected_payloads_id_type_uk unique (id, payload_type),
+  constraint protected_payloads_evidence_ownership_uk unique (
+    id, client_id, operation_id, payload_type
+  ),
+  constraint protected_payloads_final_authorization_owner_ck check (
+    payload_type <> 'FINAL_AUTHORIZATION_EVIDENCE'
+    or (client_id is not null and operation_id is not null)
+  ),
   constraint protected_payload_owner_ck check (
     num_nonnulls(client_id, proposal_id, operation_id) >= 1
   )
@@ -440,12 +446,16 @@ alter table public.proposals
   add constraint proposals_final_authorization_evidence_payload_ref_fk
   foreign key (
     final_authorization_evidence_payload_ref,
+    client_id,
+    operation_id,
     final_authorization_evidence_type
   )
-  references app_private.protected_payloads(id, payload_type) on delete restrict;
+  references app_private.protected_payloads(
+    id, client_id, operation_id, payload_type
+  ) on delete restrict;
 
 comment on column public.proposals.final_authorization_evidence_payload_ref is
-  'Evidencia protegida obrigatoria da autorizacao final; nunca texto, link ou dado bruto.';
+  'Evidencia protegida obrigatoria da autorizacao final, do mesmo cliente e operacao; nunca texto, link ou dado bruto.';
 
 -- Trilha minima append-only. Metadata aceita somente codigos/estados nao sensiveis.
 create table if not exists audit.events (

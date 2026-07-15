@@ -25,7 +25,7 @@ As tabelas `public` são:
 - `technical_operations`: `operation_id` canônico, fila, estado, retry e `session_alias`;
 - `consultations`: uma consulta por produto e operação;
 - `offers`: snapshot da condição retornada;
-- `proposals`: sempre vinculada a uma oferta coerente em cliente/produto e a `final_authorization_evidence_payload_ref` cujo payload possui tipo canônico `FINAL_AUTHORIZATION_EVIDENCE`;
+- `proposals`: sempre vinculada a uma oferta coerente em cliente/produto e a `final_authorization_evidence_payload_ref` cujo payload possui o mesmo `client_id`, o mesmo `operation_id` e o tipo canônico `FINAL_AUTHORIZATION_EVIDENCE`;
 - `interactions`: linha do tempo com resumo mascarado;
 - `pending_items`: ação e motivo em campos separados;
 - `user_profiles`: papel interno ligado ao Supabase Auth.
@@ -40,7 +40,7 @@ O schema `app_private` não está na lista de schemas expostos pela API local e 
 
 - `client_sensitive_data`: CPF, RG, metadados, endereço e conta somente em ciphertext;
 - `proposal_sensitive_data`: link, endereço, conta e documentos da proposta somente em ciphertext;
-- `protected_payloads`: retornos brutos e evidências de autorização protegidas, com dono, retenção e hash do ciphertext;
+- `protected_payloads`: retornos brutos e evidências de autorização protegidas, com dono, retenção e hash do ciphertext; evidências finais já nascem ligadas ao cliente e à operação, mesmo antes de existir proposta;
 - `protected_file_refs`: referência UUID/hash para objetos privados, nunca URL assinada.
 
 A função `app_private.get_client_sensitive_summary` é `security definer`, fixa `search_path` vazio, valida o papel e retorna apenas presença de dados e últimos quatro dígitos. Ela não retorna ciphertext nem segredo. `admin` e `operations` são os únicos papéis que recebem resultado; chamadas de `support` e `auditor` retornam zero linhas e registram a negação. `anon` não possui `USAGE` no schema nem `EXECUTE` nessas funções. A função não é exposta no PostgREST.
@@ -64,6 +64,12 @@ Nesta fase, nenhum papel da API (`anon` ou `authenticated`) grava diretamente em
 A criação do login técnico e sua senha depende do projeto Supabase real e não pertence à migration. A credencial ficará no gerenciador de credenciais do n8n/cofre do Gateway. O `service_role` contorna RLS e, por isso, só pode existir em backend confiável; nunca será entregue ao navegador ou ao Appsmith. Nenhuma chave administrativa será usada como atalho para a conexão direta do painel.
 
 Todas as funções `security definer` usam `search_path = ''`, nomes totalmente qualificados e grants mínimos. Funções auxiliares de papel e resumo não concedem `EXECUTE` a `anon`.
+
+### Integridade da autorização final
+
+O banco aplica uma foreign key composta entre a proposta e o payload protegido usando `final_authorization_evidence_payload_ref`, `client_id`, `operation_id` e `final_authorization_evidence_type`. A chave candidata correspondente existe em `app_private.protected_payloads`. Assim, não basta conhecer o UUID de uma evidência válida: cliente, operação e tipo também precisam coincidir.
+
+O payload `FINAL_AUTHORIZATION_EVIDENCE` exige `client_id` e `operation_id` não nulos. Ele pode ser inserido antes da proposta porque referencia somente entidades que já existem nessa etapa; a proposta é criada depois e aponta para essa evidência, sem dependência circular. Aplicação, n8n e Appsmith não conseguem contornar essa regra por erro de implementação.
 
 O primeiro administrador não é criado pelo seed. Após criar o usuário real pelo Supabase Auth, um operador autorizado deve promover explicitamente o UUID no SQL Editor:
 
@@ -161,9 +167,9 @@ No projeto real, habilitar backups gerenciados/PITR conforme o plano Supabase, r
 
 ## Validação local preparada
 
-- `supabase/tests/bkl016_secure_storage_test.sql`: fixtures Auth sintéticas para admin, operations, support, auditor e usuário sem perfil; troca efetiva de role/claims; acesso de anon; isolamento privado; permissões reais; máscaras; oferta imutável; oferta/evidência obrigatórias e auditoria append-only;
+- `supabase/tests/bkl016_secure_storage_test.sql`: fixtures Auth sintéticas para admin, operations, support, auditor e usuário sem perfil; troca efetiva de role/claims; acesso de anon; isolamento privado; permissões reais; máscaras; oferta imutável; evidência positiva do mesmo cliente/operação/tipo; rejeição de evidência de outro cliente, outra operação, tipo incorreto ou UUID inexistente; e auditoria append-only;
 - `scripts/validate-bkl016.ps1`: estrutura esperada, invariantes da revisão, seed sintético, ausência recursiva de `.env`, padrões de segredo, sessão, token, chave, JWT e CPF completo;
-- `supabase/seed.sql`: somente cliente, operação, consulta e oferta claramente sintéticos.
+- `supabase/seed.sql`: cliente, operações, consulta, oferta, evidência protegida e proposta claramente sintéticos; a evidência é inserida antes da proposta para provar o ciclo válido.
 - `supabase/rollback/20260715_001_bkl016_secure_storage_down.sql`: rollback manual e destrutivo somente para desenvolvimento limpo; buckets com objetos não são apagados silenciosamente.
 
 Se Docker/Supabase CLI não estiverem disponíveis, o teste de banco ficará preparado, mas não executado. Isso deve ser registrado como limitação, sem marcar BKL-016 como concluída.

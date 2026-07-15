@@ -208,6 +208,8 @@ A migration **não foi aplicada em Supabase real**. KMS/cofre, usuários, polici
 - corrigida a constraint de `interactions.event_type`;
 - máscaras de CPF e telefone agora exigem `*` e rejeitam sequências completas;
 - proposta exige evidência de autorização vinculada a `app_private.protected_payloads`;
+- a FK da autorização final compara payload, cliente, operação e tipo; uma evidência de outro dono não pode ser reutilizada;
+- a evidência final nasce ligada ao cliente e à operação antes da proposta, evitando dependência circular;
 - rollback reordenado para remover dependências privadas antes das tabelas públicas;
 - testes SQL passaram a usar usuários Auth sintéticos, troca de role/claims e operações reais de RLS;
 - `anon` perdeu permissões de execução desnecessárias;

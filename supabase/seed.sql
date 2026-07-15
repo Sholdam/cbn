@@ -76,5 +76,59 @@ insert into public.offers (
   '2026-07-16T12:00:00Z'
 ) on conflict (id) do nothing;
 
--- O seed nao inclui CPF/RG/endereco/conta completos, ciphertext ficticio,
--- usuarios Auth, propostas, links, sessoes Telegram, tokens ou payload bruto.
+-- A operacao de criacao da proposta e independente da operacao de consulta.
+insert into public.technical_operations (
+  operation_id, correlation_id, client_id, product, action,
+  session_alias, state, attempt_count, gateway_version,
+  started_at, finished_at, retention_until
+) values (
+  '20000000-0000-4000-8000-000000000003',
+  '20000000-0000-4000-8000-000000000004',
+  '10000000-0000-4000-8000-000000000001',
+  'FGTS',
+  'CRIAR_PROPOSTA',
+  'synthetic-fgts-session-alias',
+  'COMPLETED',
+  1,
+  'synthetic-test-version',
+  '2026-07-15T12:01:00Z',
+  '2026-07-15T12:01:01Z',
+  '2026-08-14T12:01:00Z'
+) on conflict (operation_id) do nothing;
+
+-- A evidencia nasce antes da proposta e ja pertence ao cliente e a operacao.
+-- O bytea abaixo e apenas a palavra SYNTHETIC codificada, sem dado real.
+insert into app_private.protected_payloads (
+  id, client_id, operation_id, payload_type, ciphertext,
+  encryption_key_ref, encryption_version, retention_until
+) values (
+  '50000000-0000-4000-8000-000000000001',
+  '10000000-0000-4000-8000-000000000001',
+  '20000000-0000-4000-8000-000000000003',
+  'FINAL_AUTHORIZATION_EVIDENCE',
+  decode('53594e544845544943', 'hex'),
+  'synthetic-kms-key-ref',
+  'synthetic-v1',
+  '2026-08-14T12:01:00Z'
+) on conflict (id) do nothing;
+
+insert into public.proposals (
+  id, client_id, offer_id, product, operation_id,
+  status_raw, status_normalized,
+  final_authorization_evidence_payload_ref, authorized_at,
+  retention_until
+) values (
+  '60000000-0000-4000-8000-000000000001',
+  '10000000-0000-4000-8000-000000000001',
+  '40000000-0000-4000-8000-000000000001',
+  'FGTS',
+  '20000000-0000-4000-8000-000000000003',
+  'SYNTHETIC_CREATED',
+  'CREATED',
+  '50000000-0000-4000-8000-000000000001',
+  '2026-07-15T12:01:01Z',
+  '2026-08-14T12:01:00Z'
+) on conflict (id) do nothing;
+
+-- O seed nao inclui CPF/RG/endereco/conta completos, usuarios Auth, links,
+-- sessoes Telegram, tokens, chaves reais ou payload bruto real.

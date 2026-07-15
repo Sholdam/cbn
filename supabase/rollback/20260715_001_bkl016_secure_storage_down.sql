@@ -6,8 +6,9 @@ begin;
 
 drop view if exists public.audit_event_summaries;
 
--- Quebra primeiro as referencias public -> app_private. As referencias no
--- sentido inverso desaparecem quando o schema privado e removido.
+-- Quebra primeiro as referencias public -> app_private, inclusive a FK composta
+-- de propriedade da evidencia final. As referencias no sentido inverso
+-- desaparecem quando o schema privado e removido.
 alter table if exists public.consultations
   drop constraint if exists consultations_protected_payload_ref_fk;
 alter table if exists public.technical_operations
