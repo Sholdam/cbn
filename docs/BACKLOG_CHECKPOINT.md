@@ -82,23 +82,48 @@ Foram alinhadas as abas operacionais:
 
 Novos campos FGTS serão manutenção do dicionário e não reabrem a arquitetura.
 
+## DE-002 — Sistema interno e camada de dados
+
+Decisão aprovada:
+
+- **Supabase/PostgreSQL:** fonte principal de dados e memória;
+- **Appsmith:** interface interna da operação;
+- **n8n/Gateway:** regras, integrações, idempotência e execução;
+- **Google Sheets:** apoio temporário, exportação e contingência;
+- **Power BI:** camada analítica futura, não operacional.
+
+A implantação será distribuída pelas tasks já existentes, evitando criar um projeto paralelo que interrompa o fluxo principal:
+
+- BKL-016 — schema, proteção, RLS, backup, storage e secrets;
+- BKL-018 — autenticação, perfis e permissões no Supabase/Appsmith;
+- BKL-020 — trilha de auditoria canônica no PostgreSQL;
+- BKL-024 — memória e máquina de estados persistidas;
+- BKL-035 — painel Appsmith de monitoramento operacional;
+- BKL-048 — KPIs no Appsmith e avaliação posterior do Power BI.
+
 ## Próxima tarefa operacional
 
-### BKL-016 — Definir armazenamento de dados sensíveis
+### BKL-016 — Base protegida e fundação do sistema interno
 
-Status: **Próxima**.
+Status: **Em andamento**.
 
-Decisões necessárias:
+Decisões já tomadas:
 
-1. banco protegido para dados estruturados;
-2. criptografia ou tokenização de CPF e dados financeiros;
-3. storage de documentos e retornos brutos;
-4. cofre de secrets para sessões e tokens;
-5. perfis de acesso mínimo;
-6. retenção, anonimização e exclusão;
-7. backup e recuperação.
+1. Supabase/PostgreSQL será o banco principal;
+2. Appsmith será conectado apenas depois da validação do ambiente e das permissões;
+3. Power BI fica fora do MVP operacional;
+4. o primeiro ambiente usará somente dados sintéticos;
+5. a planilha continuará contendo apenas referências, aliases, códigos, resumos e dados mascarados.
 
-A planilha continuará contendo apenas referências, aliases, códigos, resumos e dados mascarados.
+Próximas ações:
+
+1. criar projeto Supabase isolado de desenvolvimento;
+2. transformar o dicionário de dados em schema SQL;
+3. configurar RLS e menor privilégio;
+4. definir criptografia/tokenização;
+5. separar banco, storage de documentos e logs;
+6. configurar secrets, backup, retenção e recuperação;
+7. executar teste com dados sintéticos antes de conectar n8n ou Appsmith.
 
 ## Tarefas vivas paralelas
 
