@@ -1,6 +1,6 @@
 # Handoff — CBN Crédito
 
-**Atualizado em:** 15/07/2026, após preparação em código da base BKL-016
+**Atualizado em:** 15/07/2026, após integração da DE-003 e preparação em código da BKL-016
 **Projeto:** CBN — operação autônoma de varredura e venda de crédito  
 **Escopo inicial:** FGTS + Crédito do Trabalhador (CLT)
 
@@ -22,6 +22,10 @@ Construir uma operação autônoma com captação pela Meta, atendimento no What
 10. **Appsmith será o sistema interno da equipe**, usado para clientes, consultas, ofertas, propostas, pendências, filas e monitoramento.
 11. **n8n e Gateway continuam responsáveis por regras, integrações e execução.** A interface não deve concentrar lógica crítica.
 12. **Power BI será opcional e somente analítico**, após existir volume real e dados confiáveis. Não será CRM nem sistema operacional.
+13. **Toda atividade recebe uma estimativa de esforço de 1 a 10 antes da execução.**
+14. **Atividades com esforço de 1 a 6 podem ser executadas diretamente no ChatGPT/conectores.**
+15. **Atividades com esforço de 7 a 10 devem ser transformadas em prompt estruturado para o Codex**, executadas em branch própria e revisadas antes de merge ou deploy.
+16. Codex não substitui revisão: toda entrega complexa passa por inspeção do diff, testes, segurança, documentação e aceite do usuário.
 
 ## DE-002 — Supabase + Appsmith + n8n; Power BI analítico
 
@@ -35,6 +39,33 @@ A implantação será progressiva, sem interromper a construção do fluxo princ
 - BKL-048: indicadores no Appsmith e avaliação posterior do Power BI.
 
 O protótipo começa em ambiente isolado, sem dados reais. O Google Sheets permanece como apoio, exportação e contingência durante a transição.
+
+## DE-003 — Escalonamento por esforço ao Codex
+
+### Escala adotada
+
+- **1–3:** atividade simples, localizada e de baixo risco;
+- **4–6:** atividade moderada, com poucas dependências e revisão direta;
+- **7–8:** atividade complexa, com múltiplos arquivos, integrações, migrations, testes ou risco de regressão;
+- **9–10:** atividade crítica, com segurança, dados sensíveis, infraestrutura, arquitetura ou impacto amplo.
+
+### Regra operacional
+
+1. estimar o esforço antes de iniciar;
+2. informar a nota no começo da atividade quando ela for relevante;
+3. para esforço **7 ou maior**, criar `docs/PROMPT_CODEX_<TAREFA>.md`;
+4. o prompt deve conter contexto, escopo, restrições, critérios de aceite, testes, segurança, arquivos esperados e formato do relatório final;
+5. o Codex trabalha em branch própria, sem merge e sem deploy automático;
+6. após a execução, revisar diff, testes, migrations, documentação, segredos e riscos;
+7. somente depois da revisão e do aceite do usuário a mudança pode ser integrada.
+
+### Exceções
+
+- ações que dependem de login, segredo, pagamento, autorização, ambiente real ou interface do usuário continuam manuais;
+- o Codex pode preparar código, scripts e instruções, mas não deve receber credenciais reais;
+- uma urgência só pode quebrar essa regra com autorização explícita do usuário.
+
+A BKL-016 foi classificada como **9/10** e já possui o arquivo `docs/PROMPT_CODEX_BKL-016.md`.
 
 ## Checkpoint técnico concluído
 
@@ -139,6 +170,8 @@ Campos FGTS ainda não observados entram como manutenção do dicionário, sem r
 
 **Status: Em andamento.**
 
+**Esforço estimado: 9/10 — execução pelo Codex, com revisão obrigatória.**
+
 Decisão inicial aprovada:
 
 - Supabase/PostgreSQL como base principal;
@@ -148,14 +181,15 @@ Decisão inicial aprovada:
 
 Próximas ações:
 
-1. criar ambiente Supabase isolado de desenvolvimento;
-2. transformar o dicionário em schema SQL;
-3. definir criptografia/tokenização de CPF e dados financeiros;
-4. separar banco, storage de documentos e logs;
-5. configurar RLS e menor privilégio;
-6. definir cofre de secrets para sessões e tokens;
-7. definir backup, retenção, anonimização e recuperação;
-8. validar tudo com dados sintéticos antes de conectar Appsmith ou n8n.
+1. executar `docs/PROMPT_CODEX_BKL-016.md` em branch própria;
+2. criar ambiente Supabase isolado de desenvolvimento somente após revisão do código;
+3. transformar o dicionário em schema SQL;
+4. definir criptografia/tokenização de CPF e dados financeiros;
+5. separar banco, storage de documentos e logs;
+6. configurar RLS e menor privilégio;
+7. definir cofre de secrets para sessões e tokens;
+8. definir backup, retenção, anonimização e recuperação;
+9. validar tudo com dados sintéticos antes de conectar Appsmith ou n8n.
 
 ### Preparação em código realizada em 15/07/2026
 
@@ -184,15 +218,19 @@ A migration **não foi aplicada em Supabase real**. KMS/cofre, usuários, polici
 - `docs/DICIONARIO_DADOS.md`
 - `docs/BACKLOG_CHECKPOINT.md`
 - `docs/ARQUITETURA_TECNICA.md`
+- `docs/PROMPT_CODEX_BKL-016.md`
 - `.env.example` sem credenciais
 
 ## Regras para retomar
 
 1. abrir este handoff;
-2. continuar pela BKL-016;
-3. montar primeiro o Supabase de desenvolvimento, sem dados reais;
-4. implementar Appsmith progressivamente nas tarefas correspondentes, sem parar o fluxo principal;
-5. manter BKL-012 e BKL-013 como tarefas vivas não bloqueantes;
-6. não gerar nova sessão Telegram sem necessidade;
-7. não registrar segredo ou dado completo de cliente em código, planilha, print ou chat;
-8. não criar proposta sem autorização final expressa.
+2. estimar o esforço da próxima atividade em escala de 1 a 10;
+3. se o esforço for 7 ou maior, criar prompt para o Codex antes da execução;
+4. continuar pela BKL-016;
+5. revisar a entrega do Codex antes de criar o Supabase real;
+6. montar primeiro o Supabase de desenvolvimento, sem dados reais;
+7. implementar Appsmith progressivamente nas tarefas correspondentes, sem parar o fluxo principal;
+8. manter BKL-012 e BKL-013 como tarefas vivas não bloqueantes;
+9. não gerar nova sessão Telegram sem necessidade;
+10. não registrar segredo ou dado completo de cliente em código, planilha, print ou chat;
+11. não criar proposta sem autorização final expressa.
