@@ -13,6 +13,22 @@ $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
 Set-Location -LiteralPath $repoRoot
 
+$safeStatusPath = Join-Path $repoRoot 'supabase\.temp\bkl016-remote-validation-status.json'
+function Write-SafeValidationStatus {
+  param(
+    [string]$Phase,
+    [string]$Result,
+    [string]$Category
+  )
+  $status = [ordered]@{
+    phase = $Phase
+    result = $Result
+    category = $Category
+  } | ConvertTo-Json -Compress
+  [IO.File]::WriteAllText($safeStatusPath, $status, [Text.UTF8Encoding]::new($false))
+}
+Write-SafeValidationStatus -Phase 'preflight' -Result 'started' -Category 'none'
+
 $preflightPath = Join-Path $PSScriptRoot 'supabase-remote-preflight.ps1'
 & $preflightPath `
   -ProjectRef $ProjectRef `
@@ -78,6 +94,7 @@ try {
   if ([string]::IsNullOrWhiteSpace($pgDatabase)) { $pgDatabase = 'postgres' }
   $pgPort = if ($uri.IsDefaultPort) { '5432' } else { $uri.Port.ToString() }
 } catch {
+  Write-SafeValidationStatus -Phase 'credential' -Result 'failed' -Category 'credential_prepare_failed'
   Write-Error 'A conexao local ou a senha nao pode ser preparada; valores omitidos.'
   exit 1
 } finally {
@@ -120,15 +137,30 @@ try {
   )
 
   foreach ($check in $checks) {
+    Write-SafeValidationStatus -Phase $check.Label -Result 'started' -Category 'none'
     $output = (& psql -X -v ON_ERROR_STOP=1 -f $check.Path 2>&1 | Out-String)
     if ($LASTEXITCODE -ne 0) {
+      $category = if ($output -match '(?i)password authentication failed|authentication failed') {
+        'database_authentication_failed'
+      } elseif ($output -match '(?i)could not connect|connection (?:timed out|refused|failed)|timeout expired|could not translate host') {
+        'database_connection_failed'
+      } elseif ($output -match '(?i)permission denied|must be (?:owner|superuser)|insufficient privilege') {
+        'database_privilege_failed'
+      } elseif ($output -match '(?i)Migration BKL-016|RLS desativada|SECURITY DEFINER|grant inesperado|schema privado|Buckets privados|Bucket BKL-016|Policy publica|Integridade|Protecao|Usuario Auth nao sintetico|Dado real ou segredo') {
+        'database_assertion_failed'
+      } else {
+        'sql_execution_failed'
+      }
+      Write-SafeValidationStatus -Phase $check.Label -Result 'failed' -Category $category
       Write-Error "Falha na validacao de $($check.Label); a saida detalhada foi omitida para evitar exposicao de dados."
       exit 1
     }
     if ($output -notmatch [regex]::Escape($check.Expected)) {
+      Write-SafeValidationStatus -Phase $check.Label -Result 'failed' -Category 'expected_marker_missing'
       Write-Error "A validacao de $($check.Label) nao produziu o marcador final esperado."
       exit 1
     }
+    Write-SafeValidationStatus -Phase $check.Label -Result 'passed' -Category 'none'
     Write-Host "$($check.Expected)"
   }
 } finally {
@@ -139,4 +171,5 @@ try {
   $pgPassword = $null
 }
 
+Write-SafeValidationStatus -Phase 'complete' -Result 'passed' -Category 'none'
 Write-Host 'BKL-016 remote validation passed; identifiers and credentials omitted.'
