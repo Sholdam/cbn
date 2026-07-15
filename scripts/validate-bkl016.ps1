@@ -111,6 +111,9 @@ if ($migration -notmatch '(?is)protected_payloads_final_authorization_owner_ck\s
 if ($migration -match '(?im)^\s*grant\s+execute\b.*\bto\s+anon\b') {
   $failures.Add('anon recebeu EXECUTE explicito desnecessario.')
 }
+if ($migration -notmatch '(?is)revoke\s+all\s+on\s+public\.user_profiles.*?public\.pending_items\s+from\s+public\s*,\s*anon\s*;') {
+  $failures.Add('Migration-base nao revoga grants operacionais de PUBLIC e anon.')
+}
 
 $migrationLines = $migration -split "`r?`n"
 for ($index = 0; $index -lt $migrationLines.Count; $index++) {
@@ -221,6 +224,22 @@ if (Test-Path -LiteralPath 'scripts\supabase-remote-validate.ps1') {
   }
   if ($remoteValidator -notmatch [regex]::Escape('ZeroFreeBSTR')) {
     $failures.Add('Validador remoto nao limpa a senha convertida da memoria nativa.')
+  }
+}
+
+$grantHardeningPath = 'supabase\migrations\20260716_001_bkl016_revoke_anon_operational_grants.sql'
+if (-not (Test-Path -LiteralPath $grantHardeningPath -PathType Leaf)) {
+  $failures.Add('Migration corretiva de grants remotos ausente.')
+} else {
+  $grantHardening = Get-Content -Raw -LiteralPath $grantHardeningPath
+  if ($grantHardening -notmatch '(?is)revoke\s+all\s+on\s+public\.user_profiles.*?public\.pending_items\s+from\s+public\s*,\s*anon\s*;') {
+    $failures.Add('Migration corretiva nao revoga tabelas operacionais de PUBLIC e anon.')
+  }
+  if ($grantHardening -notmatch '(?is)revoke\s+all\s+on\s+public\.audit_event_summaries\s+from\s+public\s*,\s*anon\s*;') {
+    $failures.Add('Migration corretiva nao protege a view de auditoria contra anon.')
+  }
+  if ($grantHardening -match '(?i)insert\s+into|update\s+public\.|delete\s+from') {
+    $failures.Add('Migration corretiva de grants contem mutacao de dados inesperada.')
   }
 }
 

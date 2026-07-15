@@ -1,6 +1,6 @@
 # BKL-016 — Runbook de validação remota em desenvolvimento
 
-**Status:** migration aplicada sem seed; quarta parada obrigatória ativa antes da validação remota
+**Status:** validação remota bloqueada por grant indevido de `anon`; correção local preparada e não aplicada
 **Data:** 15/07/2026
 **Ambiente permitido:** projeto Supabase exclusivo de desenvolvimento, vazio e sem dados reais
 
@@ -69,6 +69,17 @@ O usuário autorizou somente a migration BKL-016, sem seed. A aplicação e a ve
 ## QUARTA PARADA OBRIGATÓRIA — antes da validação remota
 
 Não executar a suíte SQL, criar usuários Auth sintéticos, inserir fixtures transacionais ou objetos Storage sem nova autorização explícita. A validação precisa de conexão PostgreSQL configurada somente na sessão local; senha ou URL não devem ser enviadas ao chat.
+
+### Resultado da primeira tentativa autorizada
+
+O teste estrutural remoto parou antes da suíte de fixtures com `anon possui grant operacional inesperado`. Nenhuma fixture foi iniciada ou persistida. A causa é compatível com default privileges do projeto remoto, que diferem do ambiente local.
+
+A correção foi preparada em duas camadas:
+
+- a migration-base passou a revogar explicitamente todas as permissões das tabelas operacionais de `PUBLIC` e `anon`, protegendo instalações novas;
+- `20260716_001_bkl016_revoke_anon_operational_grants.sql` faz o hardening idempotente do projeto já migrado e reafirma somente os grants de `authenticated` previstos.
+
+Essa migration corretiva não altera dados ou policies e ainda exige novo dry-run e autorização antes de aplicação remota. A validação SQL completa deve ser repetida depois.
 
 ## Continuação autorizada — inspeção antes do vínculo
 

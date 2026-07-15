@@ -236,6 +236,8 @@ Após uma terceira autorização explícita, `supabase db push --linked` aplicou
 
 **Ponto exato de retomada:** quarta parada obrigatória antes da suíte SQL remota e de qualquer fixture sintética. Uma nova autorização explícita é obrigatória. A BKL-016 continua **Em andamento**; RLS/Storage remoto, limpeza, backup/restauração e decisão final de KMS ainda não foram validados.
 
+Na primeira tentativa autorizada, o teste estrutural remoto bloqueou em `anon possui grant operacional inesperado`, antes de iniciar a suíte transacional de fixtures. O projeto remoto aplicou default privileges diferentes do ambiente local. A migration-base foi endurecida para instalações novas e foi criada `20260716_001_bkl016_revoke_anon_operational_grants.sql` para corrigir o projeto já migrado. A correção não foi aplicada: aguarda dry-run e nova autorização.
+
 ## Tarefas vivas paralelas
 
 - BKL-007 — validação regulatória e operacional;

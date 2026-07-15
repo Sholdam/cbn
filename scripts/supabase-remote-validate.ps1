@@ -138,8 +138,15 @@ try {
 
   foreach ($check in $checks) {
     Write-SafeValidationStatus -Phase $check.Label -Result 'started' -Category 'none'
-    $output = (& psql -X -v ON_ERROR_STOP=1 -f $check.Path 2>&1 | Out-String)
-    if ($LASTEXITCODE -ne 0) {
+    $previousErrorActionPreference = $ErrorActionPreference
+    try {
+      $ErrorActionPreference = 'Continue'
+      $output = (& psql -X -v ON_ERROR_STOP=1 -f $check.Path 2>&1 | Out-String)
+      $psqlExitCode = $LASTEXITCODE
+    } finally {
+      $ErrorActionPreference = $previousErrorActionPreference
+    }
+    if ($psqlExitCode -ne 0) {
       $category = if ($output -match '(?i)password authentication failed|authentication failed') {
         'database_authentication_failed'
       } elseif ($output -match '(?i)could not connect|connection (?:timed out|refused|failed)|timeout expired|could not translate host') {
