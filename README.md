@@ -15,7 +15,7 @@ A decisão técnica está registrada em [`docs/ARQUITETURA_TECNICA.md`](docs/ARQ
 
 ## Próximo ponto de retomada
 
-A **BKL-016** teve migration, seed, rollback e testes de RLS validados em Supabase local descartável. No `cbn-dev`, a migration-base e o hardening corretivo de grants foram aplicados sem seed; a validação remota estrutural e a suíte transacional de banco/RLS passaram, com zero linhas estimadas ao final. Permanecem pendentes o ciclo real de objeto/URL assinada, restauração, retenção e aprovação do KMS.
+A **BKL-016** teve migration, seed, rollback e testes de RLS validados em Supabase local descartável. No `cbn-dev`, migrations e suíte transacional passaram sem seed ou fixture persistente. O runtime real de Storage também passou: acesso anônimo negado, URL de 30 segundos expirada após 36 segundos, objeto removido e validação SQL repetida. Restauração, retenção e aprovação do KMS permanecem pendentes.
 
 BKL-012 e BKL-013 permanecem tarefas vivas paralelas. Nenhuma proposta real pode ser confirmada sem autorização expressa e evidência protegida válida.
 
@@ -27,6 +27,7 @@ Veja o checkpoint completo em [`docs/HANDOFF.md`](docs/HANDOFF.md) e a parada ob
 - `supabase/` — migration, seed sintético, rollback manual e testes de RLS da BKL-016.
 - `scripts/validate-bkl016.ps1` — validação estática de estrutura, máscaras, segredos e dados pessoais.
 - `scripts/supabase-remote-*.ps1` — preflight, validação e limpeza sintética para futuro projeto remoto isolado.
+- `scripts/supabase-storage-runtime-*` — wrapper, runtime backend e testes negativos do ciclo de Storage, sem credencial versionada.
 - `telegram-gateway/` — provas de conceito MTProto de persistência e idempotência.
 
 ## Segurança

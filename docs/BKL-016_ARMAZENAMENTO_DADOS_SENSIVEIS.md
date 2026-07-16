@@ -1,6 +1,6 @@
 # BKL-016 — Armazenamento de dados sensíveis
 
-**Status:** Em andamento — migrations e banco/RLS remotos validados; objeto/URL assinada, KMS e restauração pendentes
+**Status:** Em andamento — migrations, banco/RLS e runtime real de objeto/URL assinada validados; KMS e restauração pendentes
 **Data:** 15/07/2026
 **Escopo desta entrega:** fundação local, dados sintéticos e políticas conservadoras
 
@@ -109,7 +109,7 @@ A migration prepara, se o schema `storage` estiver disponível, quatro buckets p
 - `cbn-evidence-private`;
 - `cbn-temporary-private`.
 
-Não é criada policy de acesso a `storage.objects`: a negação é intencional até existir backend validado. O nome do objeto deve ser UUID/hash e a referência fica em `protected_file_refs`. URLs assinadas são geradas sob demanda, com expiração curta, e nunca persistidas.
+Não é criada policy pública de acesso a `storage.objects`: o backend validado usa credencial exclusiva e efêmera. O nome do objeto deve ser UUID/hash e a referência fica em `protected_file_refs`. URLs assinadas são geradas sob demanda, com expiração curta, e nunca persistidas.
 
 Retenção inicial a validar com jurídico/compliance:
 
@@ -206,7 +206,14 @@ O painel confirmou plano Free sem backup agendado e PITR disponível somente com
 
 ## Riscos restantes
 
-- objeto sintético e URL assinada não foram exercitados por limitação da CLI;
+### Runtime de Storage validado
+
+A branch `codex/bkl-016-storage-runtime` contém um teste backend descartável em Node.js com `@supabase/supabase-js` fixado em `2.110.6`. O fluxo limita o alvo a `cbn-temporary-private`, confirma o bucket privado antes de criar qualquer objeto, usa conteúdo sintético em memória e nome UUID, bloqueia overwrite, valida tamanho e SHA-256, exige acesso anônimo não-2xx, testa URL assinada de 30 segundos com margem limitada e remove o objeto em `finally`.
+
+O preflight sem credencial passou, reconciliando branch, `origin/main`, vínculo, migrations e existência do bucket. A privacidade é comprovada novamente por `getBucket` como primeira chamada autenticada, ainda antes do upload. A varredura local e a validação SQL procuram chave, JWT, URL assinada e parâmetro de assinatura sem imprimir os valores.
+
+Após o gate humano, o runtime real foi executado com credencial em entrada oculta e somente no processo local. O upload sintético teve 94 bytes; o acesso anônimo retornou `4xx`; o download anterior à expiração preservou o SHA-256; a URL nominal de 30 segundos retornou `4xx` após 36 segundos. A varredura local passou, o objeto foi removido, a listagem recursiva final encontrou zero objetos e a revalidação SQL terminou `complete/passed`. A URL e a credencial não foram impressas ou persistidas. Produção, n8n, Appsmith, usuários Auth e dados reais não foram acessados.
+
 - KMS/cofre, rotação, recuperação e provedor não foram aprovados;
 - prazos legais de retenção e legal hold precisam de validação;
 - policies de objetos Storage continuam deliberadamente ausentes;
@@ -224,7 +231,7 @@ O painel confirmou plano Free sem backup agendado e PITR disponível somente com
 - [ ] Appsmith sem `service_role` e sem acesso privado;
 - [ ] n8n usando cofre e credencial mínima;
 - [x] buckets confirmados como privados, sem policy pública e sem objeto persistente;
-- [ ] URLs assinadas expiram e não aparecem em logs;
+- [x] URLs assinadas expiram e não aparecem em logs;
 - [ ] KMS/cofre e rotação aprovados;
 - [ ] retenção, anonimização, legal hold e backup aprovados;
 - [x] varredura de segredos e dados pessoais aprovada;

@@ -248,7 +248,7 @@ do $$
 declare
   item record;
   unsafe_value boolean;
-  unsafe_pattern text := '(eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{16,}|-----BEGIN [A-Z ]*PRIVATE KEY-----|(?:sk-|ghp_|github_pat_|xox[baprs]-|sb_secret_)[A-Za-z0-9_-]{16,}|[0-9]{3}\.?[0-9]{3}\.?[0-9]{3}-?[0-9]{2})';
+  unsafe_pattern text := '(eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{16,}|-----BEGIN [A-Z ]*PRIVATE KEY-----|(?:sk-|ghp_|github_pat_|xox[baprs]-|sb_secret_)[A-Za-z0-9_-]{16,}|https://[^[:space:]"'']+/storage/v1/object/sign/|[?&](?:token|signature)=[A-Za-z0-9._~-]{12,}|[0-9]{3}\.?[0-9]{3}\.?[0-9]{3}-?[0-9]{2})';
 begin
   for item in
     select c.table_schema, c.table_name, c.column_name

@@ -1,6 +1,6 @@
 # BKL-016 — Runbook de validação remota em desenvolvimento
 
-**Status:** migration corretiva e validação SQL concluídas; objeto/URL assinada, KMS e restauração pendentes
+**Status:** migration corretiva, validação SQL e runtime real de objeto/URL assinada concluídos; KMS e restauração pendentes
 **Data:** 15/07/2026
 **Ambiente permitido:** projeto Supabase exclusivo de desenvolvimento, vazio e sem dados reais
 
@@ -168,6 +168,32 @@ Marcadores finais esperados:
 O validador cobre `anon`, authenticated sem perfil, support, operations, auditor, admin, acesso privado, `SECURITY DEFINER`, grants, buckets, policy pública, integridades, evidência final, snapshot e auditoria append-only. A exposição dos schemas deve também ser conferida no painel de API, porque uma configuração externa ao banco pode não aparecer em `pg_db_role_setting`.
 
 ## Storage sintético
+
+### Runtime backend executado
+
+O runtime usa `scripts/supabase-storage-runtime-run.ps1`, que encadeia o preflight, o teste Node.js e a validação SQL remota já existente. A dependência oficial `@supabase/supabase-js` está isolada em `scripts/package.json` e fixada em `2.110.6`; ela não altera o aplicativo principal.
+
+Antes do gate, execute somente o preflight sanitizado com os mesmos parâmetros seguros já confirmados. Ele exige a branch `codex/bkl-016-storage-runtime`, `development`, árvore limpa, branch não atrasada da `main`, vínculo coerente, migrations reconciliadas e bucket temporário existente. A migration versionada também fixa esse bucket como privado. O teste autenticado repete a verificação de privacidade antes do upload e para sem criar objeto se ela falhar.
+
+### Gate humano de credencial backend
+
+A variável efêmera reservada é `CBN_SUPABASE_BACKEND_KEY`. O operador deve obter no painel do projeto isolado `cbn-dev` uma chave secreta de API apropriada exclusivamente a backend. Não cole o valor no chat e não o salve em `.env`, perfil, script, screenshot, relatório ou histórico do shell.
+
+O método recomendado é manter apenas `CBN_SUPABASE_URL` na sessão atual e iniciar o wrapper com `-PromptForBackendCredential`; a entrada fica oculta e o wrapper coloca a chave em `CBN_SUPABASE_BACKEND_KEY` somente dentro do processo, limpa a memória nativa usada pelo prompt e remove as duas variáveis do processo ao terminar. Não passe chave em argumento de linha de comando.
+
+Comando reservado para depois de confirmação explícita do operador; **não executar durante a preparação**:
+
+```powershell
+powershell.exe -ExecutionPolicy Bypass -File .\scripts\supabase-storage-runtime-run.ps1 `
+  -RemoteTargetConfirmed `
+  -SyntheticDataConfirmed `
+  -MigrationDryRunReviewed `
+  -PromptForBackendCredential
+```
+
+O runtime usa objeto UUID e conteúdo `BKL016_STORAGE_SYNTHETIC_ONLY` acrescido de aleatoriedade, tudo em memória. A URL assinada nominal é de 30 segundos, com margem padrão de 5 segundos e tolerância total máxima de 15 segundos. Só serão documentados tempo observado, classe HTTP, tamanho e SHA-256; URL, token e identificadores ficam omitidos.
+
+O preflight sanitizado passou com migrations conciliadas e bucket temporário localizado. Após o gate humano, os seis marcadores finais foram atingidos: upload de 94 bytes, acesso anônimo `4xx`, download pré-expiração com SHA-256 idêntico, falha `4xx` após 36 segundos para TTL nominal de 30 segundos, limpeza confirmada e revalidação SQL `complete/passed`. A listagem recursiva final encontrou zero objetos. URL assinada, chave, senha e project-ref permaneceram omitidos.
 
 Se for necessário validar URL assinada, criar somente um objeto descartável com conteúdo inerte, nome UUID/hash e bucket privado. Não persistir a URL. Registrar bucket e nome exatos no manifesto local de limpeza antes do upload.
 
