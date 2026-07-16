@@ -203,8 +203,7 @@ if (Test-Path -LiteralPath 'scripts\supabase-remote-preflight.ps1') {
     'SyntheticDataConfirmed',
     'MigrationDryRunReviewed',
     'CBN_PRODUCTION_PROJECT_REFS',
-    '20260715_001_bkl016_secure_storage.sql',
-    '20260716_001_bkl016_revoke_anon_operational_grants.sql',
+    "@('20260715', '20260716')",
     'cbn-temporary-private',
     'app_private',
     'audit'

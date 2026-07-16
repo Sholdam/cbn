@@ -196,35 +196,58 @@ if ($gatewayChanges.Count -gt 0) {
 }
 
 if ($Phase -eq 'StorageRuntime' -and $failures.Count -eq 0) {
-  $migrationOutput = @(& supabase migration list --linked 2>$null)
-  if ($LASTEXITCODE -ne 0) {
+  $previousErrorActionPreference = $ErrorActionPreference
+  try {
+    $ErrorActionPreference = 'Continue'
+    $migrationOutput = @(& supabase migration list --linked --output-format json 2>$null)
+    $migrationExitCode = $LASTEXITCODE
+  } finally {
+    $ErrorActionPreference = $previousErrorActionPreference
+  }
+  if ($migrationExitCode -ne 0) {
     Add-Failure 'Nao foi possivel reconciliar migrations locais e remotas pelo vinculo confirmado.'
   } else {
-    $requiredMigrationFiles = @(
-      '20260715_001_bkl016_secure_storage.sql',
-      '20260716_001_bkl016_revoke_anon_operational_grants.sql'
-    )
-    foreach ($migrationFile in $requiredMigrationFiles) {
-      $migrationParts = ([System.IO.Path]::GetFileNameWithoutExtension($migrationFile) -split '_', 3)
-      $migrationVersion = "$($migrationParts[0])$($migrationParts[1])"
-      $matchingLine = @($migrationOutput | Where-Object { $_ -match [regex]::Escape($migrationVersion) })
-      if ($matchingLine.Count -ne 1 -or $matchingLine[0] -notmatch "^\s*$migrationVersion\s+\|\s+$migrationVersion\s+\|") {
-        Add-Failure "A migration esperada $migrationVersion nao esta reconciliada entre local e remoto."
+    try {
+      $migrationResult = (($migrationOutput -join "`n") | ConvertFrom-Json -ErrorAction Stop)
+      foreach ($migrationVersion in @('20260715', '20260716')) {
+        $matchingMigration = @($migrationResult.migrations | Where-Object {
+          $_.local -ceq $migrationVersion -and $_.remote -ceq $migrationVersion
+        })
+        if ($matchingMigration.Count -ne 1) {
+          Add-Failure "A migration esperada $migrationVersion nao esta reconciliada entre local e remoto."
+        }
       }
-    }
-    $divergentMigration = @($migrationOutput | Where-Object {
-      $_ -match '^\s*(\d+)\s*\|\s*(\d*)\s*\|' -and $Matches[1] -cne $Matches[2]
-    })
-    if ($divergentMigration.Count -gt 0) {
-      Add-Failure 'Existe divergencia entre migrations locais e remotas; detalhes omitidos.'
+      $divergentMigration = @($migrationResult.migrations | Where-Object {
+        [string]::IsNullOrWhiteSpace($_.local) -or
+        [string]::IsNullOrWhiteSpace($_.remote) -or
+        $_.local -cne $_.remote
+      })
+      if ($divergentMigration.Count -gt 0) {
+        Add-Failure 'Existe divergencia entre migrations locais e remotas; detalhes omitidos.'
+      }
+    } catch {
+      Add-Failure 'A resposta sanitizada da conciliacao de migrations nao possui o formato esperado.'
     }
   }
 
-  $storageOutput = @(& supabase --experimental storage ls --linked 'ss:///' 2>$null)
-  if ($LASTEXITCODE -ne 0) {
+  try {
+    $ErrorActionPreference = 'Continue'
+    $storageOutput = @(& supabase --experimental storage ls --linked 'ss:///' --output-format json 2>$null)
+    $storageExitCode = $LASTEXITCODE
+  } finally {
+    $ErrorActionPreference = $previousErrorActionPreference
+  }
+  if ($storageExitCode -ne 0) {
     Add-Failure 'Nao foi possivel confirmar o bucket temporario pelo vinculo existente.'
-  } elseif (-not ($storageOutput -match '(?m)(^|\s)cbn-temporary-private/?(\s|$)')) {
-    Add-Failure 'O bucket temporario esperado nao foi localizado; identificadores remotos omitidos.'
+  } else {
+    try {
+      $storageResult = (($storageOutput -join "`n") | ConvertFrom-Json -ErrorAction Stop)
+      if (@($storageResult.paths) -cnotcontains 'cbn-temporary-private/') {
+        Add-Failure 'O bucket temporario esperado nao foi localizado; identificadores remotos omitidos.'
+      }
+    } catch {
+      Add-Failure 'A resposta sanitizada da listagem de Storage nao possui o formato esperado.'
+    }
   }
 }
 
