@@ -193,7 +193,7 @@ powershell.exe -ExecutionPolicy Bypass -File .\scripts\supabase-storage-runtime-
 
 O runtime usa objeto UUID e conteúdo `BKL016_STORAGE_SYNTHETIC_ONLY` acrescido de aleatoriedade, tudo em memória. A URL assinada nominal é de 30 segundos, com margem padrão de 5 segundos e tolerância total máxima de 15 segundos. Só serão documentados tempo observado, classe HTTP, tamanho e SHA-256; URL, token e identificadores ficam omitidos.
 
-Nesta etapa nenhum marcador final de runtime foi atingido, pois o gate não foi atravessado. Após autorização e execução, os seis marcadores exigidos só podem ser registrados se o download antes da expiração, a negação depois dela, a varredura sem vazamento, a remoção e a revalidação SQL forem todos aprovados.
+O preflight sanitizado foi executado e passou: migrations esperadas conciliadas e bucket temporário localizado, sem credencial backend, escrita ou identificador exposto. Nesta etapa nenhum marcador final de runtime foi atingido, pois o gate não foi atravessado. Após autorização e execução, os seis marcadores exigidos só podem ser registrados se o download antes da expiração, a negação depois dela, a varredura sem vazamento, a remoção e a revalidação SQL forem todos aprovados.
 
 Se for necessário validar URL assinada, criar somente um objeto descartável com conteúdo inerte, nome UUID/hash e bucket privado. Não persistir a URL. Registrar bucket e nome exatos no manifesto local de limpeza antes do upload.
 

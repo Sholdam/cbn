@@ -182,7 +182,7 @@ Storage estrutural passou: quatro buckets privados, ausência de policy pública
 
 Foi criada a branch `codex/bkl-016-storage-runtime` a partir da `main` atualizada. O código backend descartável usa a biblioteca oficial do Supabase, objeto e conteúdo exclusivamente sintéticos em memória, bucket temporário em allowlist, bloqueio de overwrite, validação SHA-256, URL assinada curta, varredura de vazamento e limpeza remota em `finally`. O preflight também recusa `main`, árvore suja, alvo divergente, migration não conciliada e repositório com segredo ou PII.
 
-Os 9 testes negativos locais e o validador estático passaram. A execução real permanece pendente porque o trabalho parou no gate anterior à variável efêmera `CBN_SUPABASE_BACKEND_KEY`; nenhum objeto, URL assinada, usuário Auth ou fixture foi criado nesta fase. KMS/cofre, restauração, retenção/legal hold, policies finais e revisão independente continuam abertos, logo a BKL-016 permanece **Em andamento**.
+Os 9 testes negativos locais, o validador estático e o preflight remoto sanitizado passaram. Este último reconciliou migrations e localizou o bucket sem credencial backend ou escrita. A execução real permanece pendente porque o trabalho parou no gate anterior à variável efêmera `CBN_SUPABASE_BACKEND_KEY`; nenhum objeto, URL assinada, usuário Auth ou fixture foi criado nesta fase. KMS/cofre, restauração, retenção/legal hold, policies finais e revisão independente continuam abertos, logo a BKL-016 permanece **Em andamento**.
 
 ## Tarefas vivas paralelas
 

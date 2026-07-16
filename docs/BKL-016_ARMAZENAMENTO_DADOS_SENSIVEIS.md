@@ -210,7 +210,7 @@ O painel confirmou plano Free sem backup agendado e PITR disponível somente com
 
 A branch `codex/bkl-016-storage-runtime` contém um teste backend descartável em Node.js com `@supabase/supabase-js` fixado em `2.110.6`. O fluxo limita o alvo a `cbn-temporary-private`, confirma o bucket privado antes de criar qualquer objeto, usa conteúdo sintético em memória e nome UUID, bloqueia overwrite, valida tamanho e SHA-256, exige acesso anônimo não-2xx, testa URL assinada de 30 segundos com margem limitada e remove o objeto em `finally`.
 
-O preflight sem credencial reconcilia branch, `origin/main`, vínculo, migrations e existência do bucket. A privacidade é comprovada novamente por `getBucket` como primeira chamada autenticada, ainda antes do upload. A varredura local e a validação SQL procuram chave, JWT, URL assinada e parâmetro de assinatura sem imprimir os valores.
+O preflight sem credencial passou, reconciliando branch, `origin/main`, vínculo, migrations e existência do bucket. A privacidade é comprovada novamente por `getBucket` como primeira chamada autenticada, ainda antes do upload. A varredura local e a validação SQL procuram chave, JWT, URL assinada e parâmetro de assinatura sem imprimir os valores.
 
 Nesta preparação o runtime real não foi executado: a execução parou obrigatoriamente antes de usar `CBN_SUPABASE_BACKEND_KEY`. Portanto expiração efetiva, download real e limpeza remota ainda não são evidências concluídas. Produção, n8n, Appsmith, usuários Auth e dados reais não foram acessados.
 

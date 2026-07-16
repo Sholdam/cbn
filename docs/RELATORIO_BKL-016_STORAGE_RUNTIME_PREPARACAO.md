@@ -20,6 +20,7 @@ Nenhum project-ref, chave, senha, JWT, URL assinada ou header de autorização e
 | Supabase CLI | `2.109.1` |
 | Node.js | `v24.18.0` |
 | npm | `11.16.0` |
+| preflight remoto sem credencial backend | aprovado; migrations esperadas conciliadas e bucket temporário localizado, com alvo omitido |
 
 O shim `npm.ps1` foi bloqueado pela política de execução já existente no Windows. Nenhuma política do sistema foi alterada; os comandos npm foram executados por `npm.cmd`.
 
@@ -57,6 +58,8 @@ Os 9 testes Node.js passaram:
 
 O parser do PowerShell aprovou o preflight, o wrapper e o validador. O validador estático aprovou estrutura, seed sintético e varredura de segredo/CPF. `git diff --check` também passou durante a preparação.
 
+O preflight remoto sanitizado passou usando somente a autenticação já existente da CLI e o vínculo local ignorado. Ele não usou a credencial backend do runtime, não criou objeto e não alterou o projeto. A confirmação autenticada de `public=false` permanece como a primeira chamada do runtime após o gate, antes do upload.
+
 ## Comandos executados
 
 Valores sensíveis e identificadores remotos foram omitidos por desenho:
@@ -76,6 +79,7 @@ npm.cmd install --prefix scripts
 npm.cmd test --prefix scripts
 git diff --check
 powershell.exe -ExecutionPolicy Bypass -File .\scripts\validate-bkl016.ps1
+powershell.exe -ExecutionPolicy Bypass -File .\scripts\supabase-remote-preflight.ps1 -Phase StorageRuntime <confirmações seguras, sem valor sensível>
 ```
 
 Também foi feita validação sintática dos arquivos PowerShell pela API de parser do próprio PowerShell. Nenhum comando de `supabase link`, `supabase db push`, seed, reset ou rollback foi executado nesta fase.
@@ -104,6 +108,7 @@ Consequentemente, o tempo nominal configurado é 30 segundos, mas o tempo efetiv
 - `npm` via shim PowerShell falhou pela política local; foi usado `npm.cmd`, sem alterar o sistema operacional ou a política.
 - o primeiro nome de script npm não oferecia o alias padrão `test`; o alias foi adicionado.
 - o scanner interpretou a versão numérica concatenada de uma migration como possível CPF; o preflight passou a derivar a versão a partir do nome com separador, preservando a detecção de CPF real.
+- a CLI envia mensagens normais de progresso pelo canal de erro e retorna JSON nesta instalação; o preflight passou a capturar o código real, descartar progresso e validar o JSON explicitamente. Depois da correção, o preflight passou.
 
 ## Arquivos criados ou alterados
 
