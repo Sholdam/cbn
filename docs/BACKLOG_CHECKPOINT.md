@@ -117,13 +117,13 @@ Decisões já tomadas:
 
 Próximas ações:
 
-1. criar projeto Supabase isolado de desenvolvimento;
-2. transformar o dicionário de dados em schema SQL;
-3. configurar RLS e menor privilégio;
-4. definir criptografia/tokenização;
-5. separar banco, storage de documentos e logs;
-6. configurar secrets, backup, retenção e recuperação;
-7. executar teste com dados sintéticos antes de conectar n8n ou Appsmith.
+1. o usuário criar/selecionar projeto Supabase isolado de desenvolvimento e informar apenas o project ref não secreto;
+2. executar preflight e inspeção sem escrita após autorização explícita;
+3. executar `db push --dry-run`, revisar e parar novamente antes da aplicação;
+4. aplicar/validar migration, RLS, Storage e integridades somente após segunda autorização;
+5. remover fixtures/objetos sintéticos por manifesto explícito e revalidar;
+6. decidir KMS/cofre e comprovar backup/restauração conforme o plano real;
+7. manter n8n e Appsmith desconectados até aprovação independente.
 
 ### Checkpoint de preparação no repositório — 15/07/2026
 
@@ -157,6 +157,26 @@ Os bloqueios encontrados na primeira revisão foram corrigidos no código:
 - privilégios de `anon` e o caminho backend para ciphertext foram documentados.
 
 Em 15/07/2026, migration e seed foram aplicados em Supabase local descartável. A suíte completa passou duas vezes, antes e depois do rollback/reaplicação. O rollback removeu toda a estrutura BKL-016 e buckets vazios, preservou um bucket com objeto sintético e não deixou funções ou constraints quebradas. Nenhum projeto remoto foi vinculado ou acessado.
+
+### Checkpoint da preparação remota — 15/07/2026
+
+Status permanece: **Em andamento**.
+
+- branch `codex/bkl-016-remote-dev` criada a partir da `main` atualizada;
+- ferramentas disponíveis: Docker 29.6.1, Compose 5.3.0, Supabase CLI 2.109.1 e psql 17.10;
+- CLI autenticada interativamente, projeto isolado `cbn-dev` confirmado duas vezes e vínculo local correspondente;
+- runbook remoto, preflight fail-closed, validador SQL/PowerShell e limpeza sintética por manifesto preparados;
+- a CLI instalada oferece `db push --dry-run`;
+- metadados de vínculo continuam ignorados e schemas privados continuam fora do PostgREST local;
+- nenhuma conexão com produção, usuário Auth, fixture persistente, objeto Storage, n8n ou Appsmith foi criada.
+
+Após a primeira autorização, o vínculo foi concluído e a inspeção somente leitura encontrou histórico remoto de migrations vazio, migration local `20260715` pendente e nenhuma tabela reportada. Após autorização separada, o dry-run listou somente `20260715_001_bkl016_secure_storage.sql` e não alterou o projeto.
+
+Após uma terceira autorização explícita, somente `20260715_001_bkl016_secure_storage.sql` foi aplicada, sem seed. A primeira validação remota encontrou grant operacional indevido para `anon`; `20260716_001_bkl016_revoke_anon_operational_grants.sql` foi então preparada, passou em dry-run e foi aplicada sem seed.
+
+Depois da correção, os marcadores `BKL-016 remote structural checks passed` e `BKL-016 database and RLS checks passed` foram atingidos. As fixtures usaram transação com `ROLLBACK`; o inspetor reportou zero linhas estimadas nas 13 tabelas. Foram validados `anon`, usuário sem perfil, support, operations, auditor, admin, schema privado, integridades cliente/produto/operação/evidência, snapshot de oferta e auditoria append-only.
+
+Storage estrutural passou: quatro buckets privados, ausência de policy pública e `anon` sem grants. A CLI experimental recusou upload remoto antes de criar objeto, então ciclo real de objeto e URL assinada permanecem pendentes. O painel confirmou plano Free sem backup agendado e sem PITR; dump manual somente de schema passou e foi removido, mas restauração continua não comprovada. KMS gerenciado com envelope encryption é a recomendação técnica, pendente de provedor, custo e aprovação. Esses itens, retenção/legal hold e revisão independente impedem concluir a BKL-016.
 
 ## Tarefas vivas paralelas
 

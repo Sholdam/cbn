@@ -878,6 +878,14 @@ grant select on audit.events to authenticated;
 revoke insert, update, delete on audit.events from authenticated;
 
 -- Permissoes de tabelas publicas; RLS continua sendo a barreira por linha.
+-- Supabase remoto pode possuir default privileges para anon. A revogacao
+-- explicita garante que ausencia de policy nao seja a unica barreira.
+revoke all on
+  public.user_profiles, public.clients, public.technical_operations,
+  public.consultations, public.offers, public.proposals,
+  public.interactions, public.pending_items
+from public, anon;
+
 grant select, insert, update, delete on public.user_profiles to authenticated;
 grant select, insert, update, delete on
   public.clients, public.technical_operations, public.consultations,
