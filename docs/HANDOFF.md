@@ -238,6 +238,14 @@ Depois da correção, a validação estrutural e a suíte transacional completa 
 
 **Ponto exato de retomada:** a CLI experimental de Storage recusou upload antes de criar o objeto, então ciclo real de objeto/URL assinada segue pendente. O plano Free não oferece backup agendado nem PITR; dump manual somente de schema passou, mas restauração não foi comprovada. KMS gerenciado com envelope encryption é a recomendação técnica, ainda pendente de provedor/aprovação. A BKL-016 continua **Em andamento**, sem integração n8n/Appsmith e sem alteração em produção.
 
+### Runtime de Storage preparado — parada atual
+
+A branch `codex/bkl-016-storage-runtime` parte da `main` atualizada e contém preflight reforçado, wrapper PowerShell com entrada oculta e teste Node.js backend usando `@supabase/supabase-js` `2.110.6`. O fluxo está limitado ao bucket temporário, a objeto UUID/conteúdo sintético em memória, URL assinada nominal de 30 segundos, hash SHA-256, negação anônima, varredura de vazamento e limpeza em `finally`.
+
+Os 9 testes negativos locais passaram e nenhum backend credential foi usado. **Ponto exato de retomada:** o operador deve confirmar que obteve no painel de `cbn-dev` uma chave secreta exclusiva de backend, sem revelar o valor. Depois, executar o wrapper com `-PromptForBackendCredential`; ele usa a variável efêmera `CBN_SUPABASE_BACKEND_KEY` apenas no processo e a limpa ao final. Não criar `.env` nem passar chave em argumento ou chat.
+
+Nenhum dos seis marcadores finais do runtime foi atingido ainda. Não houve objeto remoto, URL assinada, produção, n8n, Appsmith, usuário Auth, fixture persistente ou dado real nesta preparação. KMS, restauração, retenção/legal hold, policies finais e revisão independente continuam pendentes; BKL-016 segue **Em andamento**.
+
 ## Tarefas vivas paralelas
 
 - BKL-007 — validação regulatória e operacional;
@@ -259,6 +267,9 @@ Depois da correção, a validação estrutural e a suíte transacional completa 
 - `scripts/supabase-remote-preflight.ps1`
 - `scripts/supabase-remote-validate.ps1`
 - `scripts/supabase-remote-cleanup.ps1`
+- `scripts/supabase-storage-runtime-run.ps1`
+- `scripts/supabase-storage-runtime-test.mjs`
+- `scripts/supabase-storage-runtime-test.test.mjs`
 - `.env.example` sem credenciais
 
 ## Regras para retomar

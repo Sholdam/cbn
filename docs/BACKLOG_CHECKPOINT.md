@@ -178,6 +178,12 @@ Depois da correção, os marcadores `BKL-016 remote structural checks passed` e 
 
 Storage estrutural passou: quatro buckets privados, ausência de policy pública e `anon` sem grants. A CLI experimental recusou upload remoto antes de criar objeto, então ciclo real de objeto e URL assinada permanecem pendentes. O painel confirmou plano Free sem backup agendado e sem PITR; dump manual somente de schema passou e foi removido, mas restauração continua não comprovada. KMS gerenciado com envelope encryption é a recomendação técnica, pendente de provedor, custo e aprovação. Esses itens, retenção/legal hold e revisão independente impedem concluir a BKL-016.
 
+### Checkpoint do runtime de Storage — preparação
+
+Foi criada a branch `codex/bkl-016-storage-runtime` a partir da `main` atualizada. O código backend descartável usa a biblioteca oficial do Supabase, objeto e conteúdo exclusivamente sintéticos em memória, bucket temporário em allowlist, bloqueio de overwrite, validação SHA-256, URL assinada curta, varredura de vazamento e limpeza remota em `finally`. O preflight também recusa `main`, árvore suja, alvo divergente, migration não conciliada e repositório com segredo ou PII.
+
+Os 9 testes negativos locais e o validador estático passaram. A execução real permanece pendente porque o trabalho parou no gate anterior à variável efêmera `CBN_SUPABASE_BACKEND_KEY`; nenhum objeto, URL assinada, usuário Auth ou fixture foi criado nesta fase. KMS/cofre, restauração, retenção/legal hold, policies finais e revisão independente continuam abertos, logo a BKL-016 permanece **Em andamento**.
+
 ## Tarefas vivas paralelas
 
 - BKL-007 — validação regulatória e operacional;

@@ -97,6 +97,10 @@ A primeira validação estrutural remota detectou que default privileges do proj
 
 Os quatro buckets esperados foram confirmados privados, sem policy pública e sem objeto persistente. A CLI experimental listou os buckets, mas recusou upload remoto com `Unsupported operation`; por isso objeto sintético e URL assinada continuam pendentes, sem uso de `service_role` como atalho.
 
+O runtime real de Storage foi preparado separadamente em backend Node.js com a biblioteca oficial `@supabase/supabase-js` fixada. O controle exige um único bucket temporário privado, objeto UUID, conteúdo sintético em memória, upload sem overwrite, confirmação de metadados e SHA-256, acesso anônimo não-2xx, URL assinada de 30 a 60 segundos, falha pós-expiração e remoção no `finally`. Um wrapper PowerShell mantém a credencial apenas em variável do processo ou entrada oculta e encadeia a revalidação SQL depois da limpeza.
+
+A implementação está parada antes do gate de credencial. Assim, o desenho e os testes negativos locais estão aprovados, mas a duração observada da URL, a limpeza remota e a ausência de vazamento após um ciclo real ainda precisam ser comprovadas. Essa preparação não altera a decisão de manter produção, navegador, Appsmith e n8n sem credencial administrativa.
+
 Para criptografia de aplicação, a recomendação é KMS gerenciado com envelope encryption: um DEK por gravação/objeto, AES-256-GCM local e KEK mantida no KMS, com alias versionado no banco. [Cloud KMS](https://docs.cloud.google.com/kms/docs/envelope-encryption) documenta esse modelo; [Vault Transit](https://developer.hashicorp.com/vault/docs/secrets/transit) permanece alternativa quando houver capacidade operacional própria, e um secrets manager simples fica restrito a credenciais. A escolha do provedor e a criação de chaves continuam pendentes.
 
 O painel confirmou que o `cbn-dev` está no plano Free: não há backup agendado e PITR exige plano/add-on pago. Um dump manual somente de schema foi gerado, verificado sem dados ou credenciais e removido; restauração gerenciada e teste de recuperação continuam pendentes.
