@@ -217,10 +217,154 @@ if (Test-Path -LiteralPath 'scripts\supabase-remote-preflight.ps1') {
 
 if (Test-Path -LiteralPath 'scripts\package.json') {
   $storagePackage = Get-Content -Raw -LiteralPath 'scripts\package.json'
-  foreach ($requiredPackageValue in @('@supabase/supabase-js', '2.110.6', 'node --test')) {
+  foreach ($requiredPackageValue in @(
+    '@supabase/supabase-js', '2.110.6', 'node --test',
+    'test:kms-envelope', 'kms-envelope/envelope-service.test.mjs'
+  )) {
     if ($storagePackage -notmatch [regex]::Escape($requiredPackageValue)) {
       $failures.Add("Configuracao npm do runtime ausente: $requiredPackageValue")
     }
+  }
+}
+
+$kmsEnvelopeArtifacts = @(
+  'scripts\kms-envelope\kms-adapter.mjs',
+  'scripts\kms-envelope\local-test-kms-adapter.mjs',
+  'scripts\kms-envelope\envelope-service.mjs',
+  'scripts\kms-envelope\envelope-service.test.mjs',
+  'supabase\migrations\20260717_001_bkl016_envelope_metadata.sql',
+  'supabase\rollback\20260717_001_bkl016_envelope_metadata_down.sql',
+  'supabase\tests\bkl016_envelope_constraints_test.sql',
+  'supabase\tests\bkl016_envelope_rollback_test.sql',
+  'docs\BKL-016_KMS_ENVELOPE_RUNBOOK.md',
+  'docs\RELATORIO_BKL-016_KMS_ENVELOPE_LOCAL.md'
+)
+foreach ($artifact in $kmsEnvelopeArtifacts) {
+  if (-not (Test-Path -LiteralPath $artifact -PathType Leaf)) {
+    $failures.Add("Artefato de envelope KMS ausente: $artifact")
+  }
+}
+
+if (Test-Path -LiteralPath 'scripts\kms-envelope\kms-adapter.mjs') {
+  $kmsContract = Get-Content -Raw -LiteralPath 'scripts\kms-envelope\kms-adapter.mjs'
+  foreach ($method in @('wrapKey', 'unwrapKey', 'getKeyReference', 'rewrapDataKey', 'healthCheck')) {
+    if ($kmsContract -notmatch [regex]::Escape($method)) {
+      $failures.Add("Metodo obrigatorio do contrato KMS ausente: $method")
+    }
+  }
+}
+
+if (Test-Path -LiteralPath 'scripts\kms-envelope\local-test-kms-adapter.mjs') {
+  $localKms = Get-Content -Raw -LiteralPath 'scripts\kms-envelope\local-test-kms-adapter.mjs'
+  foreach ($control in @(
+    "environment !== 'test'", 'allowLocalTestKms !== true',
+    'randomBytes(KEY_BYTES)', 'local-test-only', 'destroy()'
+  )) {
+    if ($localKms -notmatch [regex]::Escape($control)) {
+      $failures.Add("Controle obrigatorio do KMS local ausente: $control")
+    }
+  }
+  if ($localKms -match '(?i)@aws-sdk|@google-cloud|@azure|node-vault|fetch\s*\(') {
+    $failures.Add('Adaptador local contem SDK ou chamada para provedor externo.')
+  }
+}
+
+if (Test-Path -LiteralPath 'scripts\kms-envelope\envelope-service.mjs') {
+  $envelopeService = Get-Content -Raw -LiteralPath 'scripts\kms-envelope\envelope-service.mjs'
+  foreach ($control in @(
+    "CONTENT_ALGORITHM = 'AES-256-GCM'", 'randomBytes(KEY_BYTES)',
+    'randomBytes(NONCE_BYTES)', 'createCipheriv', 'createDecipheriv',
+    'setAAD', 'setAuthTag', 'aadSha256', 'rotateKek', 'rotateDek',
+    "fill(0)"
+  )) {
+    if ($envelopeService -notmatch [regex]::Escape($control)) {
+      $failures.Add("Controle criptografico de envelope ausente: $control")
+    }
+  }
+  if ($envelopeService -match '(?i)console\.(?:log|debug|info)|@aws-sdk|@google-cloud|@azure|node-vault') {
+    $failures.Add('Servico de envelope contem log direto ou SDK de provedor externo.')
+  }
+}
+
+if (Test-Path -LiteralPath 'scripts\kms-envelope\envelope-service.test.mjs') {
+  $envelopeTests = Get-Content -Raw -LiteralPath 'scripts\kms-envelope\envelope-service.test.mjs'
+  foreach ($requiredTest in @(
+    'round-trip positivo', 'plaintext vazio', 'DEK, nonce e ciphertext diferentes',
+    'cliente, operacao e proposta divergentes', 'bucket e object name',
+    'tag, ciphertext, nonce e wrapped DEK adulterados', 'key version incorreta',
+    'rotacao de KEK', 'rotacao de DEK', 'falha de rotacao',
+    'local falha fechado fora do ambiente de teste',
+    'nao expõem plaintext ou material criptografico completo'
+  )) {
+    if ($envelopeTests -notmatch [regex]::Escape($requiredTest)) {
+      $failures.Add("Teste de envelope obrigatorio ausente: $requiredTest")
+    }
+  }
+}
+
+$syntheticPlaintextMarker = 'BKL016_SYNTHETIC_ENVELOPE_PAYLOAD'
+foreach ($relativePath in $files) {
+  if ($relativePath -in @(
+    'scripts/kms-envelope/envelope-service.test.mjs',
+    'scripts/validate-bkl016.ps1'
+  )) { continue }
+  $path = Join-Path $repoRoot $relativePath
+  if ((Test-Path -LiteralPath $path -PathType Leaf) -and
+      (Get-Content -Raw -LiteralPath $path) -match [regex]::Escape($syntheticPlaintextMarker)) {
+    $failures.Add("Plaintext sintetico escapou do teste controlado: $relativePath")
+  }
+}
+
+$envelopeMigrationPath = 'supabase\migrations\20260717_001_bkl016_envelope_metadata.sql'
+if (Test-Path -LiteralPath $envelopeMigrationPath) {
+  $envelopeMigration = Get-Content -Raw -LiteralPath $envelopeMigrationPath
+  foreach ($requiredMetadata in @(
+    'envelope_algorithm', 'envelope_version', 'wrapped_dek', 'content_nonce',
+    'authentication_tag', 'aad_version', 'aad_sha256',
+    "envelope_algorithm = 'AES-256-GCM'", 'octet_length(content_nonce) = 12',
+    'octet_length(authentication_tag) = 16',
+    'num_nonnulls(',
+    'protected_payloads_envelope_coherence_ck',
+    'protected_file_refs_envelope_coherence_ck'
+  )) {
+    if ($envelopeMigration -notmatch [regex]::Escape($requiredMetadata)) {
+      $failures.Add("Metadado/constraint de envelope ausente: $requiredMetadata")
+    }
+  }
+}
+
+$envelopeRollbackPath = 'supabase\rollback\20260717_001_bkl016_envelope_metadata_down.sql'
+if (Test-Path -LiteralPath $envelopeRollbackPath) {
+  $envelopeRollback = Get-Content -Raw -LiteralPath $envelopeRollbackPath
+  foreach ($rollbackControl in @(
+    'Rollback de envelope recusado: existem envelopes novos',
+    'where envelope_version is not null', 'drop column if exists wrapped_dek'
+  )) {
+    if ($envelopeRollback -notmatch [regex]::Escape($rollbackControl)) {
+      $failures.Add("Controle de rollback do envelope ausente: $rollbackControl")
+    }
+  }
+}
+
+if (Test-Path -LiteralPath 'supabase\tests\bkl016_envelope_constraints_test.sql') {
+  $envelopeDatabaseTests = Get-Content -Raw -LiteralPath 'supabase\tests\bkl016_envelope_constraints_test.sql'
+  foreach ($databaseControl in @(
+    'SYNTHETIC_LEGACY', 'SYNTHETIC_ENVELOPE', 'AES-128-CBC',
+    'SYNTHETIC_NULL_ALGORITHM',
+    "repeat('bb', 11)", "repeat('cc', 15)", 'SYNTHETIC_PARTIAL',
+    'referencia de chave vazia foi aceita',
+    'BKL-016 envelope database constraints passed', 'rollback;'
+  )) {
+    if ($envelopeDatabaseTests -notmatch [regex]::Escape($databaseControl)) {
+      $failures.Add("Teste SQL de envelope ausente: $databaseControl")
+    }
+  }
+}
+
+if (Test-Path -LiteralPath 'supabase\tests\bkl016_envelope_rollback_test.sql') {
+  $envelopeRollbackTests = Get-Content -Raw -LiteralPath 'supabase\tests\bkl016_envelope_rollback_test.sql'
+  if ($envelopeRollbackTests -notmatch [regex]::Escape('BKL-016 envelope rollback checks passed')) {
+    $failures.Add('Marcador do teste SQL de rollback do envelope ausente.')
   }
 }
 

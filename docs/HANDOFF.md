@@ -1,6 +1,6 @@
 # Handoff — CBN Crédito
 
-**Atualizado em:** 15/07/2026, após validação do runtime real de Storage da BKL-016
+**Atualizado em:** 15/07/2026, após preparação e validação local do envelope KMS da BKL-016
 **Projeto:** CBN — operação autônoma de varredura e venda de crédito  
 **Escopo inicial:** FGTS + Crédito do Trabalhador (CLT)
 
@@ -245,6 +245,18 @@ A branch `codex/bkl-016-storage-runtime` parte da `main` atualizada e contém pr
 Os 9 testes negativos locais e o preflight remoto sanitizado passaram. Após o gate humano, o ciclo real aprovou upload de 94 bytes, negação anônima `4xx`, SHA-256 antes da expiração, falha `4xx` após 36 segundos para TTL de 30 segundos, varredura local, limpeza e revalidação SQL `complete/passed`. A listagem recursiva final encontrou zero objetos; chave, senha e URL não foram impressas nem persistidas.
 
 Os seis marcadores finais do runtime foram atingidos. **Ponto exato de retomada:** decidir KMS/cofre e rotação, comprovar restauração, definir retenção/legal hold e revisar policies finais. Não houve produção, n8n, Appsmith, usuário Auth, fixture persistente ou dado real. BKL-016 segue **Em andamento** até essas pendências e revisão independente.
+
+### KMS e envelope validados somente em ambiente local
+
+A branch `codex/bkl-016-kms-envelope` acrescenta contrato KMS neutro, adaptador local bloqueado fora de teste e serviço de envelope com primitivas nativas do Node.js. O formato v1 usa AES-256-GCM, DEK de 32 bytes e nonce de 12 bytes aleatórios por gravação, tag obrigatória e AAD de contexto sem PII. Logs/auditoria ficam limitados a evento, algoritmo, alias e versões.
+
+A migration nova `20260717_001_bkl016_envelope_metadata.sql` foi criada em vez de editar migrations já aplicadas. Ela preserva linhas legadas, rejeita envelope parcial e cobre payloads e referências de arquivos. O rollback incremental falha fechado quando existirem envelopes novos.
+
+Rotação de KEK foi modelada como rewrap da mesma DEK, sem tocar no ciphertext; rotação de DEK descriptografa/recriptografa em memória e conserva o envelope anterior em falha. Testes locais exercitam ambos os fluxos e recuperação. O runbook e relatório desta fase são `docs/BKL-016_KMS_ENVELOPE_RUNBOOK.md` e `docs/RELATORIO_BKL-016_KMS_ENVELOPE_LOCAL.md`.
+
+A comparação oficial de 15/07/2026 mantém três caminhos: KMS gerenciado, Vault Transit e cofre de credenciais mais envelope próprio. A recomendação técnica preliminar é avaliar KMS gerenciado primeiro, mas **nenhum provedor foi escolhido ou acessado e nenhuma chave real foi criada**.
+
+**Ponto exato de retomada:** Guilherme decide provedor/região/custo/IAM/auditoria/recuperação. Parar antes de autenticar, ativar API/billing, criar/importar KEK, criar Vault ou gravar segredo Railway. Depois disso, abrir tarefa separada para adaptador remoto sintético. BKL-016 segue **Em andamento**.
 
 ## Tarefas vivas paralelas
 
