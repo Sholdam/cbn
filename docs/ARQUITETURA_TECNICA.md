@@ -1,5 +1,26 @@
 # Arquitetura Técnica — Gateway de Crédito CBN
 
+## Identidades técnicas mínimas do Gateway
+
+O PostgreSQL local passa a modelar autorização backend por papéis `NOLOGIN`:
+
+```text
+credencial futura do workload (ainda inexistente)
+  ├─ cbn_gateway_backend       → operação comum por wrapper
+  ├─ cbn_retention_operator    → avaliar/anonimizar/preparar/cancelar/solicitar
+  ├─ cbn_hold_reviewer         → aprovar ou rejeitar remoção de hold
+  └─ cbn_deletion_executor     → concluir descarte após ausência comprovada
+```
+
+Nenhum papel acessa tabela privada, auditoria, Storage ou dado operacional por
+SQL direto. A preparação e a conclusão do descarte ficam em papéis diferentes.
+As funções são `SECURITY DEFINER`, pertencem ao executor técnico de migrations,
+usam nomes qualificados e `search_path = ''`. `PUBLIC`, `anon`, `authenticated`,
+Appsmith e navegador não recebem os wrappers.
+
+Os papéis não são credenciais. A autenticação futura do Gateway será uma tarefa
+separada e não poderá usar `service_role` como identidade operacional permanente.
+
 ## Decisões após revisão de retenção
 
 - `CLIENT` é um escopo superior de legal hold; payloads e arquivos consultam esse
