@@ -1,6 +1,6 @@
 # BKL-016 — Armazenamento de dados sensíveis
 
-**Status:** Em andamento — migration-base aplicada; validação remota bloqueou grant de `anon`; correção incremental pendente
+**Status:** Em andamento — migrations e banco/RLS remotos validados; objeto/URL assinada, KMS e restauração pendentes
 **Data:** 15/07/2026
 **Escopo desta entrega:** fundação local, dados sintéticos e políticas conservadoras
 
@@ -192,37 +192,41 @@ Foram preparados:
 
 A versão instalada da CLI oferece `supabase db push --dry-run`. O vínculo foi concluído sem senha em argumento; o alvo foi verificado duas vezes e a inspeção somente leitura mostrou histórico remoto vazio, migration local `20260715` pendente e nenhuma tabela reportada. Com autorização separada, o dry-run listou somente `20260715_001_bkl016_secure_storage.sql`.
 
-Após uma terceira autorização explícita, essa migration foi aplicada por `supabase db push --linked`, sem seed. O histórico remoto passou a coincidir com o local em `20260715`, e o inspetor reportou as 13 tabelas esperadas. Nenhum usuário, fixture ou dado foi criado. A listagem dos buckets via CLI não ficou disponível; RLS, funções, grants, buckets, policies e integridades ainda precisam passar pela suíte SQL remota.
+Após uma terceira autorização explícita, essa migration foi aplicada por `supabase db push --linked`, sem seed. O histórico remoto passou a coincidir com o local em `20260715`, e o inspetor reportou as 13 tabelas esperadas. Nenhum usuário, fixture ou dado foi criado nessa etapa.
 
-Na primeira tentativa autorizada, o teste estrutural remoto falhou em `anon possui grant operacional inesperado` antes da suíte de fixtures. O ambiente remoto possui default privileges diferentes do local. A migration-base agora revoga explicitamente `PUBLIC` e `anon` nas oito tabelas operacionais; a migration incremental `20260716_001_bkl016_revoke_anon_operational_grants.sql` aplica a mesma correção ao projeto já migrado e reafirma somente os grants previstos de `authenticated`. O dry-run remoto listou exclusivamente essa migration; a correção ainda não foi aplicada.
+Na primeira tentativa autorizada, o teste estrutural remoto falhou em `anon possui grant operacional inesperado` antes da suíte de fixtures. O ambiente remoto possui default privileges diferentes do local. A migration-base agora revoga explicitamente `PUBLIC` e `anon` nas oito tabelas operacionais; a migration incremental `20260716_001_bkl016_revoke_anon_operational_grants.sql` passou no dry-run e foi aplicada ao projeto já migrado, sem seed.
 
-A comparação preliminar de KMS/cofre foi limitada a três famílias: KMS gerenciado com envelope encryption, HashiCorp Vault Transit e serviço de secrets com criptografia no Gateway. A escolha continua pendente de custo comprovado, operação, rotação, recuperação e aprovação. Backup/PITR também não foi afirmado sem comprovação do plano do futuro projeto.
+A repetição integral terminou com `BKL-016 remote structural checks passed` e `BKL-016 database and RLS checks passed`. As fixtures sintéticas usaram `ROLLBACK`; a inspeção posterior indicou zero linhas estimadas nas 13 tabelas. Foram comprovados grants, RLS de `anon`/sem perfil/support/operations/auditor/admin, bloqueio privado, funções `SECURITY DEFINER`, máscaras, snapshot, evidência final, integridades cliente/produto/operação e auditoria append-only.
+
+Os quatro buckets foram listados e a suíte confirmou que são privados, sem policy pública. O upload sintético pela CLI experimental falhou com `Unsupported operation` antes de criar objeto, portanto o ciclo objeto/URL assinada não foi comprovado. Nenhum objeto persistiu.
+
+A comparação de KMS/cofre foi limitada a três famílias: KMS gerenciado com envelope encryption, [HashiCorp Vault Transit](https://developer.hashicorp.com/vault/docs/secrets/transit) e serviço de secrets com criptografia no Gateway. Recomenda-se KMS gerenciado com DEK por gravação/objeto e KEK externa, conforme o modelo de [envelope encryption](https://docs.cloud.google.com/kms/docs/envelope-encryption); secrets manager simples fica apenas para credenciais. Provedor, custo e criação de chave continuam pendentes de aprovação.
+
+O painel confirmou plano Free sem backup agendado e PITR disponível somente como adicional pago. Um dump manual somente de schema (51.078 bytes) foi validado sem dados ou credenciais e removido. Restauração continua não comprovada.
 
 ## Riscos restantes
 
-- a migration-base já foi aplicada no projeto remoto de desenvolvimento; qualquer correção adicional continua sujeita a dry-run e autorização explícita;
-- a validação SQL remota foi autorizada, mas precisa ser repetida integralmente depois da correção de grants;
-- migration corretiva de grants passou no dry-run, mas ainda precisa de aplicação autorizada e revalidação;
-- KMS/cofre, rotação e recuperação de chave não foram escolhidos;
+- objeto sintético e URL assinada não foram exercitados por limitação da CLI;
+- KMS/cofre, rotação, recuperação e provedor não foram aprovados;
 - prazos legais de retenção e legal hold precisam de validação;
 - policies de objetos Storage continuam deliberadamente ausentes;
-- backup/PITR e restauração ainda não foram testados;
+- plano Free não possui backup/PITR gerenciado; restauração ainda não foi testada;
 - rotina de anonimização/exclusão ainda não foi implementada;
 - funções e grants devem passar por revisão independente antes da aplicação;
 - BKL-018 e BKL-020 completarão autenticação/perfis e auditoria canônica.
 
 ## Checklist para aprovar a aplicação futura
 
-- [ ] migration aplicada em projeto Supabase limpo de desenvolvimento;
-- [ ] teste SQL executado sem falhas;
-- [ ] RLS testada com usuário sem papel, admin, operations, support e auditor;
-- [ ] acesso direto ao schema privado negado;
+- [x] migration aplicada em projeto Supabase limpo de desenvolvimento;
+- [x] teste SQL executado sem falhas;
+- [x] RLS testada transacionalmente com usuário sem papel, admin, operations, support e auditor;
+- [x] acesso direto ao schema privado negado;
 - [ ] Appsmith sem `service_role` e sem acesso privado;
 - [ ] n8n usando cofre e credencial mínima;
-- [ ] buckets confirmados como privados e sem nome de arquivo com PII;
+- [x] buckets confirmados como privados, sem policy pública e sem objeto persistente;
 - [ ] URLs assinadas expiram e não aparecem em logs;
 - [ ] KMS/cofre e rotação aprovados;
 - [ ] retenção, anonimização, legal hold e backup aprovados;
-- [ ] varredura de segredos e dados pessoais aprovada;
-- [ ] documentação e handoff revisados;
+- [x] varredura de segredos e dados pessoais aprovada;
+- [x] documentação e handoff revisados;
 - [ ] BKL-016 somente então avaliada para conclusão.

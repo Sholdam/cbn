@@ -1,6 +1,6 @@
 # BKL-016 — Runbook de validação remota em desenvolvimento
 
-**Status:** validação remota bloqueada por grant indevido de `anon`; dry-run corretivo aprovado e aplicação pendente
+**Status:** migration corretiva e validação SQL concluídas; objeto/URL assinada, KMS e restauração pendentes
 **Data:** 15/07/2026
 **Ambiente permitido:** projeto Supabase exclusivo de desenvolvimento, vazio e sem dados reais
 
@@ -66,9 +66,9 @@ O usuário autorizou exclusivamente o dry-run. O comando foi executado sem `--in
 
 O usuário autorizou somente a migration BKL-016, sem seed. A aplicação e a verificação de leitura foram concluídas sem criar dados.
 
-## QUARTA PARADA OBRIGATÓRIA — antes da validação remota
+## Quarta parada obrigatória — concluída
 
-Não executar a suíte SQL, criar usuários Auth sintéticos, inserir fixtures transacionais ou objetos Storage sem nova autorização explícita. A validação precisa de conexão PostgreSQL configurada somente na sessão local; senha ou URL não devem ser enviadas ao chat.
+A validação recebeu autorização explícita e usou conexão PostgreSQL somente em memória, com entrada de senha oculta. Nenhum usuário Auth foi criado e nenhuma credencial foi enviada ao chat ou persistida.
 
 ### Resultado da primeira tentativa autorizada
 
@@ -79,7 +79,13 @@ A correção foi preparada em duas camadas:
 - a migration-base passou a revogar explicitamente todas as permissões das tabelas operacionais de `PUBLIC` e `anon`, protegendo instalações novas;
 - `20260716_001_bkl016_revoke_anon_operational_grants.sql` faz o hardening idempotente do projeto já migrado e reafirma somente os grants de `authenticated` previstos.
 
-Essa migration corretiva não altera dados ou policies. O dry-run executado depois da autorização listou exclusivamente `20260716_001_bkl016_revoke_anon_operational_grants.sql`. A migration ainda exige autorização separada antes da aplicação remota, e a validação SQL completa deve ser repetida depois.
+Essa migration corretiva não altera dados ou policies. O dry-run listou exclusivamente `20260716_001_bkl016_revoke_anon_operational_grants.sql`; a aplicação sem seed foi concluída e o histórico local/remoto passou a coincidir em `20260715` e `20260716`.
+
+### Resultado da repetição integral
+
+Os testes terminaram com `BKL-016 remote structural checks passed` e `BKL-016 database and RLS checks passed`. As fixtures sintéticas foram revertidas pelo `ROLLBACK`, e a inspeção final reportou zero linhas estimadas nas 13 tabelas. Os quatro buckets privados foram listados e as verificações SQL confirmaram ausência de acesso/policy pública. A CLI experimental recusou o upload sintético com `Unsupported operation` antes da criação; nenhum objeto persistiu e URL assinada não foi testada.
+
+O painel do projeto confirmou plano Free, sem backup agendado; PITR aparece como adicional do Pro. O dump manual somente de schema passou na varredura de dados/segredos e foi removido. Restauração, KMS/cofre, retenção e legal hold continuam pendentes.
 
 ## Continuação autorizada — inspeção antes do vínculo
 
@@ -214,25 +220,25 @@ Nenhuma chave será criada nesta tarefa. A decisão será tomada antes de integr
 | HashiCorp Vault Transit | controle e portabilidade | operação, disponibilidade e recuperação ficam sob responsabilidade da CBN |
 | serviço de secrets gerenciado com criptografia feita no Gateway | implantação inicial simples | rotação e uso criptográfico exigem desenho adicional e nunca podem alcançar o navegador/Appsmith |
 
-Critérios de decisão: custo comprovado, simplicidade, rotação, recuperação, integração backend, separação desenvolvimento/produção, portabilidade e prevenção de exposição. A opção final depende de aprovação do usuário e revisão independente.
+Critérios de decisão: custo comprovado, simplicidade, rotação, recuperação, integração backend, separação desenvolvimento/produção, portabilidade e prevenção de exposição. A recomendação atual é KMS gerenciado com envelope encryption; provedor, custo e criação de chave dependem de aprovação e revisão independente.
 
-## Backup, restauração e retenção pendentes
+## Backup, restauração e retenção
 
-O projeto ainda não foi criado/confirmado, portanto o plano e os recursos disponíveis não foram comprovados. Não há afirmação de PITR ou backup gerenciado.
+O painel do `cbn-dev` confirmou plano Free: backup agendado não está incluído e PITR aparece como adicional do Pro. Portanto não há backup gerenciado ativo a afirmar.
 
-Após autorização, registrar evidência do plano no painel e preparar exportação/restauração somente de estruturas e fixtures sintéticas em ambiente separado. O dump não pode conter credencial embutida. Prazo de retenção, anonimização e `legal hold` continuam pendentes de validação jurídica.
+Um dump manual somente dos schemas BKL-016 foi gerado, validado sem registros/credenciais e removido. Restauração não foi executada porque não há backup gerenciado nem alvo descartável separado nesta fase. Prazo de retenção, anonimização e `legal hold` continuam pendentes de validação jurídica.
 
 ## Checklist antes de encerrar a fase remota
 
 - [x] projeto isolado confirmado duas vezes;
 - [x] dry-run revisado e segunda autorização registrada;
 - [x] migration aplicada sem seed remoto;
-- [ ] validação remota completa aprovada;
-- [ ] buckets privados e ausência de policy pública confirmados;
-- [ ] fixtures persistentes e objetos sintéticos removidos;
-- [ ] validador reaprovado após limpeza;
-- [ ] backup/restauração testados ou pendência fundamentada;
-- [ ] decisão de KMS aprovada ou pendência registrada;
-- [ ] nenhum dado real, segredo, `.env`, n8n ou Appsmith;
-- [ ] nenhuma alteração em `telegram-gateway/`;
-- [ ] nenhum merge na `main`.
+- [x] validação SQL remota completa aprovada;
+- [x] buckets privados e ausência de policy pública confirmados;
+- [x] nenhuma fixture ou objeto sintético persistente ao final;
+- [x] validador concluiu após o `ROLLBACK` e a inspeção final confirmou zero linhas;
+- [x] backup/restauração testados ou pendência fundamentada;
+- [x] decisão de KMS aprovada ou pendência registrada;
+- [x] nenhum dado real, segredo, `.env`, n8n ou Appsmith;
+- [x] nenhuma alteração em `telegram-gateway/`;
+- [x] nenhum merge na `main`.

@@ -83,7 +83,7 @@ Nenhum papel PostgREST grava diretamente em `app_private`. A escrita/leitura de 
 
 Propostas exigem `final_authorization_evidence_payload_ref` válido e protegido. Máscaras operacionais de CPF/telefone devem conter `*` e não podem preservar a sequência numérica completa.
 
-Essa arquitetura foi preparada em migration e testes, mas ainda não foi aplicada em projeto Supabase real. Appsmith, n8n, Gateway e Power BI não foram conectados nesta etapa.
+Essa arquitetura foi aplicada somente no projeto Supabase isolado de desenvolvimento `cbn-dev`, sem seed ou dados reais. Appsmith, n8n, Gateway e Power BI não foram conectados nesta etapa; produção permanece intocada.
 
 ### Gate para o primeiro ambiente remoto
 
@@ -91,9 +91,15 @@ A fase remota deve usar somente projeto Supabase isolado e claramente marcado co
 
 O runbook `docs/BKL-016_REMOTE_DEV_RUNBOOK.md` e os scripts `supabase-remote-preflight.ps1`, `supabase-remote-validate.ps1` e `supabase-remote-cleanup.ps1` bloqueiam branch/árvore inadequadas, alvo não confirmado, possível produção, dados não sintéticos, segredo, schema privado exposto e migration sem revisão. A limpeza aceita apenas manifesto local ignorado com IDs e objetos sintéticos explícitos.
 
-Na preparação de 15/07/2026, a primeira parada foi cumprida. Depois da autorização explícita, o projeto isolado `cbn-dev` foi confirmado duas vezes, vinculado e inspecionado somente para leitura. O histórico remoto de migrations estava vazio e nenhuma tabela foi reportada. Com autorização separada, o dry-run apresentou somente a migration BKL-016 esperada; após uma terceira autorização, ela foi aplicada sem seed. O histórico local/remoto passou a coincidir e as 13 tabelas esperadas foram reportadas. A execução parou antes dos testes/fixtures; Storage, KMS/cofre, backup/restauração e retenção permanecem pendentes, e nenhuma integração n8n/Appsmith pode antecedê-los.
+Na preparação de 15/07/2026, o projeto isolado `cbn-dev` foi confirmado, vinculado e inspecionado antes de escrita. A migration-base foi aplicada sem seed. Depois do hardening corretivo, as migrations `20260715` e `20260716` ficaram conciliadas, as 13 tabelas esperadas permaneceram sem linhas estimadas e os dois marcadores da validação SQL remota foram atingidos. Nenhum usuário Auth, fixture persistente ou integração n8n/Appsmith foi criado.
 
-A primeira validação estrutural remota detectou que default privileges do projeto concederam acesso operacional a `anon`, apesar da ausência de policy. A arquitetura passa a exigir revogação explícita de `PUBLIC` e `anon` em cada tabela operacional, além de RLS. O dry-run da migration incremental para o projeto já aplicado listou somente a correção esperada; sua aplicação permanece pendente de autorização.
+A primeira validação estrutural remota detectou que default privileges do projeto concederam acesso operacional a `anon`, apesar da ausência de policy. A arquitetura passa a exigir revogação explícita de `PUBLIC` e `anon` em cada tabela operacional, além de RLS. A migration incremental aplicou essa correção e a repetição integral da suíte comprovou grants, RLS, funções `SECURITY DEFINER`, integridades, snapshot e auditoria append-only.
+
+Os quatro buckets esperados foram confirmados privados, sem policy pública e sem objeto persistente. A CLI experimental listou os buckets, mas recusou upload remoto com `Unsupported operation`; por isso objeto sintético e URL assinada continuam pendentes, sem uso de `service_role` como atalho.
+
+Para criptografia de aplicação, a recomendação é KMS gerenciado com envelope encryption: um DEK por gravação/objeto, AES-256-GCM local e KEK mantida no KMS, com alias versionado no banco. [Cloud KMS](https://docs.cloud.google.com/kms/docs/envelope-encryption) documenta esse modelo; [Vault Transit](https://developer.hashicorp.com/vault/docs/secrets/transit) permanece alternativa quando houver capacidade operacional própria, e um secrets manager simples fica restrito a credenciais. A escolha do provedor e a criação de chaves continuam pendentes.
+
+O painel confirmou que o `cbn-dev` está no plano Free: não há backup agendado e PITR exige plano/add-on pago. Um dump manual somente de schema foi gerado, verificado sem dados ou credenciais e removido; restauração gerenciada e teste de recuperação continuam pendentes.
 
 ## Sessões previstas
 

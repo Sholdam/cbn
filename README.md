@@ -15,7 +15,7 @@ A decisão técnica está registrada em [`docs/ARQUITETURA_TECNICA.md`](docs/ARQ
 
 ## Próximo ponto de retomada
 
-A **BKL-016** teve migration, seed, rollback e testes de RLS validados em Supabase local descartável. No `cbn-dev`, a migration-base foi aplicada sem seed; a primeira validação remota detectou grant operacional indevido para `anon`. O dry-run da migration corretiva listou somente o arquivo esperado, mas a correção ainda não foi aplicada.
+A **BKL-016** teve migration, seed, rollback e testes de RLS validados em Supabase local descartável. No `cbn-dev`, a migration-base e o hardening corretivo de grants foram aplicados sem seed; a validação remota estrutural e a suíte transacional de banco/RLS passaram, com zero linhas estimadas ao final. Permanecem pendentes o ciclo real de objeto/URL assinada, restauração, retenção e aprovação do KMS.
 
 BKL-012 e BKL-013 permanecem tarefas vivas paralelas. Nenhuma proposta real pode ser confirmada sem autorização expressa e evidência protegida válida.
 

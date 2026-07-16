@@ -200,7 +200,7 @@ Próximas ações:
 - criados teste SQL e varredura estática de segredo/CPF;
 - criada documentação de acesso, Storage, cofre, retenção, anonimização, backup e aplicação.
 
-A migration **não foi aplicada em Supabase real**. KMS/cofre, usuários reais, policies finais de Storage, backup, restauração e retenção legal permanecem pendentes. A BKL-016 continua **Em andamento** até essas validações e revisão independente.
+Naquela preparação inicial a migration ainda não havia sido aplicada. Posteriormente ela foi aplicada somente no projeto isolado `cbn-dev`; produção, usuários reais, KMS/cofre, policies finais de Storage, restauração e retenção legal permanecem intocados ou pendentes. A BKL-016 continua **Em andamento** até essas validações e revisão independente.
 
 ### Correções da revisão técnica preparadas
 
@@ -232,11 +232,11 @@ Em 15/07/2026, migration, seed, suíte SQL/RLS, rollback com preservação de bu
 
 Após autorização, o `supabase link` foi concluído sem senha em argumento. A inspeção somente leitura confirmou histórico remoto de migrations vazio, migration local `20260715` pendente e nenhuma tabela reportada pelo inspetor. Com autorização separada, `supabase db push --dry-run --linked` listou somente `20260715_001_bkl016_secure_storage.sql` e não fez escrita.
 
-Após uma terceira autorização explícita, `supabase db push --linked` aplicou somente `20260715_001_bkl016_secure_storage.sql`, sem seed. O histórico local/remoto passou a coincidir em `20260715` e o inspetor reportou as 13 tabelas BKL-016 esperadas. Nenhum usuário, fixture ou dado foi criado. A leitura de Storage pela CLI não ficou disponível e ainda precisa ser comprovada pelo validador SQL.
+Após uma terceira autorização explícita, `supabase db push --linked` aplicou somente `20260715_001_bkl016_secure_storage.sql`, sem seed. A primeira validação remota encontrou grant indevido de `anon`; a migration corretiva `20260716_001_bkl016_revoke_anon_operational_grants.sql` passou em dry-run, foi aplicada sem seed e conciliou o histórico local/remoto.
 
-**Ponto exato de retomada:** quarta parada obrigatória antes da suíte SQL remota e de qualquer fixture sintética. Uma nova autorização explícita é obrigatória. A BKL-016 continua **Em andamento**; RLS/Storage remoto, limpeza, backup/restauração e decisão final de KMS ainda não foram validados.
+Depois da correção, a validação estrutural e a suíte transacional completa passaram. RLS e integridades foram exercitadas com claims/papéis sintéticos; todas as fixtures terminaram em `ROLLBACK`, nenhum usuário Auth foi criado e as 13 tabelas ficaram com zero linhas estimadas. Os buckets privados e a ausência de policy pública foram confirmados.
 
-Na primeira tentativa autorizada, o teste estrutural remoto bloqueou em `anon possui grant operacional inesperado`, antes de iniciar a suíte transacional de fixtures. O projeto remoto aplicou default privileges diferentes do ambiente local. A migration-base foi endurecida para instalações novas e foi criada `20260716_001_bkl016_revoke_anon_operational_grants.sql` para corrigir o projeto já migrado. O dry-run listou somente essa migration; a correção não foi aplicada e aguarda nova autorização.
+**Ponto exato de retomada:** a CLI experimental de Storage recusou upload antes de criar o objeto, então ciclo real de objeto/URL assinada segue pendente. O plano Free não oferece backup agendado nem PITR; dump manual somente de schema passou, mas restauração não foi comprovada. KMS gerenciado com envelope encryption é a recomendação técnica, ainda pendente de provedor/aprovação. A BKL-016 continua **Em andamento**, sem integração n8n/Appsmith e sem alteração em produção.
 
 ## Tarefas vivas paralelas
 

@@ -168,15 +168,15 @@ Status permanece: **Em andamento**.
 - runbook remoto, preflight fail-closed, validador SQL/PowerShell e limpeza sintética por manifesto preparados;
 - a CLI instalada oferece `db push --dry-run`;
 - metadados de vínculo continuam ignorados e schemas privados continuam fora do PostgREST local;
-- nenhuma conexão a banco/projeto remoto, migration, usuário, fixture, objeto, n8n ou Appsmith foi criada.
+- nenhuma conexão com produção, usuário Auth, fixture persistente, objeto Storage, n8n ou Appsmith foi criada.
 
 Após a primeira autorização, o vínculo foi concluído e a inspeção somente leitura encontrou histórico remoto de migrations vazio, migration local `20260715` pendente e nenhuma tabela reportada. Após autorização separada, o dry-run listou somente `20260715_001_bkl016_secure_storage.sql` e não alterou o projeto.
 
-Após uma terceira autorização explícita, somente `20260715_001_bkl016_secure_storage.sql` foi aplicada, sem seed. Histórico local/remoto coincidem em `20260715`, e as 13 tabelas esperadas foram reportadas. Nenhum usuário, fixture ou dado foi criado; Storage ainda não foi comprovado pela suíte SQL.
+Após uma terceira autorização explícita, somente `20260715_001_bkl016_secure_storage.sql` foi aplicada, sem seed. A primeira validação remota encontrou grant operacional indevido para `anon`; `20260716_001_bkl016_revoke_anon_operational_grants.sql` foi então preparada, passou em dry-run e foi aplicada sem seed.
 
-**Bloqueio deliberado:** quarta parada antes da validação SQL remota e de fixtures sintéticas. A continuação exige nova autorização e configuração local segura da conexão PostgreSQL. RLS/Storage, limpeza, KMS e backup/restauração continuam pendentes e impedem concluir a BKL-016.
+Depois da correção, os marcadores `BKL-016 remote structural checks passed` e `BKL-016 database and RLS checks passed` foram atingidos. As fixtures usaram transação com `ROLLBACK`; o inspetor reportou zero linhas estimadas nas 13 tabelas. Foram validados `anon`, usuário sem perfil, support, operations, auditor, admin, schema privado, integridades cliente/produto/operação/evidência, snapshot de oferta e auditoria append-only.
 
-A primeira validação estrutural remota encontrou grant operacional inesperado para `anon` antes da suíte de fixtures. Foi preparada uma correção explícita para revogar permissões de `PUBLIC`/`anon` nas tabelas BKL-016, tanto na migration-base quanto em migration incremental para o projeto já aplicado. O dry-run listou somente `20260716_001_bkl016_revoke_anon_operational_grants.sql`; o hardening permanece sem aplicação até nova autorização.
+Storage estrutural passou: quatro buckets privados, ausência de policy pública e `anon` sem grants. A CLI experimental recusou upload remoto antes de criar objeto, então ciclo real de objeto e URL assinada permanecem pendentes. O painel confirmou plano Free sem backup agendado e sem PITR; dump manual somente de schema passou e foi removido, mas restauração continua não comprovada. KMS gerenciado com envelope encryption é a recomendação técnica, pendente de provedor, custo e aprovação. Esses itens, retenção/legal hold e revisão independente impedem concluir a BKL-016.
 
 ## Tarefas vivas paralelas
 
