@@ -102,6 +102,10 @@ insert into public.technical_operations (
 
 -- A evidencia nasce antes da proposta e ja pertence ao cliente e a operacao.
 -- O bytea abaixo e apenas a palavra SYNTHETIC codificada, sem dado real.
+-- Esta fixture permanece deliberadamente no formato legado para provar que a
+-- migration incremental de envelope nao quebra linhas existentes. Novas
+-- escritas devem usar todos os metadados validados pela migration 20260717;
+-- o seed nunca persiste KEK, DEK em claro ou wrapped DEK reutilizavel.
 insert into app_private.protected_payloads (
   id, client_id, operation_id, payload_type, ciphertext,
   encryption_key_ref, encryption_version, retention_until

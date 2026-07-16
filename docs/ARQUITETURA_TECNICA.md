@@ -105,6 +105,14 @@ Para criptografia de aplicação, a recomendação é KMS gerenciado com envelop
 
 O painel confirmou que o `cbn-dev` está no plano Free: não há backup agendado e PITR exige plano/add-on pago. Um dump manual somente de schema foi gerado, verificado sem dados ou credenciais e removido; restauração gerenciada e teste de recuperação continuam pendentes.
 
+### Contrato local de envelope preparado
+
+A implementação independente de provedor está em `scripts/kms-envelope/`. O conteúdo é cifrado no Gateway com AES-256-GCM, DEK aleatória por escrita, nonce de 12 bytes e AAD canônica sem PII. O adaptador KMS conhece somente wrap/unwrap, referência, rewrap e health check; a implementação local exige ambiente de teste e KEK efêmera em memória.
+
+A migration incremental `20260717_001_bkl016_envelope_metadata.sql` persiste ciphertext ou referência ao objeto, wrapped DEK, nonce, tag, algoritmo, versões do envelope/AAD/KEK e hash da AAD. O banco aceita formato legado completo ou envelope v1 completo e rejeita estados híbridos. Rotação de KEK troca apenas wrapped DEK e referência; rotação de DEK recriptografa em memória e só substitui o registro depois de produzir envelope válido.
+
+O Gateway é a única fronteira futura de criptografia. n8n solicita operações ao Gateway e Appsmith recebe apenas campos autorizados; nenhum deles recebe KEK, DEK ou credencial KMS. O runbook `docs/BKL-016_KMS_ENVELOPE_RUNBOOK.md` mantém a parada antes de provedor externo e a decisão de Guilherme ainda pendente.
+
 ## Sessões previstas
 
 - sessão CLT;

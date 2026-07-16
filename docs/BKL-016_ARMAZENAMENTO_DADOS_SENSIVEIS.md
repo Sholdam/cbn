@@ -1,6 +1,6 @@
 # BKL-016 — Armazenamento de dados sensíveis
 
-**Status:** Em andamento — migrations, banco/RLS e runtime real de objeto/URL assinada validados; KMS e restauração pendentes
+**Status:** Em andamento — banco/RLS, Storage e envelope local validados; provedor KMS, chave remota e restauração pendentes
 **Data:** 15/07/2026
 **Escopo desta entrega:** fundação local, dados sintéticos e políticas conservadoras
 
@@ -204,6 +204,16 @@ A comparação de KMS/cofre foi limitada a três famílias: KMS gerenciado com e
 
 O painel confirmou plano Free sem backup agendado e PITR disponível somente como adicional pago. Um dump manual somente de schema (51.078 bytes) foi validado sem dados ou credenciais e removido. Restauração continua não comprovada.
 
+## Envelope encryption validado localmente
+
+Na branch `codex/bkl-016-kms-envelope`, o contrato independente de provedor passou a usar `AES-256-GCM`, DEK aleatória de 32 bytes por gravação, nonce aleatório de 12 bytes, tag de 16 bytes e AAD canônica vinculada a tipo, cliente, operação, proposta e, para arquivo, bucket/objeto. A KEK nunca entra no banco; a DEK só pode ser persistida embrulhada.
+
+A migration incremental `20260717_001_bkl016_envelope_metadata.sql` adiciona a `protected_payloads` e `protected_file_refs` algoritmo/versão do envelope, wrapped DEK, nonce, tag, versão/hash da AAD e versão da referência de chave. Constraints permitem linha inteiramente legada ou envelope v1 completo, nunca mistura parcial. O rollback recusa remover metadados quando existir envelope novo.
+
+O adaptador local é exclusivo de teste, não possui SDK/rede, exige duas confirmações de ambiente e gera KEK efêmera em memória. Os testes cobrem round-trip, aleatoriedade, AAD, adulteração, versões, rotação de KEK por rewrap, rotação de DEK por recriptografia, recuperação após falha e ausência de material sensível na saída. O procedimento e a matriz de até três caminhos estão em `docs/BKL-016_KMS_ENVELOPE_RUNBOOK.md`.
+
+Nenhum provedor foi autenticado e nenhuma chave real foi criada. O gate humano ocorre antes de login, billing, API KMS, Vault ou variável Railway. A direção preliminar é avaliar primeiro KMS gerenciado, mas a decisão depende de Guilherme e a BKL-016 permanece **Em andamento**.
+
 ## Riscos restantes
 
 ### Runtime de Storage validado
@@ -214,7 +224,7 @@ O preflight sem credencial passou, reconciliando branch, `origin/main`, vínculo
 
 Após o gate humano, o runtime real foi executado com credencial em entrada oculta e somente no processo local. O upload sintético teve 94 bytes; o acesso anônimo retornou `4xx`; o download anterior à expiração preservou o SHA-256; a URL nominal de 30 segundos retornou `4xx` após 36 segundos. A varredura local passou, o objeto foi removido, a listagem recursiva final encontrou zero objetos e a revalidação SQL terminou `complete/passed`. A URL e a credencial não foram impressas ou persistidas. Produção, n8n, Appsmith, usuários Auth e dados reais não foram acessados.
 
-- KMS/cofre, rotação, recuperação e provedor não foram aprovados;
+- provedor KMS, custo, identidade de workload, rotação/recuperação remotas e chave real não foram aprovados;
 - prazos legais de retenção e legal hold precisam de validação;
 - policies de objetos Storage continuam deliberadamente ausentes;
 - plano Free não possui backup/PITR gerenciado; restauração ainda não foi testada;

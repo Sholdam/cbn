@@ -184,6 +184,16 @@ Foi criada a branch `codex/bkl-016-storage-runtime` a partir da `main` atualizad
 
 Os 9 testes negativos locais, o validador estático e o preflight remoto sanitizado passaram. Após o gate humano, o ciclo real aprovou upload sintético de 94 bytes, negação anônima `4xx`, hash antes da expiração, falha `4xx` após 36 segundos para TTL de 30 segundos, varredura sem vazamento, limpeza e revalidação SQL `complete/passed`. A listagem recursiva final do bucket encontrou zero objetos. Nenhuma URL, credencial, fixture ou usuário Auth persistiu. KMS/cofre, restauração, retenção/legal hold, policies finais e revisão independente continuam abertos, logo a BKL-016 permanece **Em andamento**.
 
+### Checkpoint de KMS/envelope local — 15/07/2026
+
+Status permanece: **Em andamento**.
+
+Foi preparado um contrato KMS sem SDK cloud, adaptador estritamente local e serviço AES-256-GCM com DEK/nonce únicos, AAD canônica e falha fechada. A migration incremental `20260717` acrescenta metadados completos e constraints de coerência a payloads/arquivos protegidos, preserva linhas legadas e possui rollback que recusa perda de envelopes novos.
+
+Os testes sintéticos cobrem round-trip, plaintext vazio, aleatoriedade, troca de contexto, adulteração de todos os componentes, versões inválidas, rewrap de KEK, rotação completa de DEK, recuperação em falha e saída segura. A matriz oficial compara KMS gerenciado, Vault Transit e cofre de credenciais com envelope no Gateway. A recomendação preliminar é avaliar KMS gerenciado, sem escolha automática.
+
+**Gate aberto:** Guilherme ainda precisa aprovar provedor, região, custo, identidade mínima, auditoria, recuperação e retenção de versões. É proibido autenticar, ativar billing/API, criar/importar chave ou gravar segredo externo antes dessa decisão. Restauração, retenção/legal hold, policies finais e revisão independente também continuam pendentes.
+
 ## Tarefas vivas paralelas
 
 - BKL-007 — validação regulatória e operacional;

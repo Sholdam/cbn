@@ -1,13 +1,14 @@
 {
-  "name": "cbn-bkl016-storage-runtime-scripts",
+  "name": "cbn-bkl016-validation-scripts",
   "private": true,
   "type": "module",
   "engines": {
     "node": ">=22.0.0"
   },
   "scripts": {
-    "test": "node --test supabase-storage-runtime-test.test.mjs",
-    "test:storage-runtime": "node --test supabase-storage-runtime-test.test.mjs"
+    "test": "node --test supabase-storage-runtime-test.test.mjs kms-envelope/envelope-service.test.mjs",
+    "test:storage-runtime": "node --test supabase-storage-runtime-test.test.mjs",
+    "test:kms-envelope": "node --test kms-envelope/envelope-service.test.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.110.6"
