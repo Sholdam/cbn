@@ -477,6 +477,55 @@ if (-not (Test-Path -LiteralPath $grantHardeningPath -PathType Leaf)) {
   }
 }
 
+$backupRuntimePath = 'scripts\backup-restore\backup-restore-runtime.mjs'
+$backupRecoveryPath = 'scripts\backup-restore\backup-recovery.mjs'
+$backupRecoveryTestsPath = 'scripts\backup-restore\backup-recovery.test.mjs'
+
+foreach ($backupPath in @($backupRuntimePath, $backupRecoveryPath, $backupRecoveryTestsPath)) {
+  if (-not (Test-Path -LiteralPath $backupPath -PathType Leaf)) {
+    $failures.Add("Artefato de backup/restauracao ausente: $backupPath")
+  }
+}
+
+if (Test-Path -LiteralPath $backupRuntimePath) {
+  $backupRuntime = Get-Content -Raw -LiteralPath $backupRuntimePath
+  foreach ($requiredBackupControl in @(
+    'codex/bkl-016-backup-restore',
+    'synthetic-local-only',
+    'supabase_admin',
+    "'stop', '--no-backup'",
+    'BKL-016 synthetic schema backup passed',
+    'BKL-016 synthetic data restore passed',
+    'BKL-016 synthetic Storage restore passed',
+    'BKL-016 envelope recovery passed',
+    'BKL-016 missing KEK version failed closed',
+    'BKL-016 tamper detection passed',
+    'BKL-016 safe rollback refusal passed',
+    'BKL-016 backup and restore runtime passed'
+  )) {
+    if ($backupRuntime -notmatch [regex]::Escape($requiredBackupControl)) {
+      $failures.Add("Controle de backup/restauracao ausente: $requiredBackupControl")
+    }
+  }
+  if ($backupRuntime -match '(?i)--linked|supabase\s+link|db\s+push') {
+    $failures.Add('Runtime de backup/restauracao contem comando remoto proibido.')
+  }
+}
+
+if (Test-Path -LiteralPath $backupRecoveryTestsPath) {
+  $backupRecoveryTests = Get-Content -Raw -LiteralPath $backupRecoveryTestsPath
+  foreach ($requiredRecoveryTest in @(
+    'key_version_unavailable',
+    'envelope_authentication_failed',
+    'backup_artifact_sensitive_content',
+    'artefato temporario e removido integralmente'
+  )) {
+    if ($backupRecoveryTests -notmatch [regex]::Escape($requiredRecoveryTest)) {
+      $failures.Add("Teste de recuperacao ausente: $requiredRecoveryTest")
+    }
+  }
+}
+
 if ($failures.Count -gt 0) {
   $failures | ForEach-Object { Write-Error $_ }
   exit 1

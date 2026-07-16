@@ -1,7 +1,7 @@
 # BKL-016 — Armazenamento de dados sensíveis
 
-**Status:** Em andamento — banco/RLS, Storage e envelope local validados; provedor KMS, chave remota e restauração pendentes
-**Data:** 15/07/2026
+**Status:** Em andamento — banco/RLS, Storage, envelope e restauração sintética local validados; provedor KMS/chave remota, retenção e revisão independente pendentes
+**Data:** 16/07/2026
 **Escopo desta entrega:** fundação local, dados sintéticos e políticas conservadoras
 
 ## Decisão de arquitetura
@@ -202,7 +202,7 @@ Os quatro buckets foram listados e a suíte confirmou que são privados, sem pol
 
 A comparação de KMS/cofre foi limitada a três famílias: KMS gerenciado com envelope encryption, [HashiCorp Vault Transit](https://developer.hashicorp.com/vault/docs/secrets/transit) e serviço de secrets com criptografia no Gateway. Recomenda-se KMS gerenciado com DEK por gravação/objeto e KEK externa, conforme o modelo de [envelope encryption](https://docs.cloud.google.com/kms/docs/envelope-encryption); secrets manager simples fica apenas para credenciais. Provedor, custo e criação de chave continuam pendentes de aprovação.
 
-O painel confirmou plano Free sem backup agendado e PITR disponível somente como adicional pago. Um dump manual somente de schema (51.078 bytes) foi validado sem dados ou credenciais e removido. Restauração continua não comprovada.
+O painel confirmou plano Free sem backup agendado e PITR disponível somente como adicional pago. Um dump manual somente de schema (51.078 bytes) foi validado sem dados ou credenciais e removido. A lacuna de restauração remota/gerenciada permanece, mas a recuperação sintética local foi posteriormente comprovada conforme a seção abaixo.
 
 ## Envelope encryption validado localmente
 
@@ -213,6 +213,24 @@ A migration incremental `20260717_001_bkl016_envelope_metadata.sql` adiciona a `
 O adaptador local é exclusivo de teste, não possui SDK/rede, exige duas confirmações de ambiente e gera KEK efêmera em memória. Os testes cobrem round-trip, aleatoriedade, AAD, adulteração, versões, rotação de KEK por rewrap, rotação de DEK por recriptografia, recuperação após falha e ausência de material sensível na saída. O procedimento e a matriz de até três caminhos estão em `docs/BKL-016_KMS_ENVELOPE_RUNBOOK.md`.
 
 Nenhum provedor foi autenticado e nenhuma chave real foi criada. O gate humano ocorre antes de login, billing, API KMS, Vault ou variável Railway. A direção preliminar é avaliar primeiro KMS gerenciado, mas a decisão depende de Guilherme e a BKL-016 permanece **Em andamento**.
+
+## Backup, restauração e recuperação sintética local
+
+Em 16/07/2026, a branch `codex/bkl-016-backup-restore` executou uma prova completa somente na stack local descartável. O schema foi preservado em dump de verificação e reconstruído pelas migrations versionadas; os dados BKL-016 tiveram dump separado e foram restaurados depois de novo `db reset`. Um objeto sintético do bucket privado temporário foi copiado separadamente e restaurado com SHA-256 idêntico.
+
+O payload protegido foi convertido em envelope v1 com KEK local efêmera na versão 2. Depois da restauração do banco, o envelope foi recuperado com a KEK correta. Um segundo adaptador sem a versão 2 falhou fechado em `key_version_unavailable`; ciphertext adulterado falhou em autenticação; o rollback incremental recusou remover metadados enquanto o envelope existia.
+
+As suítes terminaram com:
+
+```text
+BKL-016 database and RLS checks passed
+BKL-016 envelope database constraints passed
+BKL-016 backup and restore runtime passed
+```
+
+O RTO local observado na execução final foi **105,08 segundos**. Isso é baseline técnico, não SLA. O RPO do teste foi snapshot exato; o RPO operacional continuará igual ao intervalo futuro entre backups bem-sucedidos até existir PITR/backup gerenciado aprovado.
+
+Banco, Storage e KMS são dependências independentes: restaurar somente o banco não recupera arquivos; restaurar banco/arquivos sem a versão da KEK conserva ciphertext, mas não recupera plaintext. Dumps, manifesto, objeto, KEK e stack foram removidos no `finally`. Nenhum comando `--linked`, credencial externa, nuvem ou produção foi usado.
 
 ## Riscos restantes
 
@@ -227,7 +245,7 @@ Após o gate humano, o runtime real foi executado com credencial em entrada ocul
 - provedor KMS, custo, identidade de workload, rotação/recuperação remotas e chave real não foram aprovados;
 - prazos legais de retenção e legal hold precisam de validação;
 - policies de objetos Storage continuam deliberadamente ausentes;
-- plano Free não possui backup/PITR gerenciado; restauração ainda não foi testada;
+- plano Free não possui backup/PITR gerenciado; restauração sintética local passou, mas restauração gerenciada/remota continua pendente;
 - rotina de anonimização/exclusão ainda não foi implementada;
 - funções e grants devem passar por revisão independente antes da aplicação;
 - BKL-018 e BKL-020 completarão autenticação/perfis e auditoria canônica.
@@ -243,7 +261,8 @@ Após o gate humano, o runtime real foi executado com credencial em entrada ocul
 - [x] buckets confirmados como privados, sem policy pública e sem objeto persistente;
 - [x] URLs assinadas expiram e não aparecem em logs;
 - [ ] KMS/cofre e rotação aprovados;
-- [ ] retenção, anonimização, legal hold e backup aprovados;
+- [ ] retenção, anonimização, legal hold e estratégia de backup de produção aprovados;
+- [x] backup/restauração sintética local com banco, Storage e envelope comprovados;
 - [x] varredura de segredos e dados pessoais aprovada;
 - [x] documentação e handoff revisados;
 - [ ] BKL-016 somente então avaliada para conclusão.

@@ -6,9 +6,11 @@
     "node": ">=22.0.0"
   },
   "scripts": {
-    "test": "node --test supabase-storage-runtime-test.test.mjs kms-envelope/envelope-service.test.mjs",
+    "test": "node --test supabase-storage-runtime-test.test.mjs kms-envelope/envelope-service.test.mjs backup-restore/backup-recovery.test.mjs",
     "test:storage-runtime": "node --test supabase-storage-runtime-test.test.mjs",
-    "test:kms-envelope": "node --test kms-envelope/envelope-service.test.mjs"
+    "test:kms-envelope": "node --test kms-envelope/envelope-service.test.mjs",
+    "test:backup-recovery": "node --test backup-restore/backup-recovery.test.mjs",
+    "run:backup-restore-local": "node backup-restore/backup-restore-runtime.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.110.6"

@@ -194,6 +194,24 @@ Os testes sintéticos cobrem round-trip, plaintext vazio, aleatoriedade, troca d
 
 **Gate aberto:** Guilherme ainda precisa aprovar provedor, região, custo, identidade mínima, auditoria, recuperação e retenção de versões. É proibido autenticar, ativar billing/API, criar/importar chave ou gravar segredo externo antes dessa decisão. Restauração, retenção/legal hold, policies finais e revisão independente também continuam pendentes.
 
+### Checkpoint de backup/restauração sintética — 16/07/2026
+
+Status da fase: **Concluída localmente**. Status da BKL-016 geral: **Em andamento**.
+
+- schema preservado em dump de verificação e reconstruído por migrations;
+- dados exclusivamente sintéticos restaurados de dump separado;
+- objeto do Storage privado restaurado com SHA-256 idêntico;
+- envelope recuperado com KEK local efêmera correta;
+- versão de KEK ausente falhou fechada;
+- ciphertext adulterado falhou em autenticação;
+- rollback incremental recusou perda dos metadados do envelope;
+- suíte RLS e constraints do envelope passaram após a restauração;
+- RTO local final de 105,08 s; RPO sintético de snapshot exato;
+- dumps, manifesto, objeto, KEK e stack removidos ao final;
+- nenhuma conexão remota, cloud, billing, credencial externa, dado real ou produção.
+
+Continuam pendentes: KMS real (bloqueado por faturamento), política de backup de produção/PITR, retenção/legal hold, policies finais e revisão independente.
+
 ## Tarefas vivas paralelas
 
 - BKL-007 — validação regulatória e operacional;
