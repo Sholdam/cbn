@@ -140,7 +140,7 @@ reset role;
 `)
     runtimeStage = 'rollback_guard'
     const refused = psqlFile(
-      'supabase/rollback/20260720_001_bkl016_backend_identity_down.sql',
+      'supabase/rollback/20260721_001_bkl016_backend_identity_audit_down.sql',
       { allowFailure: true }
     )
     if (refused.status === 0 || !/existe auditoria indispensavel/i.test(String(refused.stderr))) {
@@ -150,7 +150,9 @@ reset role;
     // Base limpa: rollback funciona e nao amplia PUBLIC/anon/authenticated.
     runtimeStage = 'clean_reset'
     run('supabase', ['db', 'reset'])
-    runtimeStage = 'clean_rollback'
+    runtimeStage = 'clean_audit_rollback'
+    psqlFile('supabase/rollback/20260721_001_bkl016_backend_identity_audit_down.sql')
+    runtimeStage = 'clean_identity_rollback'
     psqlFile('supabase/rollback/20260720_001_bkl016_backend_identity_down.sql')
     const cleanCheck = psqlText(`
 do $$

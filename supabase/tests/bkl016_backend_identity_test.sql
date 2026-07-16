@@ -244,6 +244,10 @@ begin
     array['c3000000-0000-4000-8000-000000000001'::uuid], 'identity-v1'
   );
   if processed <> 1 then raise exception 'operador nao anonimizou fixture permitida'; end if;
+  processed := app_private.retention_anonymize_clients(
+    array['c3000000-0000-4000-8000-000000000001'::uuid], 'identity-v1'
+  );
+  if processed <> 0 then raise exception 'segunda anonimizacao alterou fixture'; end if;
   perform app_private.retention_apply_legal_hold(
     'c3000000-0000-4000-8000-000000000002', 'SYNTHETIC_REVIEW', 'identity-v1'
   );
@@ -372,6 +376,15 @@ begin
     'synthetic-local-explicit-ids', 'identity-v1'
   );
   if inventory_count <> 1 then raise exception 'operador nao preparou inventario explicito'; end if;
+  perform app_private.retention_cancel_deletion(
+    'c3000000-0000-4000-8000-000000000004',
+    'SYNTHETIC_RETRY', 'identity-v1'
+  );
+  select count(*) into inventory_count from app_private.retention_prepare_deletion(
+    array['c3000000-0000-4000-8000-000000000004'::uuid],
+    'synthetic-local-explicit-ids', 'identity-v1'
+  );
+  if inventory_count <> 1 then raise exception 'operador nao repreparou inventario explicito'; end if;
 end
 $$;
 reset role;
@@ -393,6 +406,8 @@ $$;
 reset role;
 
 do $$
+declare
+  expected record;
 begin
   if exists (
     select 1 from app_private.protected_payloads
@@ -409,15 +424,84 @@ begin
       and metadata::text ~* '(https?://|[0-9]{11}|cpf|telefone|address|password|token|secret|session|ciphertext)'
   ) then raise exception 'auditoria tecnica contem dado proibido'; end if;
 
+  for expected in
+    select * from (values
+      ('CBN_GATEWAY_BACKEND', 'GATEWAY_OPERATION_CREATED'),
+      ('CBN_RETENTION_OPERATOR', 'RETENTION_EVALUATED_BY_OPERATOR'),
+      ('CBN_RETENTION_OPERATOR', 'CLIENT_ANONYMIZED_BY_OPERATOR'),
+      ('CBN_RETENTION_OPERATOR', 'LEGAL_HOLD_APPLIED_BY_OPERATOR'),
+      ('CBN_RETENTION_OPERATOR', 'LEGAL_HOLD_REMOVAL_REQUESTED_BY_OPERATOR'),
+      ('CBN_RETENTION_OPERATOR', 'DELETION_PREPARED_BY_OPERATOR'),
+      ('CBN_RETENTION_OPERATOR', 'DELETION_CANCELLED_BY_OPERATOR'),
+      ('CBN_HOLD_REVIEWER', 'LEGAL_HOLD_REMOVAL_APPROVED_BY_REVIEWER'),
+      ('CBN_HOLD_REVIEWER', 'LEGAL_HOLD_REMOVAL_REJECTED_BY_REVIEWER'),
+      ('CBN_DELETION_EXECUTOR', 'DELETION_COMPLETED_BY_EXECUTOR')
+    ) as required_event(technical_role, event_type)
+  loop
+    if not exists (
+      select 1 from audit.events e
+      where e.event_type = expected.event_type
+        and e.metadata ->> 'technical_role' = expected.technical_role
+        and e.metadata ->> 'identity_model' = 'BKL016_BACKEND_IDENTITY_V1'
+        and e.metadata ? 'reason_code'
+        and e.metadata ? 'process_version'
+    ) then
+      raise exception 'evento de identidade ausente/incorreto: % %',
+        expected.technical_role, expected.event_type;
+    end if;
+  end loop;
+
+  if exists (
+    select 1 from audit.events
+    where metadata ->> 'identity_model' = 'BKL016_BACKEND_IDENTITY_V1'
+      and event_type = 'LEGAL_HOLD_REMOVAL_REJECTED'
+  ) then raise exception 'evento generico duplicou auditoria do revisor'; end if;
+
   if not exists (
     select 1 from audit.events
-    where metadata ->> 'technical_role' = 'CBN_GATEWAY_BACKEND'
-      and event_type = 'GATEWAY_OPERATION_CREATED'
+    where event_type = 'CLIENT_ANONYMIZED_BY_OPERATOR'
+      and metadata ->> 'technical_role' = 'CBN_RETENTION_OPERATOR'
+      and allowed = false
+      and metadata ->> 'reason_code' = 'NO_CHANGES'
+  ) then raise exception 'zero alteracoes foi registrado como sucesso'; end if;
+
+  if not exists (
+    select 1 from audit.events
+    where event_type = 'LEGAL_HOLD_REMOVAL_REJECTED_BY_REVIEWER'
+      and metadata ->> 'technical_role' = 'CBN_HOLD_REVIEWER'
+      and allowed = false
   ) or not exists (
     select 1 from audit.events
-    where metadata ->> 'technical_role' = 'CBN_HOLD_REVIEWER'
-      and event_type = 'LEGAL_HOLD_REMOVAL_REJECTED'
-  ) then raise exception 'identidade tecnica nao foi auditada'; end if;
+    where event_type = 'LEGAL_HOLD_REMOVAL_APPROVED_BY_REVIEWER'
+      and metadata ->> 'technical_role' = 'CBN_HOLD_REVIEWER'
+      and allowed = true
+  ) or not exists (
+    select 1 from audit.events
+    where event_type = 'DELETION_COMPLETED_BY_EXECUTOR'
+      and metadata ->> 'technical_role' = 'CBN_DELETION_EXECUTOR'
+      and allowed = true
+  ) then raise exception 'resultado allowed incorreto na auditoria de identidade'; end if;
+
+  if (select count(*) from audit.events
+      where event_type = 'RETENTION_EVALUATED_BY_OPERATOR') <> 1
+     or (select count(*) from audit.events
+      where event_type = 'CLIENT_ANONYMIZED_BY_OPERATOR') <> 2
+     or (select count(*) from audit.events
+      where event_type = 'LEGAL_HOLD_APPLIED_BY_OPERATOR') <> 2
+     or (select count(*) from audit.events
+      where event_type = 'LEGAL_HOLD_REMOVAL_REQUESTED_BY_OPERATOR') <> 2
+     or (select count(*) from audit.events
+      where event_type = 'DELETION_PREPARED_BY_OPERATOR') <> 2
+     or (select count(*) from audit.events
+      where event_type = 'DELETION_CANCELLED_BY_OPERATOR') <> 1
+     or (select count(*) from audit.events
+      where event_type = 'LEGAL_HOLD_REMOVAL_APPROVED_BY_REVIEWER') <> 1
+     or (select count(*) from audit.events
+      where event_type = 'LEGAL_HOLD_REMOVAL_REJECTED_BY_REVIEWER') <> 1
+     or (select count(*) from audit.events
+      where event_type = 'DELETION_COMPLETED_BY_EXECUTOR') <> 1 then
+    raise exception 'auditoria duplicada ou ausente apos falha tecnica';
+  end if;
 end
 $$;
 

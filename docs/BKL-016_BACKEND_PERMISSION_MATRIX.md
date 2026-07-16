@@ -63,3 +63,11 @@ concedidas a nenhum dos papéis operacionais. O owner continua sendo a identidad
 técnica que executa migrations. A associação administrativa automática do
 Supabase local permite que `postgres` use `SET ROLE` durante testes; ela não é
 uma credencial operacional e é removida pelo rollback antes de apagar os papéis.
+
+## Auditoria por identidade
+
+A migration `20260721_001` não altera nenhum item da matriz. Os mesmos wrappers
+registram eventos específicos para `CBN_RETENTION_OPERATOR`,
+`CBN_HOLD_REVIEWER` e `CBN_DELETION_EXECUTOR`, além dos eventos já existentes do
+Gateway. Os papéis continuam sem `EXECUTE` em
+`audit.record_backend_identity_event(...)` e sem acesso direto a `audit.events`.

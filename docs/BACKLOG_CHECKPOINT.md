@@ -1,5 +1,14 @@
 # Backlog — checkpoint de 15/07/2026
 
+## BKL-016 — auditoria localizada da identidade (16/07/2026)
+
+- Migration incremental `20260721_001` registra identidade técnica do operador
+  de retenção, revisor de hold e executor de descarte em eventos específicos.
+- Rollback incremental falha fechado após qualquer evento do modelo
+  `BKL016_BACKEND_IDENTITY_V1` e funciona antes do rollback-base em banco limpo.
+- Matriz de privilégios e grants não foram ampliados.
+- Status: **Em andamento**, sem merge, deploy ou conexão remota.
+
 ## BKL-016 — identidade mínima do backend (16/07/2026)
 
 - Migration incremental `20260720_001` cria quatro papéis sem LOGIN e sem

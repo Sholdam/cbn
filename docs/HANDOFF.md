@@ -1,5 +1,15 @@
 # Handoff — CBN Crédito
 
+## Correção localizada da auditoria de identidade — 16/07/2026
+
+- Migration incremental `20260721_001` completa a auditoria dos wrappers de
+  retenção, revisão de hold e conclusão de descarte no modelo
+  `BKL016_BACKEND_IDENTITY_V1`.
+- Papéis, grants e matriz de permissões permanecem inalterados; a função interna
+  de auditoria não foi concedida aos papéis operacionais.
+- O teste focado de identidade foi aprovado antes da regressão completa.
+- Nenhuma conexão remota, deploy ou merge faz parte desta correção.
+
 ## Identidade mínima do backend — 16/07/2026
 
 - Branch `codex/bkl-016-backend-identity` preparada, sem merge ou aplicação remota.

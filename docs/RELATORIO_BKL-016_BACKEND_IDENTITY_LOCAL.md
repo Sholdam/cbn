@@ -8,6 +8,13 @@
 
 ## Entrega
 
+- correção incremental `20260721_001`, sem alteração da migration-base;
+- eventos específicos de identidade para Gateway, operador, revisor nos caminhos
+  de aprovação/rejeição e executor de descarte;
+- ausência de evento de sucesso em negação, zero alterações ou falha técnica;
+- rollback incremental fail-closed antes do rollback-base;
+- matriz de permissões e grants preservados;
+
 - quatro papéis PostgreSQL `NOLOGIN` e sem atributos administrativos;
 - Gateway, retenção, revisão de hold e conclusão de descarte separados;
 - nenhum grant direto em tabelas públicas, privadas ou de auditoria;
@@ -18,6 +25,27 @@
 - gate local que recusa branch, stack, alvo, confirmação e caminhos inseguros.
 
 ## Validações executadas
+
+### Correção localizada de auditoria
+
+- teste SQL focado de identidade: aprovado;
+- teste focado comprova `allowed=false` em zero alterações e contagens exatas,
+  sem evento extra após falhas técnicas;
+- gate Node focado: **8/8 testes aprovados**;
+- suíte Node completa BKL-016: **44/44 testes aprovados**;
+- runtime SQL completo foi executado uma vez e encerrou removendo a stack local;
+  o invólucro do terminal atingiu seu timeout antes de capturar a linha final;
+- verificação focada posterior comprovou explicitamente a recusa do rollback
+  após evento de identidade e o rollback limpo `20260721_001` → `20260720_001`;
+- `git diff --check`: aprovado;
+- `validate-bkl016.ps1`: aprovado;
+- `telegram-gateway/` e `.env.example`: inalterados;
+- nenhuma conexão remota, credencial externa, dado real, deploy ou merge.
+
+O nome inicialmente sugerido `20260720_002` não foi usado porque a CLI do
+Supabase interpreta somente o trecho anterior ao primeiro `_` como versão e
+detectou colisão com `20260720_001`. A migration permaneceu incremental e recebeu
+a versão única `20260721_001`, sem modificar o histórico aplicado.
 
 - Node.js: **44/44 testes aprovados**, incluindo Storage, envelope, recuperação,
   retenção e os 8 testes novos do gate de identidade;

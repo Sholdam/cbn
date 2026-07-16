@@ -1,5 +1,14 @@
 # BKL-016 — Runbook de identidade mínima do backend
 
+## Auditoria localizada dos wrappers
+
+A migration incremental `20260721_001_bkl016_backend_identity_audit.sql`
+mantém papéis, grants e matriz inalterados e registra o modelo
+`BKL016_BACKEND_IDENTITY_V1` somente depois do resultado do wrapper controlado.
+Negações esperadas recebem `allowed=false`; falhas técnicas revertem a transação
+e não produzem evento enganoso. O rollback incremental deve ser executado antes
+do rollback `20260720_001` e recusa qualquer evento indispensável desse modelo.
+
 ## Estado e limites
 
 Este runbook valida somente papéis PostgreSQL `NOLOGIN` em Supabase local.
@@ -33,7 +42,8 @@ O runtime:
 1. recusa branch, confirmação, alvo ou stack incompatível;
 2. inicia Supabase local e executa `supabase db reset`;
 3. roda as suítes de banco, envelope, retenção e identidade;
-4. cria auditoria sintética por um wrapper e comprova que o rollback recusa;
+4. cria auditoria sintética pelo Gateway, operador, revisor e executor e comprova
+   que o rollback incremental recusa;
 5. recria uma base limpa e comprova o rollback destrutivo permitido;
 6. verifica que papéis/wrappers sumiram sem ampliar `anon`/`authenticated`;
 7. reaplica todas as migrations e repete a suíte de identidade;
@@ -66,7 +76,9 @@ Até essa tarefa futura existir:
 
 ## Rollback
 
-O rollback falha fechado se houver auditoria do novo modelo, retenção/hold/
+O rollback `20260721_001` falha fechado se houver qualquer auditoria do modelo
+`BKL016_BACKEND_IDENTITY_V1`. Depois dele, o rollback `20260720_001` falha
+fechado se houver retenção/hold/
 anonimização/descarte indispensável, membership inesperado ou objeto pertencente
 a papel operacional. Em base limpa ele revoga funções, remove wrappers, revoga a
 associação administrativa local e apaga os quatro papéis. Ele nunca concede
