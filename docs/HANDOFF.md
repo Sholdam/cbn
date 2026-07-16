@@ -1,6 +1,6 @@
 # Handoff — CBN Crédito
 
-**Atualizado em:** 15/07/2026, após preparação segura da fase remota de desenvolvimento da BKL-016
+**Atualizado em:** 15/07/2026, após validação do runtime real de Storage da BKL-016
 **Projeto:** CBN — operação autônoma de varredura e venda de crédito  
 **Escopo inicial:** FGTS + Crédito do Trabalhador (CLT)
 
@@ -236,15 +236,15 @@ Após uma terceira autorização explícita, `supabase db push --linked` aplicou
 
 Depois da correção, a validação estrutural e a suíte transacional completa passaram. RLS e integridades foram exercitadas com claims/papéis sintéticos; todas as fixtures terminaram em `ROLLBACK`, nenhum usuário Auth foi criado e as 13 tabelas ficaram com zero linhas estimadas. Os buckets privados e a ausência de policy pública foram confirmados.
 
-**Ponto exato de retomada:** a CLI experimental de Storage recusou upload antes de criar o objeto, então ciclo real de objeto/URL assinada segue pendente. O plano Free não oferece backup agendado nem PITR; dump manual somente de schema passou, mas restauração não foi comprovada. KMS gerenciado com envelope encryption é a recomendação técnica, ainda pendente de provedor/aprovação. A BKL-016 continua **Em andamento**, sem integração n8n/Appsmith e sem alteração em produção.
+O primeiro upload pela CLI experimental foi recusado antes de criar objeto; essa lacuna foi posteriormente fechada pelo runtime backend validado abaixo. O plano Free não oferece backup agendado nem PITR; dump manual somente de schema passou, mas restauração não foi comprovada. KMS gerenciado com envelope encryption é a recomendação técnica, ainda pendente de provedor/aprovação. A BKL-016 continua **Em andamento**, sem integração n8n/Appsmith e sem alteração em produção.
 
-### Runtime de Storage preparado — parada atual
+### Runtime de Storage validado
 
 A branch `codex/bkl-016-storage-runtime` parte da `main` atualizada e contém preflight reforçado, wrapper PowerShell com entrada oculta e teste Node.js backend usando `@supabase/supabase-js` `2.110.6`. O fluxo está limitado ao bucket temporário, a objeto UUID/conteúdo sintético em memória, URL assinada nominal de 30 segundos, hash SHA-256, negação anônima, varredura de vazamento e limpeza em `finally`.
 
-Os 9 testes negativos locais e o preflight remoto sanitizado passaram; migrations foram conciliadas e o bucket temporário foi localizado sem escrita ou backend credential. **Ponto exato de retomada:** o operador deve confirmar que obteve no painel de `cbn-dev` uma chave secreta exclusiva de backend, sem revelar o valor. Depois, executar o wrapper com `-PromptForBackendCredential`; ele usa a variável efêmera `CBN_SUPABASE_BACKEND_KEY` apenas no processo e a limpa ao final. Não criar `.env` nem passar chave em argumento ou chat.
+Os 9 testes negativos locais e o preflight remoto sanitizado passaram. Após o gate humano, o ciclo real aprovou upload de 94 bytes, negação anônima `4xx`, SHA-256 antes da expiração, falha `4xx` após 36 segundos para TTL de 30 segundos, varredura local, limpeza e revalidação SQL `complete/passed`. A listagem recursiva final encontrou zero objetos; chave, senha e URL não foram impressas nem persistidas.
 
-Nenhum dos seis marcadores finais do runtime foi atingido ainda. Não houve objeto remoto, URL assinada, produção, n8n, Appsmith, usuário Auth, fixture persistente ou dado real nesta preparação. KMS, restauração, retenção/legal hold, policies finais e revisão independente continuam pendentes; BKL-016 segue **Em andamento**.
+Os seis marcadores finais do runtime foram atingidos. **Ponto exato de retomada:** decidir KMS/cofre e rotação, comprovar restauração, definir retenção/legal hold e revisar policies finais. Não houve produção, n8n, Appsmith, usuário Auth, fixture persistente ou dado real. BKL-016 segue **Em andamento** até essas pendências e revisão independente.
 
 ## Tarefas vivas paralelas
 

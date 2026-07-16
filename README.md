@@ -15,7 +15,7 @@ A decisão técnica está registrada em [`docs/ARQUITETURA_TECNICA.md`](docs/ARQ
 
 ## Próximo ponto de retomada
 
-A **BKL-016** teve migration, seed, rollback e testes de RLS validados em Supabase local descartável. No `cbn-dev`, a migration-base e o hardening corretivo de grants foram aplicados sem seed; a validação remota estrutural e a suíte transacional de banco/RLS passaram, com zero linhas estimadas ao final. O runtime backend de objeto/URL assinada está preparado e parado no gate anterior à credencial; o ciclo real, restauração, retenção e aprovação do KMS permanecem pendentes.
+A **BKL-016** teve migration, seed, rollback e testes de RLS validados em Supabase local descartável. No `cbn-dev`, migrations e suíte transacional passaram sem seed ou fixture persistente. O runtime real de Storage também passou: acesso anônimo negado, URL de 30 segundos expirada após 36 segundos, objeto removido e validação SQL repetida. Restauração, retenção e aprovação do KMS permanecem pendentes.
 
 BKL-012 e BKL-013 permanecem tarefas vivas paralelas. Nenhuma proposta real pode ser confirmada sem autorização expressa e evidência protegida válida.
 

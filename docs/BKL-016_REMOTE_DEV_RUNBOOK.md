@@ -1,6 +1,6 @@
 # BKL-016 — Runbook de validação remota em desenvolvimento
 
-**Status:** migration corretiva e validação SQL concluídas; runtime de objeto/URL assinada preparado e parado no gate de credencial; KMS e restauração pendentes
+**Status:** migration corretiva, validação SQL e runtime real de objeto/URL assinada concluídos; KMS e restauração pendentes
 **Data:** 15/07/2026
 **Ambiente permitido:** projeto Supabase exclusivo de desenvolvimento, vazio e sem dados reais
 
@@ -169,7 +169,7 @@ O validador cobre `anon`, authenticated sem perfil, support, operations, auditor
 
 ## Storage sintético
 
-### Runtime backend preparado e ainda não executado
+### Runtime backend executado
 
 O runtime usa `scripts/supabase-storage-runtime-run.ps1`, que encadeia o preflight, o teste Node.js e a validação SQL remota já existente. A dependência oficial `@supabase/supabase-js` está isolada em `scripts/package.json` e fixada em `2.110.6`; ela não altera o aplicativo principal.
 
@@ -193,7 +193,7 @@ powershell.exe -ExecutionPolicy Bypass -File .\scripts\supabase-storage-runtime-
 
 O runtime usa objeto UUID e conteúdo `BKL016_STORAGE_SYNTHETIC_ONLY` acrescido de aleatoriedade, tudo em memória. A URL assinada nominal é de 30 segundos, com margem padrão de 5 segundos e tolerância total máxima de 15 segundos. Só serão documentados tempo observado, classe HTTP, tamanho e SHA-256; URL, token e identificadores ficam omitidos.
 
-O preflight sanitizado foi executado e passou: migrations esperadas conciliadas e bucket temporário localizado, sem credencial backend, escrita ou identificador exposto. Nesta etapa nenhum marcador final de runtime foi atingido, pois o gate não foi atravessado. Após autorização e execução, os seis marcadores exigidos só podem ser registrados se o download antes da expiração, a negação depois dela, a varredura sem vazamento, a remoção e a revalidação SQL forem todos aprovados.
+O preflight sanitizado passou com migrations conciliadas e bucket temporário localizado. Após o gate humano, os seis marcadores finais foram atingidos: upload de 94 bytes, acesso anônimo `4xx`, download pré-expiração com SHA-256 idêntico, falha `4xx` após 36 segundos para TTL nominal de 30 segundos, limpeza confirmada e revalidação SQL `complete/passed`. A listagem recursiva final encontrou zero objetos. URL assinada, chave, senha e project-ref permaneceram omitidos.
 
 Se for necessário validar URL assinada, criar somente um objeto descartável com conteúdo inerte, nome UUID/hash e bucket privado. Não persistir a URL. Registrar bucket e nome exatos no manifesto local de limpeza antes do upload.
 
