@@ -1,5 +1,39 @@
 # Arquitetura Técnica — Gateway de Crédito CBN
 
+## Decisões após revisão de retenção
+
+- `CLIENT` é um escopo superior de legal hold; payloads e arquivos consultam esse
+  escopo dinamicamente, sem replicar o hold em cada linha.
+- O runtime reavalia o hold antes de remover o objeto e o banco reavalia novamente
+  no `complete`, reduzindo a janela de corrida.
+- Recusa de política é um resultado esperado e auditável, não uma exceção
+  transacional; falha técnica continua sendo exceção e nunca vira sucesso.
+- Anonimização é all-or-nothing: dependência com política própria bloqueia o lote.
+- Triggers impedem reidentificação após anonimização em dados sensíveis,
+  propostas, payloads, arquivos, interações e pendências.
+- Hold por operação não foi habilitado nesta fase.
+
+## Retenção e descarte controlado
+
+```text
+Política revisável (sem prazo legal embutido)
+                 ↓
+Controle privado por entidade
+        ┌────────┼────────┐
+        │        │        │
+   Legal hold  Anonimizar  Elegível para excluir
+        │        │                 ↓
+      bloqueia  remove PII   inventário explícito
+                                  ↓
+                         Storage comprova ausência
+                                  ↓
+                         banco marca DELETED
+```
+
+PostgreSQL e Storage não formam uma transação distribuída. A CBN usa preparação
+persistida (`DELETION_PENDING`), remoção do objeto, prova de ausência e conclusão
+do banco. Falhas não são convertidas em sucesso; permanecem reconciliáveis.
+
 ## Rota escolhida
 
 ### 1. API oficial Prospecta

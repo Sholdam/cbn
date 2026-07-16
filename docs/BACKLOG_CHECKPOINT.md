@@ -1,5 +1,29 @@
 # Backlog — checkpoint de 15/07/2026
 
+## BKL-016 — revisão corretiva de retenção (16/07/2026)
+
+Status: **Em andamento**.
+
+Bloqueadores corrigidos localmente: auditoria persistente de negações,
+anonimização fail-closed com inventário completo, prevenção de reidentificação,
+hold superior de cliente, revalidação entre prepare/complete e segregação entre
+solicitante/aprovador. Migration incremental `20260719_001`, rollback, quatro
+suítes SQL, 36 testes Node e runtime Storage aprovados.
+
+Não houve merge, deploy ou conexão remota.
+
+## BKL-016 — checkpoint de retenção e legal hold (16/07/2026)
+
+Status: **Em andamento**.
+
+Concluído localmente: migration incremental, política configurável, legal hold,
+anonimização idempotente, exclusão em duas fases, auditoria, Storage sintético,
+rollback fail-closed, restauração pós-anonimização e reaplicação.
+
+Pendente: aprovação jurídica de prazos/finalidades, KMS real bloqueado por
+faturamento, papel backend mínimo, execução em desenvolvimento remoto autorizada,
+reconciliação operacional e revisão técnica independente.
+
 ## Concluído anteriormente
 
 ### BKL-014 — Decidir a rota técnica da integração multiproduto
