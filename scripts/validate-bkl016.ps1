@@ -658,6 +658,152 @@ if (Test-Path -LiteralPath 'scripts\retention\retention-runtime.mjs') {
   }
 }
 
+$backendIdentityArtifacts = @(
+  'docs\PROMPT_CODEX_BKL-016_BACKEND_IDENTITY.md',
+  'docs\BKL-016_BACKEND_IDENTITY_RUNBOOK.md',
+  'docs\BKL-016_BACKEND_PERMISSION_MATRIX.md',
+  'docs\RELATORIO_BKL-016_BACKEND_IDENTITY_LOCAL.md',
+  'scripts\backend-identity\backend-identity-runtime.mjs',
+  'scripts\backend-identity\backend-identity-runtime.test.mjs',
+  'supabase\migrations\20260720_001_bkl016_backend_identity.sql',
+  'supabase\migrations\20260721_001_bkl016_backend_identity_audit.sql',
+  'supabase\rollback\20260720_001_bkl016_backend_identity_down.sql',
+  'supabase\rollback\20260721_001_bkl016_backend_identity_audit_down.sql',
+  'supabase\tests\bkl016_backend_identity_test.sql'
+)
+foreach ($artifact in $backendIdentityArtifacts) {
+  if (-not (Test-Path -LiteralPath $artifact -PathType Leaf)) {
+    $failures.Add("Artefato de identidade backend ausente: $artifact")
+  }
+}
+
+$backendIdentityMigrationPath = 'supabase\migrations\20260720_001_bkl016_backend_identity.sql'
+if (Test-Path -LiteralPath $backendIdentityMigrationPath) {
+  $backendIdentityMigration = Get-Content -Raw -LiteralPath $backendIdentityMigrationPath
+  foreach ($control in @(
+    'cbn_gateway_backend', 'cbn_retention_operator', 'cbn_hold_reviewer',
+    'cbn_deletion_executor',
+    'nologin nosuperuser nocreatedb nocreaterole noinherit noreplication nobypassrls',
+    'gateway_create_operation', 'gateway_update_operation_state',
+    'retention_anonymize_clients', 'retention_prepare_deletion',
+    'retention_request_hold_removal', 'hold_review_removal',
+    'retention_complete_deletion', 'record_backend_identity_event',
+    'BKL016_BACKEND_IDENTITY_V1', "set search_path = ''",
+    'from public, anon, authenticated'
+  )) {
+    if ($backendIdentityMigration -notmatch [regex]::Escape($control)) {
+      $failures.Add("Controle de identidade backend ausente: $control")
+    }
+  }
+  if ($backendIdentityMigration -match '(?im)^\s*create\s+role\s+cbn_.*\blogin\b' -and
+      $backendIdentityMigration -notmatch '(?im)^\s*create\s+role\s+cbn_.*\bnologin\b') {
+    $failures.Add('Migration de identidade contem papel CBN com LOGIN.')
+  }
+  if ($backendIdentityMigration -match '(?im)^\s*grant\s+.*\bon\s+(?:table\s+)?(?:public|app_private|audit)\.' ) {
+    $failures.Add('Migration de identidade concede tabela diretamente; somente wrappers sao permitidos.')
+  }
+}
+
+$backendIdentityAuditMigrationPath = 'supabase\migrations\20260721_001_bkl016_backend_identity_audit.sql'
+if (Test-Path -LiteralPath $backendIdentityAuditMigrationPath) {
+  $backendIdentityAuditMigration = Get-Content -Raw -LiteralPath $backendIdentityAuditMigrationPath
+  foreach ($control in @(
+    'RETENTION_EVALUATED_BY_OPERATOR', 'CLIENT_ANONYMIZED_BY_OPERATOR',
+    'LEGAL_HOLD_APPLIED_BY_OPERATOR', 'LEGAL_HOLD_REMOVAL_REQUESTED_BY_OPERATOR',
+    'DELETION_PREPARED_BY_OPERATOR', 'DELETION_CANCELLED_BY_OPERATOR',
+    'LEGAL_HOLD_REMOVAL_APPROVED_BY_REVIEWER',
+    'LEGAL_HOLD_REMOVAL_REJECTED_BY_REVIEWER',
+    'DELETION_COMPLETED_BY_EXECUTOR', 'record_backend_identity_event',
+    "set search_path = ''", 'from public, anon, authenticated'
+  )) {
+    if ($backendIdentityAuditMigration -notmatch [regex]::Escape($control)) {
+      $failures.Add("Controle da auditoria de identidade ausente: $control")
+    }
+  }
+  if ($backendIdentityAuditMigration -match '(?im)^\s*grant\s+') {
+    $failures.Add('Migration de auditoria ampliou grants; somente revogacoes sao permitidas.')
+  }
+}
+
+$backendIdentityTestPath = 'supabase\tests\bkl016_backend_identity_test.sql'
+if (Test-Path -LiteralPath $backendIdentityTestPath) {
+  $backendIdentityTests = Get-Content -Raw -LiteralPath $backendIdentityTestPath
+  foreach ($control in @(
+    'set local role cbn_gateway_backend', 'set local role cbn_retention_operator',
+    'set local role cbn_hold_reviewer', 'set local role cbn_deletion_executor',
+    'set session authorization cbn_identity_test_principal',
+    'gateway assumiu papel nao concedido', 'gateway executou GRANT',
+    'gateway executou ALTER ROLE', 'gateway executou CREATE ROLE',
+    'operador concluiu exclusao', 'revisor iniciou anonimizacao',
+    'executor preparou exclusao',
+    'RETENTION_EVALUATED_BY_OPERATOR', 'CLIENT_ANONYMIZED_BY_OPERATOR',
+    'LEGAL_HOLD_APPLIED_BY_OPERATOR', 'LEGAL_HOLD_REMOVAL_REQUESTED_BY_OPERATOR',
+    'DELETION_PREPARED_BY_OPERATOR', 'DELETION_CANCELLED_BY_OPERATOR',
+    'LEGAL_HOLD_REMOVAL_APPROVED_BY_REVIEWER',
+    'LEGAL_HOLD_REMOVAL_REJECTED_BY_REVIEWER',
+    'DELETION_COMPLETED_BY_EXECUTOR',
+    'BKL-016 backend identity and privilege checks passed', 'rollback;'
+  )) {
+    if ($backendIdentityTests -notmatch [regex]::Escape($control)) {
+      $failures.Add("Teste de identidade backend ausente: $control")
+    }
+  }
+}
+
+$backendIdentityRuntimePath = 'scripts\backend-identity\backend-identity-runtime.mjs'
+if (Test-Path -LiteralPath $backendIdentityRuntimePath) {
+  $backendIdentityRuntime = Get-Content -Raw -LiteralPath $backendIdentityRuntimePath
+  foreach ($control in @(
+    'codex/bkl-016-backend-identity',
+    'CBN_BACKEND_IDENTITY_CONFIRMED', 'synthetic-local-role-test',
+    'preexisting_local_stack_rejected', 'protected_path_modified',
+    'remote_environment_rejected', 'non_local_target_rejected',
+    'rollback_fail_closed_not_proven', 'clean_rollback_not_proven',
+    'reapplication_not_proven', "'stop', '--no-backup'"
+  )) {
+    if ($backendIdentityRuntime -notmatch [regex]::Escape($control)) {
+      $failures.Add("Gate do runtime de identidade ausente: $control")
+    }
+  }
+  if ($backendIdentityRuntime -match '(?i)supabase\s+link|db\s+push|\.supabase\.co') {
+    $failures.Add('Runtime de identidade contem alvo ou comando remoto proibido.')
+  }
+}
+
+$backendIdentityAuditRollbackPath = 'supabase\rollback\20260721_001_bkl016_backend_identity_audit_down.sql'
+if (Test-Path -LiteralPath $backendIdentityAuditRollbackPath) {
+  $backendIdentityAuditRollback = Get-Content -Raw -LiteralPath $backendIdentityAuditRollbackPath
+  foreach ($control in @(
+    'existe auditoria indispensavel',
+    "metadata ->> 'identity_model' = 'BKL016_BACKEND_IDENTITY_V1'",
+    'retention_evaluate', 'hold_review_removal', 'retention_complete_deletion'
+  )) {
+    if ($backendIdentityAuditRollback -notmatch [regex]::Escape($control)) {
+      $failures.Add("Controle do rollback da auditoria de identidade ausente: $control")
+    }
+  }
+  if ($backendIdentityAuditRollback -match '(?im)^\s*grant\s+') {
+    $failures.Add('Rollback de auditoria reintroduz grant inseguro.')
+  }
+}
+
+$backendIdentityRollbackPath = 'supabase\rollback\20260720_001_bkl016_backend_identity_down.sql'
+if (Test-Path -LiteralPath $backendIdentityRollbackPath) {
+  $backendIdentityRollback = Get-Content -Raw -LiteralPath $backendIdentityRollbackPath
+  foreach ($control in @(
+    'existe auditoria indispensavel', 'existe estado de retencao indispensavel',
+    'papel possui membership', 'papel possui objeto',
+    'revoke cbn_gateway_backend', 'drop role cbn_deletion_executor'
+  )) {
+    if ($backendIdentityRollback -notmatch [regex]::Escape($control)) {
+      $failures.Add("Controle de rollback da identidade ausente: $control")
+    }
+  }
+  if ($backendIdentityRollback -match '(?im)^\s*grant\s+') {
+    $failures.Add('Rollback de identidade reintroduz grant inseguro.')
+  }
+}
+
 if ($failures.Count -gt 0) {
   $failures | ForEach-Object { Write-Error $_ }
   exit 1

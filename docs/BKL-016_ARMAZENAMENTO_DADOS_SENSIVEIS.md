@@ -1,5 +1,21 @@
 # BKL-016 — Armazenamento de dados sensíveis
 
+## Identidade backend e separação de privilégios
+
+A migration incremental `20260720_001_bkl016_backend_identity.sql` introduz
+papéis de grupo `NOLOGIN` para Gateway, retenção, revisão de hold e conclusão de
+descarte. Todos são sem `SUPERUSER`, `CREATEDB`, `CREATEROLE`, `BYPASSRLS` e
+`REPLICATION`, não possuem objetos e não recebem acesso direto às tabelas.
+
+O Gateway pode criar/atualizar somente operações técnicas por wrappers. O
+operador de retenção avalia, anonimiza, aplica hold, solicita remoção e prepara
+ou cancela descarte. Um revisor separado decide a remoção do hold. Um quarto
+papel conclui o descarte somente depois da confirmação de ausência do objeto.
+
+A matriz canônica está em `docs/BKL-016_BACKEND_PERMISSION_MATRIX.md`. A
+credencial real futura não foi criada; até sua definição, os papéis são usados
+somente com `SET ROLE` pelo administrador da stack local descartável.
+
 ## Hardening após revisão humana
 
 A migration incremental `20260719_001` garante que negações sobrevivam à

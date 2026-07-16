@@ -1,5 +1,30 @@
 # Handoff — CBN Crédito
 
+## Correção localizada da auditoria de identidade — 16/07/2026
+
+- Migration incremental `20260721_001` completa a auditoria dos wrappers de
+  retenção, revisão de hold e conclusão de descarte no modelo
+  `BKL016_BACKEND_IDENTITY_V1`.
+- Papéis, grants e matriz de permissões permanecem inalterados; a função interna
+  de auditoria não foi concedida aos papéis operacionais.
+- O teste focado de identidade foi aprovado antes da regressão completa.
+- Nenhuma conexão remota, deploy ou merge faz parte desta correção.
+
+## Identidade mínima do backend — 16/07/2026
+
+- Branch `codex/bkl-016-backend-identity` preparada, sem merge ou aplicação remota.
+- Quatro papéis `NOLOGIN` separam Gateway, operador de retenção, revisor de hold
+  e executor de descarte; nenhum possui acesso direto a tabelas privadas/auditoria.
+- Operações sensíveis usam somente wrappers `SECURITY DEFINER` tipados, com
+  `search_path = ''` e grants mínimos.
+- O operador que prepara o descarte não consegue concluí-lo; remoção de hold
+  permanece dependente de revisor técnico distinto.
+- 44 testes Node, cinco suítes SQL, rollback fail-closed, rollback limpo e
+  reaplicação passaram em Supabase local descartável.
+- Nenhuma credencial real foi criada. `service_role` não é a identidade final.
+- BKL-016 continua **Em andamento**: login técnico futuro, KMS real, jurídico,
+  backup remoto, aplicação autorizada e revisão independente seguem pendentes.
+
 ## Revisão corretiva da retenção — 16/07/2026
 
 - Corrigidos os bloqueadores de auditoria, inventário de anonimização e escopo do
