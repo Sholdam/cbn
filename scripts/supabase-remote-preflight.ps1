@@ -2,7 +2,7 @@
 param(
   [string]$ProjectRef = $env:SUPABASE_PROJECT_REF,
 
-  [ValidateSet('LinkInspection', 'RemoteWrite', 'RemoteValidation', 'Cleanup')]
+  [ValidateSet('LinkInspection', 'RemoteWrite', 'RemoteValidation', 'StorageRuntime', 'Cleanup')]
   [string]$Phase = 'RemoteWrite',
 
   [switch]$RemoteTargetConfirmed,
@@ -37,8 +37,18 @@ if ([string]::IsNullOrWhiteSpace($branch)) {
   Add-Failure 'Nao foi possivel identificar a branch atual.'
 } elseif ($branch -eq 'main') {
   Add-Failure 'A branch main e bloqueada para a validacao remota.'
-} elseif ($branch -ne 'codex/bkl-016-remote-dev') {
-  Add-Failure 'A validacao remota deve ocorrer na branch codex/bkl-016-remote-dev.'
+} elseif ($Phase -eq 'StorageRuntime' -and $branch -ne 'codex/bkl-016-storage-runtime') {
+  Add-Failure 'O runtime de Storage deve ocorrer na branch codex/bkl-016-storage-runtime.'
+} elseif ($Phase -ne 'StorageRuntime' -and
+    $branch -notin @('codex/bkl-016-remote-dev', 'codex/bkl-016-storage-runtime')) {
+  Add-Failure 'A validacao remota deve ocorrer em uma branch BKL-016 explicitamente permitida.'
+}
+
+$mainDistance = @(Test-GitCommand -Arguments @('rev-list', '--left-right', '--count', 'origin/main...HEAD'))
+if ($mainDistance.Count -ne 1 -or $mainDistance[0] -notmatch '^\s*(\d+)\s+(\d+)\s*$') {
+  Add-Failure 'Nao foi possivel comparar a branch com origin/main.'
+} elseif ([int]$Matches[1] -ne 0) {
+  Add-Failure 'A branch esta atras de origin/main; sincronize antes de qualquer acesso remoto.'
 }
 
 $dirty = @(Test-GitCommand -Arguments @('status', '--porcelain', '--untracked-files=all'))
@@ -82,7 +92,7 @@ if (-not $RemoteTargetConfirmed) {
   Add-Failure 'O vinculo remoto ainda nao foi confirmado explicitamente pelo usuario.'
 }
 
-$requiresReviewedMigration = $Phase -in @('RemoteWrite', 'RemoteValidation', 'Cleanup')
+$requiresReviewedMigration = $Phase -in @('RemoteWrite', 'RemoteValidation', 'StorageRuntime', 'Cleanup')
 if ($requiresReviewedMigration -and -not $MigrationDryRunReviewed) {
   Add-Failure 'A migration pendente nao possui dry-run e revisao explicitamente confirmados.'
 }
@@ -111,11 +121,12 @@ $secretPatterns = @(
   @{ Name = 'chave privada'; Regex = '(?i)-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----' },
   @{ Name = 'token conhecido'; Regex = '(?i)\b(?:sk-proj|sk-|ghp_|github_pat_|xox[baprs]-|sb_secret_)[A-Za-z0-9_-]{16,}' },
   @{ Name = 'JWT preenchido'; Regex = '(?i)\beyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{16,}\b' },
+  @{ Name = 'URL assinada de Storage'; Regex = '(?i)https://[^\s"'']+/storage/v1/object/sign/[^\s"'']+[?&](?:token|signature)=[A-Za-z0-9._~-]{12,}' },
   @{ Name = 'segredo preenchido'; Regex = '(?im)^[A-Z0-9_]*(?:PASSWORD|TOKEN|SECRET|PRIVATE_KEY|API_HASH|SESSION|SERVICE_ROLE_KEY)[A-Z0-9_]*\s*=\s*[^\s<#][^\r\n]*$' },
   @{ Name = 'CPF completo'; Regex = '(?<![0-9])[0-9]{3}\.?[0-9]{3}\.?[0-9]{3}-?[0-9]{2}(?![0-9])' }
 )
 
-$textFilePattern = '(?i)(^|/)(?:\.gitignore|[^/]+\.(?:md|txt|ps1|sql|toml|json|ya?ml|py|js|ts|example))$'
+$textFilePattern = '(?i)(^|/)(?:\.gitignore|[^/]+\.(?:md|txt|ps1|sql|toml|json|ya?ml|py|m?js|ts|example))$'
 foreach ($relativePath in $trackedFiles) {
   if ($relativePath -notmatch $textFilePattern) { continue }
   $path = Join-Path $repoRoot $relativePath
@@ -134,6 +145,7 @@ $historyPatterns = @(
   '-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----',
   '(sk-proj|sk-|ghp_|github_pat_|xox[baprs]-|sb_secret_)[A-Za-z0-9_-]{16,}',
   'eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{16,}',
+  'https://[^[:space:]"'']+/storage/v1/object/sign/[^[:space:]"'']+[?&](token|signature)=[A-Za-z0-9._~-]{12,}',
   '(?<![0-9])[0-9]{3}\.?[0-9]{3}\.?[0-9]{3}-?[0-9]{2}(?![0-9])',
   '^[A-Z0-9_]*(PASSWORD|TOKEN|SECRET|PRIVATE_KEY|API_HASH|SESSION|SERVICE_ROLE_KEY)[A-Z0-9_]*\s*=\s*[^\s<#]'
 )
@@ -181,6 +193,39 @@ $gatewayChanges = @(Test-GitCommand -Arguments @(
 ))
 if ($gatewayChanges.Count -gt 0) {
   Add-Failure 'telegram-gateway/ possui alteracoes nesta branch.'
+}
+
+if ($Phase -eq 'StorageRuntime' -and $failures.Count -eq 0) {
+  $migrationOutput = @(& supabase migration list --linked 2>$null)
+  if ($LASTEXITCODE -ne 0) {
+    Add-Failure 'Nao foi possivel reconciliar migrations locais e remotas pelo vinculo confirmado.'
+  } else {
+    $requiredMigrationFiles = @(
+      '20260715_001_bkl016_secure_storage.sql',
+      '20260716_001_bkl016_revoke_anon_operational_grants.sql'
+    )
+    foreach ($migrationFile in $requiredMigrationFiles) {
+      $migrationParts = ([System.IO.Path]::GetFileNameWithoutExtension($migrationFile) -split '_', 3)
+      $migrationVersion = "$($migrationParts[0])$($migrationParts[1])"
+      $matchingLine = @($migrationOutput | Where-Object { $_ -match [regex]::Escape($migrationVersion) })
+      if ($matchingLine.Count -ne 1 -or $matchingLine[0] -notmatch "^\s*$migrationVersion\s+\|\s+$migrationVersion\s+\|") {
+        Add-Failure "A migration esperada $migrationVersion nao esta reconciliada entre local e remoto."
+      }
+    }
+    $divergentMigration = @($migrationOutput | Where-Object {
+      $_ -match '^\s*(\d+)\s*\|\s*(\d*)\s*\|' -and $Matches[1] -cne $Matches[2]
+    })
+    if ($divergentMigration.Count -gt 0) {
+      Add-Failure 'Existe divergencia entre migrations locais e remotas; detalhes omitidos.'
+    }
+  }
+
+  $storageOutput = @(& supabase --experimental storage ls --linked 'ss:///' 2>$null)
+  if ($LASTEXITCODE -ne 0) {
+    Add-Failure 'Nao foi possivel confirmar o bucket temporario pelo vinculo existente.'
+  } elseif (-not ($storageOutput -match '(?m)(^|\s)cbn-temporary-private/?(\s|$)')) {
+    Add-Failure 'O bucket temporario esperado nao foi localizado; identificadores remotos omitidos.'
+  }
 }
 
 if ($failures.Count -gt 0) {

@@ -17,8 +17,9 @@ foreach ($envFile in $realEnvFiles) {
 
 $patterns = @(
   @{ Name = 'chave privada'; Regex = '(?i)-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----' },
-  @{ Name = 'token conhecido'; Regex = '(?i)\b(?:sk-proj|sk-|ghp_|github_pat_|xox[baprs]-)[A-Za-z0-9_-]{16,}' },
+  @{ Name = 'token conhecido'; Regex = '(?i)\b(?:sk-proj|sk-|ghp_|github_pat_|xox[baprs]-|sb_secret_)[A-Za-z0-9_-]{16,}' },
   @{ Name = 'JWT preenchido'; Regex = '(?i)\beyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{16,}\b' },
+  @{ Name = 'URL assinada de Storage'; Regex = '(?i)https://[^\s"'']+/storage/v1/object/sign/[^\s"'']+[?&](?:token|signature)=[A-Za-z0-9._~-]{12,}' },
   @{ Name = 'CPF completo'; Regex = '(?<![0-9])[0-9]{3}\.?[0-9]{3}\.?[0-9]{3}-?[0-9]{2}(?![0-9])' },
   @{ Name = 'secret preenchido'; Regex = '(?im)^[A-Z0-9_]*(?:PASSWORD|TOKEN|SECRET|PRIVATE_KEY|API_HASH|SESSION|SERVICE_ROLE_KEY)[A-Z0-9_]*=[^\s#].+$' }
 )
@@ -178,20 +179,110 @@ foreach ($artifact in $remoteArtifacts) {
   }
 }
 
+$storageRuntimeArtifacts = @(
+  'scripts\package.json',
+  'scripts\package-lock.json',
+  'scripts\supabase-storage-runtime-test.mjs',
+  'scripts\supabase-storage-runtime-test.test.mjs',
+  'scripts\supabase-storage-runtime-run.ps1'
+)
+foreach ($artifact in $storageRuntimeArtifacts) {
+  if (-not (Test-Path -LiteralPath $artifact -PathType Leaf)) {
+    $failures.Add("Artefato do runtime de Storage ausente: $artifact")
+  }
+}
+
 if (Test-Path -LiteralPath 'scripts\supabase-remote-preflight.ps1') {
   $remotePreflight = Get-Content -Raw -LiteralPath 'scripts\supabase-remote-preflight.ps1'
   foreach ($requiredGate in @(
     'codex/bkl-016-remote-dev',
+    'codex/bkl-016-storage-runtime',
+    'StorageRuntime',
     'CBN_ENVIRONMENT',
     'RemoteTargetConfirmed',
     'SyntheticDataConfirmed',
     'MigrationDryRunReviewed',
     'CBN_PRODUCTION_PROJECT_REFS',
+    '20260715_001_bkl016_secure_storage.sql',
+    '20260716_001_bkl016_revoke_anon_operational_grants.sql',
+    'cbn-temporary-private',
     'app_private',
     'audit'
   )) {
     if ($remotePreflight -notmatch [regex]::Escape($requiredGate)) {
       $failures.Add("Gate remoto obrigatorio ausente: $requiredGate")
+    }
+  }
+}
+
+
+if (Test-Path -LiteralPath 'scripts\package.json') {
+  $storagePackage = Get-Content -Raw -LiteralPath 'scripts\package.json'
+  foreach ($requiredPackageValue in @('@supabase/supabase-js', '2.110.6', 'node --test')) {
+    if ($storagePackage -notmatch [regex]::Escape($requiredPackageValue)) {
+      $failures.Add("Configuracao npm do runtime ausente: $requiredPackageValue")
+    }
+  }
+}
+
+if (Test-Path -LiteralPath 'scripts\supabase-storage-runtime-test.mjs') {
+  $storageRuntime = Get-Content -Raw -LiteralPath 'scripts\supabase-storage-runtime-test.mjs'
+  foreach ($requiredRuntimeValue in @(
+    "from '@supabase/supabase-js'",
+    'codex/bkl-016-storage-runtime',
+    'cbn-temporary-private',
+    'upsert: false',
+    'createSignedUrl',
+    'getPublicUrl',
+    'finally',
+    'remove([objectName])',
+    'BKL-016 Storage backend preflight passed',
+    'BKL-016 Storage upload passed',
+    'BKL-016 anonymous access denied',
+    'BKL-016 signed URL pre-expiry download passed',
+    'BKL-016 signed URL expiration passed',
+    'BKL-016 Storage local leak scan passed',
+    'BKL-016 Storage cleanup passed'
+  )) {
+    if ($storageRuntime -notmatch [regex]::Escape($requiredRuntimeValue)) {
+      $failures.Add("Controle obrigatorio do runtime de Storage ausente: $requiredRuntimeValue")
+    }
+  }
+  if ($storageRuntime -match '(?i)service[_ -]?role' -or $storageRuntime -match '(?i)window\.|localStorage') {
+    $failures.Add('Runtime de Storage contem uso proibido de service_role nominal ou contexto de navegador.')
+  }
+}
+
+if (Test-Path -LiteralPath 'scripts\supabase-storage-runtime-test.test.mjs') {
+  $storageRuntimeTests = Get-Content -Raw -LiteralPath 'scripts\supabase-storage-runtime-test.test.mjs'
+  foreach ($negativeCategory in @(
+    'bucket_rejected',
+    'object_name_rejected',
+    'overwrite_rejected',
+    'project_url_target_mismatch',
+    'branch_rejected',
+    'synthetic_confirmation_missing',
+    'backend_credential_missing',
+    'unsafe_output_rejected'
+  )) {
+    if ($storageRuntimeTests -notmatch [regex]::Escape($negativeCategory)) {
+      $failures.Add("Teste negativo do runtime ausente: $negativeCategory")
+    }
+  }
+}
+
+if (Test-Path -LiteralPath 'scripts\supabase-storage-runtime-run.ps1') {
+  $storageWrapper = Get-Content -Raw -LiteralPath 'scripts\supabase-storage-runtime-run.ps1'
+  foreach ($requiredWrapperValue in @(
+    'PromptForBackendCredential',
+    'Read-Host',
+    'ZeroFreeBSTR',
+    'CBN_SUPABASE_BACKEND_KEY',
+    'CBN_STORAGE_RUNTIME_CONFIRMED',
+    'BKL-016 Storage runtime validation passed'
+  )) {
+    if ($storageWrapper -notmatch [regex]::Escape($requiredWrapperValue)) {
+      $failures.Add("Gate do wrapper de Storage ausente: $requiredWrapperValue")
     }
   }
 }
