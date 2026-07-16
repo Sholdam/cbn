@@ -113,6 +113,17 @@ A migration incremental `20260717_001_bkl016_envelope_metadata.sql` persiste cip
 
 O Gateway é a única fronteira futura de criptografia. n8n solicita operações ao Gateway e Appsmith recebe apenas campos autorizados; nenhum deles recebe KEK, DEK ou credencial KMS. O runbook `docs/BKL-016_KMS_ENVELOPE_RUNBOOK.md` mantém a parada antes de provedor externo e a decisão de Guilherme ainda pendente.
 
+### Recuperação local comprovada
+
+A recuperação usa quatro planos independentes:
+
+1. migrations Git para reconstruir o schema;
+2. dump PostgreSQL para dados sintéticos;
+3. backup separado dos bytes do Storage com manifesto/hash;
+4. KMS/cofre para manter a versão da KEK fora dos demais backups.
+
+Na prova local de 16/07/2026, banco, objeto e envelope foram restaurados, com RTO de 105,08 s. Sem a versão correta da KEK, a recuperação falhou fechada; adulteração também foi rejeitada. Isso comprova a mecânica local, não a estratégia de produção. Plano Free continua sem PITR/backup gerenciado, e KMS real permanece bloqueado por faturamento.
+
 ## Sessões previstas
 
 - sessão CLT;

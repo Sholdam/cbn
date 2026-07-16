@@ -1,6 +1,6 @@
 # Handoff — CBN Crédito
 
-**Atualizado em:** 15/07/2026, após preparação e validação local do envelope KMS da BKL-016
+**Atualizado em:** 16/07/2026, após backup, restauração e recuperação sintética local da BKL-016
 **Projeto:** CBN — operação autônoma de varredura e venda de crédito  
 **Escopo inicial:** FGTS + Crédito do Trabalhador (CLT)
 
@@ -258,6 +258,14 @@ A comparação oficial de 15/07/2026 mantém três caminhos: KMS gerenciado, Vau
 
 **Ponto exato de retomada:** Guilherme decide provedor/região/custo/IAM/auditoria/recuperação. Parar antes de autenticar, ativar API/billing, criar/importar KEK, criar Vault ou gravar segredo Railway. Depois disso, abrir tarefa separada para adaptador remoto sintético. BKL-016 segue **Em andamento**.
 
+### Backup/restauração sintética local — 16/07/2026
+
+A branch `codex/bkl-016-backup-restore` comprovou, sem conexão remota, backup de schema/dados sintéticos, reconstrução do schema por migrations, restauração do dump, backup/restauração de objeto Storage por hash e recuperação de envelope com KEK local efêmera. A ausência da versão da KEK e a adulteração falharam fechadas; o rollback incremental preservou o envelope.
+
+As suítes SQL/RLS e constraints passaram dentro da prova. RTO local final: **105,08 s**. RPO do teste: snapshot exato; em operação será o intervalo entre backups até haver PITR. Todos os artefatos, objetos e containers foram removidos. Google Cloud KMS real permanece bloqueado por faturamento; dados reais e produção continuam proibidos.
+
+**Ponto de retomada:** retenção/legal hold e policies finais podem avançar localmente. KMS real só retoma após disponibilidade financeira e nova autorização humana. A BKL-016 geral permanece **Em andamento**.
+
 ## Tarefas vivas paralelas
 
 - BKL-007 — validação regulatória e operacional;
@@ -276,6 +284,8 @@ A comparação oficial de 15/07/2026 mantém três caminhos: KMS gerenciado, Vau
 - `docs/PROMPT_CODEX_BKL-016.md`
 - `docs/PROMPT_CODEX_BKL-016_REMOTE_DEV.md`
 - `docs/BKL-016_REMOTE_DEV_RUNBOOK.md`
+- `docs/BKL-016_BACKUP_RESTORE_RUNBOOK.md`
+- `docs/PROMPT_CODEX_BKL-016_BACKUP_RESTORE.md`
 - `scripts/supabase-remote-preflight.ps1`
 - `scripts/supabase-remote-validate.ps1`
 - `scripts/supabase-remote-cleanup.ps1`
