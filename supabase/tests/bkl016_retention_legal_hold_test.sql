@@ -40,13 +40,10 @@ begin
     'a3000000-0000-4000-8000-000000000001', 'ANONYMIZE', 'test-v1'
   ) then raise exception 'retencao futura foi permitida'; end if;
 
-  begin
-    perform app_private.anonymize_clients(
-      array['a3000000-0000-4000-8000-000000000001'::uuid], 'test-v1'
-    );
-    raise exception 'retencao futura foi anonimizada';
-  exception when sqlstate '55000' then null;
-  end;
+  processed := app_private.anonymize_clients(
+    array['a3000000-0000-4000-8000-000000000001'::uuid], 'test-v1'
+  );
+  if processed <> 0 then raise exception 'retencao futura foi anonimizada'; end if;
 
   perform app_private.apply_legal_hold(
     'a3000000-0000-4000-8000-000000000002', 'SYNTHETIC_REVIEW', 'TECHNICAL_TEST', 'test-v1'
@@ -54,13 +51,16 @@ begin
   if app_private.evaluate_retention_action(
     'a3000000-0000-4000-8000-000000000002', 'ANONYMIZE', 'test-v1'
   ) then raise exception 'legal hold permitiu anonimizar'; end if;
-  begin
-    perform app_private.anonymize_clients(
-      array['a3000000-0000-4000-8000-000000000002'::uuid], 'test-v1'
-    );
-    raise exception 'legal hold nao bloqueou anonimizacao';
-  exception when sqlstate '55000' then null;
-  end;
+  processed := app_private.anonymize_clients(
+    array['a3000000-0000-4000-8000-000000000002'::uuid], 'test-v1'
+  );
+  if processed <> 0 then raise exception 'legal hold nao bloqueou anonimizacao'; end if;
+  if not exists (select 1 from audit.events where event_type = 'ANONYMIZATION_DENIED'
+      and entity_id = 'a2000000-0000-4000-8000-000000000002' and allowed = false)
+     or not exists (select 1 from audit.events where event_type = 'RETENTION_EVALUATED'
+      and entity_id = 'a2000000-0000-4000-8000-000000000002' and allowed = false) then
+    raise exception 'negacao de anonimizacao nao persistiu auditoria';
+  end if;
   begin
     perform app_private.remove_legal_hold(
       'a3000000-0000-4000-8000-000000000002', 'TECHNICAL_TEST', 'test-v1'
@@ -71,6 +71,13 @@ begin
   perform app_private.request_legal_hold_removal(
     'a3000000-0000-4000-8000-000000000002', 'TECHNICAL_TEST', 'test-v1'
   );
+  begin
+    perform app_private.remove_legal_hold(
+      'a3000000-0000-4000-8000-000000000002', 'TECHNICAL_TEST', 'test-v1'
+    );
+    raise exception 'mesmo ator solicitou e aprovou remocao';
+  exception when insufficient_privilege then null;
+  end;
   perform app_private.remove_legal_hold(
     'a3000000-0000-4000-8000-000000000002', 'TECHNICAL_REVIEWER', 'test-v1'
   );
@@ -96,6 +103,16 @@ begin
     update public.clients set display_name = '[SYNTHETIC TEST] Revived'
     where id = 'a2000000-0000-4000-8000-000000000002';
     raise exception 'cliente anonimizado foi reanimado';
+  exception when sqlstate '55000' then null;
+  end;
+  begin
+    insert into app_private.client_sensitive_data (
+      client_id, cpf_ciphertext, encryption_key_ref, encryption_version
+    ) values (
+      'a2000000-0000-4000-8000-000000000002', decode('01', 'hex'),
+      'local-test-only', 'local-v1'
+    );
+    raise exception 'cliente anonimizado aceitou novo dado sensivel';
   exception when sqlstate '55000' then null;
   end;
 
@@ -163,14 +180,17 @@ begin
     raise exception 'legal hold permitiu exclusao direta do arquivo';
   exception when sqlstate '55000' then null;
   end;
-  begin
-    perform * from app_private.prepare_retention_deletion(
-      array['a7000000-0000-4000-8000-000000000002'::uuid],
-      'synthetic-local-explicit-ids', 'test-v1'
-    );
-    raise exception 'legal hold permitiu preparar exclusao';
-  exception when sqlstate '55000' then null;
-  end;
+  select count(*) into inventory_count from app_private.prepare_retention_deletion(
+    array['a7000000-0000-4000-8000-000000000002'::uuid],
+    'synthetic-local-explicit-ids', 'test-v1'
+  );
+  if inventory_count <> 0 then raise exception 'legal hold permitiu preparar exclusao'; end if;
+  if not exists (select 1 from audit.events where event_type = 'DELETION_DENIED'
+      and entity_id = 'a6000000-0000-4000-8000-000000000001' and allowed = false)
+     or not exists (select 1 from audit.events where event_type = 'RETENTION_EVALUATED'
+      and entity_id = 'a6000000-0000-4000-8000-000000000001' and allowed = false) then
+    raise exception 'negacao de exclusao nao persistiu auditoria';
+  end if;
   perform app_private.request_legal_hold_removal(
     'a7000000-0000-4000-8000-000000000002', 'TECHNICAL_TEST', 'test-v1'
   );
@@ -243,15 +263,13 @@ set protected_log_ref = 'a5000000-0000-4000-8000-000000000001'
 where operation_id = 'a4000000-0000-4000-8000-000000000001';
 
 do $$
+declare denied_count integer;
 begin
-  begin
-    perform * from app_private.prepare_retention_deletion(
-      array['a7000000-0000-4000-8000-000000000001'::uuid],
-      'synthetic-local-explicit-ids', 'test-v1'
-    );
-    raise exception 'dependencia ativa foi ignorada';
-  exception when foreign_key_violation then null;
-  end;
+  select count(*) into denied_count from app_private.prepare_retention_deletion(
+    array['a7000000-0000-4000-8000-000000000001'::uuid],
+    'synthetic-local-explicit-ids', 'test-v1'
+  );
+  if denied_count <> 0 then raise exception 'dependencia ativa foi ignorada'; end if;
   if exists (
     select 1 from audit.events
     where (event_type like '%RETENTION%' or event_type like '%DELETION%' or event_type like '%LEGAL_HOLD%')

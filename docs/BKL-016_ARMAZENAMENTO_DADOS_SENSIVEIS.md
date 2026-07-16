@@ -1,5 +1,14 @@
 # BKL-016 — Armazenamento de dados sensíveis
 
+## Hardening após revisão humana
+
+A migration incremental `20260719_001` garante que negações sobrevivam à
+transação, que a anonimização do cliente inventarie todas as tabelas sensíveis e
+falhe fechada diante de dependência com política própria, e que nenhum dado seja
+reintroduzido depois de `anonymized_at`. O legal hold de cliente protege todo
+payload/arquivo relacionado e é revalidado imediatamente antes da conclusão.
+Remoção de hold exige solicitante e aprovador técnicos diferentes.
+
 ## Extensão local de retenção (16/07/2026)
 
 A migration incremental `20260718` adiciona políticas configuráveis e controles

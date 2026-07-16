@@ -543,6 +543,62 @@ foreach ($artifact in $retentionArtifacts) {
   }
 }
 
+$retentionRepairArtifacts = @(
+  'supabase\migrations\20260719_001_bkl016_retention_legal_hold_repairs.sql',
+  'supabase\rollback\20260719_001_bkl016_retention_legal_hold_repairs_down.sql',
+  'supabase\tests\bkl016_retention_repairs_test.sql',
+  'supabase\tests\bkl016_retention_repairs_rollback_test.sql'
+)
+foreach ($artifact in $retentionRepairArtifacts) {
+  if (-not (Test-Path -LiteralPath $artifact -PathType Leaf)) {
+    $failures.Add("Artefato de reparo da retencao ausente: $artifact")
+  }
+}
+
+$retentionRepairMigrationPath = 'supabase\migrations\20260719_001_bkl016_retention_legal_hold_repairs.sql'
+if (Test-Path -LiteralPath $retentionRepairMigrationPath) {
+  $retentionRepairMigration = Get-Content -Raw -LiteralPath $retentionRepairMigrationPath
+  foreach ($control in @(
+    'has_applicable_legal_hold', 'client_anonymization_block_reason',
+    'LEGAL_HOLD_SCOPE_ACTIVE', 'legal_hold_separation_of_duties_required',
+    'guard_anonymized_client_private_write',
+    'guard_anonymized_client_public_child',
+    'client_sensitive_prevent_reidentification',
+    'proposal_sensitive_prevent_reidentification',
+    'protected_payload_prevent_reidentification',
+    'protected_file_prevent_reidentification',
+    'proposals_prevent_reidentification',
+    'interactions_prevent_reidentification',
+    'pending_items_prevent_reidentification',
+    'if denied then return 0', 'if denied then return',
+    "evaluate_retention_action(c.id, 'DELETE'",
+    'EXPLICIT_INDEPENDENT_REVIEW'
+  )) {
+    if ($retentionRepairMigration -notmatch [regex]::Escape($control)) {
+      $failures.Add("Controle do reparo de retencao ausente: $control")
+    }
+  }
+}
+
+if (Test-Path -LiteralPath 'supabase\tests\bkl016_retention_repairs_test.sql') {
+  $retentionRepairTests = Get-Content -Raw -LiteralPath 'supabase\tests\bkl016_retention_repairs_test.sql'
+  foreach ($control in @(
+    'auditoria persistente da dependencia ausente',
+    'hold do cliente nao bloqueou payload',
+    'hold do cliente nao bloqueou arquivo',
+    'mesmo ator aprovou remocao de hold',
+    'hold tardio nao bloqueou complete',
+    'inventario reteve dado incompativel',
+    'reinsercao privada foi aceita',
+    'proposta sensivel de cliente anonimizado foi aceita',
+    'BKL-016 retention repair checks passed', 'rollback;'
+  )) {
+    if ($retentionRepairTests -notmatch [regex]::Escape($control)) {
+      $failures.Add("Teste obrigatorio do reparo de retencao ausente: $control")
+    }
+  }
+}
+
 $retentionMigrationPath = 'supabase\migrations\20260718_001_bkl016_retention_legal_hold.sql'
 if (Test-Path -LiteralPath $retentionMigrationPath) {
   $retentionMigration = Get-Content -Raw -LiteralPath $retentionMigrationPath

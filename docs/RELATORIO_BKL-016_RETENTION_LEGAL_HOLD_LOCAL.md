@@ -1,5 +1,33 @@
 # Relatório local — BKL-016 Retenção e legal hold
 
+## Revisão corretiva — 16/07/2026
+
+A revisão humana identificou três bloqueadores e uma melhoria de segregação. A
+migration incremental `20260719_001_bkl016_retention_legal_hold_repairs.sql` foi
+criada porque a CLI do Supabase não aceita duas migrations com a mesma versão
+diária `20260718`. A migration `20260718_001` permaneceu inalterada.
+
+Correções comprovadas:
+
+- negações esperadas por política não lançam exceção depois da auditoria;
+  retornam zero/nenhum inventário, preservam `RETENTION_EVALUATED` e o evento
+  `*_DENIED`, e o runtime interrompe o descarte;
+- dependências sensíveis de proposta, payload ou arquivo recusam a anonimização
+  integral do cliente; interações e pendências têm conteúdo mascarado removido
+  atomicamente;
+- triggers impedem reintroduzir dados privados, proposta, payload, arquivo,
+  interação ou pendência após anonimização;
+- hold em `CLIENT` protege dinamicamente payload e arquivo do mesmo cliente;
+- `complete_retention_deletion` revalida o escopo imediatamente antes de concluir;
+- o runtime comprovou que hold aplicado entre `prepare` e `complete` mantém o
+  objeto Storage e o estado `DELETION_PENDING`;
+- solicitante e aprovador da remoção do hold precisam ser atores diferentes;
+- rollback corretivo recusou estado novo, passou em base limpa e a reaplicação
+  completa foi aprovada.
+
+As quatro suítes SQL, os 36 testes Node e o runtime local com Storage foram
+executados novamente. A BKL-016 permanece **Em andamento**.
+
 Data: 16/07/2026
 
 Branch: `codex/bkl-016-retention-legal-hold`

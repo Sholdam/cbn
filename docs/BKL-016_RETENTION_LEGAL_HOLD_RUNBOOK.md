@@ -1,5 +1,24 @@
 # BKL-016 — Runbook de retenção, anonimização e legal hold
 
+## Reparos obrigatórios da revisão humana
+
+O comportamento vigente é definido pela migration incremental `20260719_001`:
+
+- recusas esperadas por retenção, dependência ou hold retornam sem alteração e
+  mantêm auditoria persistente; erro de formato, integridade ou segurança ainda
+  lança exceção;
+- todo chamador deve tratar retorno vazio/zero como negação e interromper o fluxo;
+- hold de `CLIENT` é superior e protege qualquer payload ou arquivo relacionado;
+- o hold é reavaliado antes do Storage e novamente no `complete`;
+- anonimização de cliente é recusada se proposta, payload ou arquivo exigir
+  política própria; nenhum estado parcial é gravado;
+- após anonimização, triggers impedem qualquer reidentificação em tabelas públicas
+  ou privadas;
+- quem solicita remoção do hold não pode aprová-la.
+
+Hold por `OPERATION` não é suportado nesta fase. A decisão é explícita: escopo de
+cliente e escopo específico de payload/arquivo são os únicos autorizados.
+
 ## Escopo e proibições
 
 Este runbook é somente para desenvolvimento local descartável com fixtures

@@ -1,5 +1,20 @@
 # Handoff — CBN Crédito
 
+## Revisão corretiva da retenção — 16/07/2026
+
+- Corrigidos os bloqueadores de auditoria, inventário de anonimização e escopo do
+  legal hold em migration incremental `20260719_001`.
+- Negações de política agora persistem `RETENTION_EVALUATED allowed=false` e o
+  evento `ANONYMIZATION_DENIED` ou `DELETION_DENIED` sem continuar o descarte.
+- Hold de cliente protege payload/arquivo relacionado e é revalidado antes do
+  Storage e da conclusão do banco.
+- Reidentificação pública ou privada de cliente anonimizado é bloqueada por
+  triggers; dependências que exigem política própria recusam anonimização.
+- Solicitante e aprovador da remoção do hold precisam ser distintos.
+- Quatro suítes SQL, 36 testes Node, runtime Storage, rollback e reaplicação
+  passaram localmente; nenhum ambiente remoto foi acessado.
+- BKL-016 continua **Em andamento** e a branch não foi mesclada.
+
 ## Atualização 16/07/2026 — retenção e legal hold local
 
 - Branch `codex/bkl-016-retention-legal-hold` preparada sem merge.
