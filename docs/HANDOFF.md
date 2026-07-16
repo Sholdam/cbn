@@ -361,3 +361,19 @@ As suítes SQL/RLS e constraints passaram dentro da prova. RTO local final: **10
 9. não gerar nova sessão Telegram sem necessidade;
 10. não registrar segredo ou dado completo de cliente em código, planilha, print ou chat;
 11. não criar proposta sem autorização final expressa.
+
+### BKL-018 — Fundação local de autenticação e perfis
+
+Em 16/07/2026 foi validada localmente a fundação de perfis humanos. `admin`,
+`operations`, `support` e `auditor` permanecem separados dos quatro papéis
+técnicos `NOLOGIN` da BKL-016. Perfis possuem estado `ACTIVE`, `DISABLED` ou
+`PENDING_REVIEW`; somente `ACTIVE` participa das policies operacionais.
+
+A gestão de `user_profiles` não aceita DML web direto e ocorre por RPCs
+controladas, com bloqueio de autoelevação, papel técnico e `service_role` como
+identidade humana. Migration, RLS, auditoria mínima, rollback fail-closed,
+rollback limpo e reaplicação passaram somente com fixtures sintéticas locais.
+
+**Ponto de retomada:** após revisão e merge da branch, a BKL-020 cria a
+auditoria canônica. Appsmith, usuários reais, convites, MFA e produção continuam
+fora do escopo e proibidos nesta fase.

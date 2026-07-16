@@ -804,10 +804,10 @@ begin
   get diagnostics affected = row_count;
   if affected <> 1 then raise exception 'Admin nao excluiu cliente isolado'; end if;
 
-  update public.user_profiles set display_name = '[SYNTHETIC TEST] Support reviewed'
-  where user_id = '81000000-0000-4000-8000-000000000003';
-  get diagnostics affected = row_count;
-  if affected <> 1 then raise exception 'Admin nao administrou perfil'; end if;
+  if not public.admin_create_human_profile(
+    '81000000-0000-4000-8000-000000000005',
+    'support', 'ACTIVE', 'BKL016_COMPAT_TEST', 'bkl016-test-v1'
+  ) then raise exception 'Admin nao administrou perfil por funcao controlada'; end if;
 
   begin
     perform count(*) from app_private.client_sensitive_data;

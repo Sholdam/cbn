@@ -258,6 +258,20 @@ Continuam pendentes: KMS real (bloqueado por faturamento), política de backup d
 
 ## Tarefas vivas paralelas
 
+### BKL-018 — Fundação local de autenticação e perfis
+
+Status: **Em revisão para merge**.
+
+- migration incremental e rollback fail-closed preparados;
+- estados `ACTIVE`, `DISABLED` e `PENDING_REVIEW` validados;
+- gestão humana somente por funções controladas;
+- autoatribuição, autoelevação e papéis técnicos bloqueados;
+- `anon`, usuário sem perfil ativo e `service_role` sem identidade humana;
+- RLS-base e identidade backend sem regressão;
+- nenhuma conexão remota, Appsmith, usuário real ou deploy.
+
+Próxima após merge: **BKL-020 — trilha de auditoria canônica no PostgreSQL**.
+
 - BKL-007 — validação regulatória e operacional;
 - BKL-011 — catálogo de produtos contínuo;
 - BKL-012 — fluxo FGTS pós-oferta;
