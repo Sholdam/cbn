@@ -1,5 +1,17 @@
 # Backlog — checkpoint de 15/07/2026
 
+## BKL-016 — checkpoint de retenção e legal hold (16/07/2026)
+
+Status: **Em andamento**.
+
+Concluído localmente: migration incremental, política configurável, legal hold,
+anonimização idempotente, exclusão em duas fases, auditoria, Storage sintético,
+rollback fail-closed, restauração pós-anonimização e reaplicação.
+
+Pendente: aprovação jurídica de prazos/finalidades, KMS real bloqueado por
+faturamento, papel backend mínimo, execução em desenvolvimento remoto autorizada,
+reconciliação operacional e revisão técnica independente.
+
 ## Concluído anteriormente
 
 ### BKL-014 — Decidir a rota técnica da integração multiproduto

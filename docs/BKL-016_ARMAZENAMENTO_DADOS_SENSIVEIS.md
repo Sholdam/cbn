@@ -1,5 +1,17 @@
 # BKL-016 — Armazenamento de dados sensíveis
 
+## Extensão local de retenção (16/07/2026)
+
+A migration incremental `20260718` adiciona políticas configuráveis e controles
+privados de retenção. Ela não define duração jurídica definitiva. Legal hold
+bloqueia anonimização e exclusão, e sua remoção exige duas ações explícitas.
+Anonimização de cliente remove ciphertext privado sem descriptografar e neutraliza
+os identificadores operacionais. Exclusão de payload/arquivo exige IDs explícitos,
+lote máximo dez, confirmação humana, verificação de dependências e, para Storage,
+comprovação de ausência antes do estado `DELETED`.
+
+Detalhes: `docs/BKL-016_RETENTION_LEGAL_HOLD_RUNBOOK.md`.
+
 **Status:** Em andamento — banco/RLS, Storage, envelope e restauração sintética local validados; provedor KMS/chave remota, retenção e revisão independente pendentes
 **Data:** 16/07/2026
 **Escopo desta entrega:** fundação local, dados sintéticos e políticas conservadoras

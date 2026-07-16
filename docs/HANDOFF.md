@@ -1,5 +1,19 @@
 # Handoff — CBN Crédito
 
+## Atualização 16/07/2026 — retenção e legal hold local
+
+- Branch `codex/bkl-016-retention-legal-hold` preparada sem merge.
+- Migration incremental `20260718` adiciona políticas configuráveis, controles
+  privados, legal hold, anonimização idempotente e descarte em duas fases.
+- Runtime local comprovou remoção do objeto Storage e só concluiu o banco após a
+  verificação de ausência; falha simulada permaneceu pendente.
+- Backup posterior à anonimização foi restaurado sem reintroduzir identificadores.
+- Rollback recusou estado novo e funcionou em base descartável limpa.
+- Nenhum prazo jurídico foi definido. Dados reais e produção continuam proibidos.
+- Google Cloud KMS real segue bloqueado temporariamente por faturamento.
+- BKL-016 permanece **Em andamento**, aguardando política jurídica, KMS real,
+  identidade backend mínima, aplicação remota autorizada e revisão independente.
+
 **Atualizado em:** 16/07/2026, após backup, restauração e recuperação sintética local da BKL-016
 **Projeto:** CBN — operação autônoma de varredura e venda de crédito  
 **Escopo inicial:** FGTS + Crédito do Trabalhador (CLT)

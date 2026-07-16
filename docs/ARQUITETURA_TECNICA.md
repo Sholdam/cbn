@@ -1,5 +1,26 @@
 # Arquitetura Técnica — Gateway de Crédito CBN
 
+## Retenção e descarte controlado
+
+```text
+Política revisável (sem prazo legal embutido)
+                 ↓
+Controle privado por entidade
+        ┌────────┼────────┐
+        │        │        │
+   Legal hold  Anonimizar  Elegível para excluir
+        │        │                 ↓
+      bloqueia  remove PII   inventário explícito
+                                  ↓
+                         Storage comprova ausência
+                                  ↓
+                         banco marca DELETED
+```
+
+PostgreSQL e Storage não formam uma transação distribuída. A CBN usa preparação
+persistida (`DELETION_PENDING`), remoção do objeto, prova de ausência e conclusão
+do banco. Falhas não são convertidas em sucesso; permanecem reconciliáveis.
+
 ## Rota escolhida
 
 ### 1. API oficial Prospecta

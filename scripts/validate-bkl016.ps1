@@ -526,6 +526,82 @@ if (Test-Path -LiteralPath $backupRecoveryTestsPath) {
   }
 }
 
+$retentionArtifacts = @(
+  'docs\PROMPT_CODEX_BKL-016_RETENTION_LEGAL_HOLD.md',
+  'docs\BKL-016_RETENTION_LEGAL_HOLD_RUNBOOK.md',
+  'docs\RELATORIO_BKL-016_RETENTION_LEGAL_HOLD_LOCAL.md',
+  'scripts\retention\retention-runtime.mjs',
+  'scripts\retention\retention-runtime.test.mjs',
+  'supabase\migrations\20260718_001_bkl016_retention_legal_hold.sql',
+  'supabase\rollback\20260718_001_bkl016_retention_legal_hold_down.sql',
+  'supabase\tests\bkl016_retention_legal_hold_test.sql',
+  'supabase\tests\bkl016_retention_rollback_test.sql'
+)
+foreach ($artifact in $retentionArtifacts) {
+  if (-not (Test-Path -LiteralPath $artifact -PathType Leaf)) {
+    $failures.Add("Artefato de retencao/legal hold ausente: $artifact")
+  }
+}
+
+$retentionMigrationPath = 'supabase\migrations\20260718_001_bkl016_retention_legal_hold.sql'
+if (Test-Path -LiteralPath $retentionMigrationPath) {
+  $retentionMigration = Get-Content -Raw -LiteralPath $retentionMigrationPath
+  foreach ($control in @(
+    'app_private.retention_policies', 'app_private.retention_controls',
+    'legal_hold_active', 'deletion_eligible_at', 'anonymized_at', 'deleted_at',
+    'evaluate_retention_action', 'anonymize_clients', 'prepare_retention_deletion',
+    'complete_retention_deletion', 'synthetic-local-explicit-ids',
+    'LEGAL_HOLD_APPLIED', 'ANONYMIZATION_COMPLETED',
+    'STORAGE_DELETION_COMPLETED', 'security definer', "set search_path = ''",
+    'revoke all on app_private.retention_policies'
+  )) {
+    if ($retentionMigration -notmatch [regex]::Escape($control)) {
+      $failures.Add("Controle de retencao/legal hold ausente: $control")
+    }
+  }
+  if ($retentionMigration -match '(?i)retention_period\s+interval\s+not\s+null\s+default|interval\s+''(?:5|10|20)\s+years''') {
+    $failures.Add('Migration de retencao contem prazo juridico definitivo hardcoded.')
+  }
+  if ($retentionMigration -match '(?im)^\s*grant\s+.*app_private\.retention_.*\bto\s+(?:anon|authenticated)\b') {
+    $failures.Add('Estrutura privada de retencao foi concedida ao frontend.')
+  }
+}
+
+$retentionRollbackPath = 'supabase\rollback\20260718_001_bkl016_retention_legal_hold_down.sql'
+if (Test-Path -LiteralPath $retentionRollbackPath) {
+  $retentionRollback = Get-Content -Raw -LiteralPath $retentionRollbackPath
+  foreach ($control in @(
+    'Rollback de retencao recusado: existe estado indispensavel',
+    'app_private.retention_policies', 'app_private.retention_controls',
+    'LEGAL_HOLD_APPLIED', 'DELETION_COMPLETED'
+  )) {
+    if ($retentionRollback -notmatch [regex]::Escape($control)) {
+      $failures.Add("Controle fail-closed do rollback de retencao ausente: $control")
+    }
+  }
+}
+
+if (Test-Path -LiteralPath 'scripts\retention\retention-runtime.mjs') {
+  $retentionRuntime = Get-Content -Raw -LiteralPath 'scripts\retention\retention-runtime.mjs'
+  foreach ($control in @(
+    'codex/bkl-016-retention-legal-hold',
+    'CBN_RETENTION_DELETE_CONFIRMED',
+    'synthetic-local-explicit-ids', 'preexisting_local_stack_rejected',
+    'protected_path_modified', 'non_local_target_rejected',
+    'post_anonymization_restore_revived_data',
+    'legal_hold_did_not_block_storage_deletion',
+    'storage_failure_marked_complete', 'storage_absence_not_proven',
+    "'stop', '--no-backup'"
+  )) {
+    if ($retentionRuntime -notmatch [regex]::Escape($control)) {
+      $failures.Add("Gate do runtime de retencao ausente: $control")
+    }
+  }
+  if ($retentionRuntime -match '(?i)supabase\s+link|db\s+push|\.supabase\.co') {
+    $failures.Add('Runtime de retencao contem alvo ou comando remoto proibido.')
+  }
+}
+
 if ($failures.Count -gt 0) {
   $failures | ForEach-Object { Write-Error $_ }
   exit 1
