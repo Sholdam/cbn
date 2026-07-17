@@ -1,44 +1,56 @@
 # CBN — Operação Autônoma de Crédito
 
-Projeto da CBN para captação, atendimento, consulta e acompanhamento de crédito, começando por **FGTS** e **Crédito do Trabalhador (CLT)**.
+Repositório oficial do projeto CBN para captação, atendimento, consulta e acompanhamento de crédito, começando por **FGTS** e **Crédito do Trabalhador (CLT)**.
 
-## Estado atual
+## Fonte oficial
 
-Em 12/07/2026, a rota provisória via **Telegram MTProto** foi validada localmente:
+A fonte oficial para continuar o projeto é:
 
-- conta autorizada e comunicação com o bot operacional;
-- sessão persistente após encerrar e reabrir o processo;
-- retry com o mesmo `operation_id` sem duplicar o comando;
-- arquitetura manual com sessões separadas de CLT, FGTS e status já comprovada pelo operador.
+- repositório: `https://github.com/Sholdam/cbn`
+- branch estável: `main`
+- handoff atual: [`docs/HANDOFF.md`](docs/HANDOFF.md)
+- instruções para outro computador: [`docs/CONTINUAR_EM_OUTRO_COMPUTADOR.md`](docs/CONTINUAR_EM_OUTRO_COMPUTADOR.md)
+- regras para o próximo Codex: [`AGENTS.md`](AGENTS.md)
 
-A decisão técnica está registrada em [`docs/ARQUITETURA_TECNICA.md`](docs/ARQUITETURA_TECNICA.md).
+Não continue o projeto a partir de ZIPs, Downloads ou cópias antigas. Clone a `main` do GitHub.
 
-## Próximo ponto de retomada
+## Checkpoint oficial — 17/07/2026
 
-A **BKL-016** teve migration, seed, rollback e testes de RLS validados em Supabase local descartável. No `cbn-dev`, migrations e suíte transacional passaram sem seed ou fixture persistente. O runtime real de Storage também passou: acesso anônimo negado, URL de 30 segundos expirada após 36 segundos, objeto removido e validação SQL repetida. Restauração, retenção e aprovação do KMS permanecem pendentes.
+Concluído e validado:
 
-BKL-012 e BKL-013 permanecem tarefas vivas paralelas. Nenhuma proposta real pode ser confirmada sem autorização expressa e evidência protegida válida.
+- Telegram MTProto: sessão persistente, comunicação com o bot e idempotência;
+- BKL-016: banco e RLS, Storage privado, criptografia por envelope local, backup/restauração sintética, retenção/legal hold e identidades técnicas de menor privilégio;
+- BKL-018: fundação local de autenticação, perfis humanos e permissões para `admin`, `operations`, `support` e `auditor`.
 
-Veja o checkpoint completo em [`docs/HANDOFF.md`](docs/HANDOFF.md) e a parada obrigatória em [`docs/BKL-016_REMOTE_DEV_RUNBOOK.md`](docs/BKL-016_REMOTE_DEV_RUNBOOK.md).
+Próxima tarefa principal:
+
+- **BKL-020 — trilha de auditoria canônica no PostgreSQL**.
+
+Tarefas de produto que continuam vivas em paralelo:
+
+- BKL-007 e BKL-011: regras e catálogo atualizados durante atendimentos;
+- BKL-012: completar campos da proposta FGTS quando houver oferta autorizada;
+- BKL-013: completar acompanhamento de proposta e pagamento.
+
+A BKL-016 geral permanece **Em andamento** apenas nos pontos que dependem de decisões ou recursos externos: KMS real, aprovação jurídica dos prazos, estratégia remota de backup/produção e revisão técnica independente. Até esses gates serem aprovados, **dados reais e produção permanecem proibidos**.
 
 ## Estrutura
 
-- `docs/` — handoff, arquitetura, backlog e pesquisas.
-- `supabase/` — migration, seed sintético, rollback manual e testes de RLS da BKL-016.
-- `scripts/validate-bkl016.ps1` — validação estática de estrutura, máscaras, segredos e dados pessoais.
-- `scripts/supabase-remote-*.ps1` — preflight, validação e limpeza sintética para futuro projeto remoto isolado.
-- `scripts/supabase-storage-runtime-*` — wrapper, runtime backend e testes negativos do ciclo de Storage, sem credencial versionada.
-- `telegram-gateway/` — provas de conceito MTProto de persistência e idempotência.
+- `AGENTS.md` — instruções automáticas para o Codex que abrir este repositório.
+- `docs/` — handoff, backlog, arquitetura, matrizes, runbooks e relatórios.
+- `supabase/` — migrations incrementais, rollbacks, seed sintético e testes SQL.
+- `scripts/` — validadores e runtimes locais controlados.
+- `telegram-gateway/` — prova de conceito MTProto de persistência e idempotência.
 
 ## Segurança
 
-Este repositório deve permanecer privado; ainda assim, é proibido versionar:
+É proibido versionar:
 
 - `.env`;
-- `TELEGRAM_API_HASH`;
-- `TELEGRAM_SESSION`;
+- `TELEGRAM_API_HASH` ou `TELEGRAM_SESSION`;
 - senha 2FA ou código de login;
-- tokens, webhooks privados ou credenciais do n8n;
-- CPF, documentos, dados bancários ou dados de clientes.
+- tokens, webhooks privados, JWTs ou credenciais;
+- CPF, RG, documentos, dados bancários ou qualquer dado real de cliente;
+- URLs assinadas e chaves criptográficas.
 
-Somente exemplos sem segredos podem entrar no GitHub.
+Dependências instaladas e estados temporários locais também não pertencem ao GitHub. Eles são recriados no novo computador.

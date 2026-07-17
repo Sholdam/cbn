@@ -1,4 +1,21 @@
-# Backlog — checkpoint de 15/07/2026
+# Backlog — checkpoint oficial de 17/07/2026
+
+## Retomada oficial
+
+- Fonte: `https://github.com/Sholdam/cbn`, branch `main`.
+- **BKL-018 — Concluída e integrada:** autenticação, perfis humanos, estados de
+  acesso, menor privilégio, RLS e funções administrativas controladas foram
+  validados localmente.
+- **BKL-020 — Próxima:** consolidar a trilha de auditoria canônica no PostgreSQL,
+  reaproveitando as estruturas existentes e sem registrar PII.
+- **BKL-016 geral — Em andamento por dependências externas:** KMS real,
+  aprovação jurídica dos prazos, backup/produção remotos e revisão independente.
+- BKL-007, BKL-011, BKL-012 e BKL-013 continuam vivas em paralelo conforme as
+  evidências de produto forem obtidas.
+- Dados reais e produção permanecem proibidos.
+
+Consulte `docs/HANDOFF.md` para o contexto completo e
+`docs/CONTINUAR_EM_OUTRO_COMPUTADOR.md` para retomar em outra máquina.
 
 ## BKL-016 — auditoria localizada da identidade (16/07/2026)
 
