@@ -1,4 +1,21 @@
-# Backlog — checkpoint de 15/07/2026
+# Backlog — checkpoint oficial de 17/07/2026
+
+## Retomada oficial
+
+- Fonte: `https://github.com/Sholdam/cbn`, branch `main`.
+- **BKL-018 — Concluída e integrada:** autenticação, perfis humanos, estados de
+  acesso, menor privilégio, RLS e funções administrativas controladas foram
+  validados localmente.
+- **BKL-020 — Próxima:** consolidar a trilha de auditoria canônica no PostgreSQL,
+  reaproveitando as estruturas existentes e sem registrar PII.
+- **BKL-016 geral — Em andamento por dependências externas:** KMS real,
+  aprovação jurídica dos prazos, backup/produção remotos e revisão independente.
+- BKL-007, BKL-011, BKL-012 e BKL-013 continuam vivas em paralelo conforme as
+  evidências de produto forem obtidas.
+- Dados reais e produção permanecem proibidos.
+
+Consulte `docs/HANDOFF.md` para o contexto completo e
+`docs/CONTINUAR_EM_OUTRO_COMPUTADOR.md` para retomar em outra máquina.
 
 ## BKL-016 — auditoria localizada da identidade (16/07/2026)
 
@@ -257,6 +274,20 @@ Status da fase: **Concluída localmente**. Status da BKL-016 geral: **Em andamen
 Continuam pendentes: KMS real (bloqueado por faturamento), política de backup de produção/PITR, retenção/legal hold, policies finais e revisão independente.
 
 ## Tarefas vivas paralelas
+
+### BKL-018 — Fundação local de autenticação e perfis
+
+Status: **Em revisão para merge**.
+
+- migration incremental e rollback fail-closed preparados;
+- estados `ACTIVE`, `DISABLED` e `PENDING_REVIEW` validados;
+- gestão humana somente por funções controladas;
+- autoatribuição, autoelevação e papéis técnicos bloqueados;
+- `anon`, usuário sem perfil ativo e `service_role` sem identidade humana;
+- RLS-base e identidade backend sem regressão;
+- nenhuma conexão remota, Appsmith, usuário real ou deploy.
+
+Próxima após merge: **BKL-020 — trilha de auditoria canônica no PostgreSQL**.
 
 - BKL-007 — validação regulatória e operacional;
 - BKL-011 — catálogo de produtos contínuo;

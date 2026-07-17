@@ -259,6 +259,26 @@ A trilha canônica ficará no PostgreSQL protegido. O Appsmith exibirá somente 
 
 Nunca registrar segredo ou documento completo.
 
+## Perfis humanos e autenticação — BKL-018
+
+O Supabase Auth fornece a identidade; `public.user_profiles` guarda apenas o
+UUID técnico, papel humano e estado. E-mail, senha e token não são copiados.
+
+```text
+Supabase Auth
+     ↓ auth.uid()
+user_profiles (papel + estado)
+     ↓ somente ACTIVE
+RLS operacional
+```
+
+Administrações de perfil passam por RPCs `SECURITY DEFINER` validadas e
+auditadas. Não há DML web direto na tabela. Os papéis humanos nunca recebem os
+papéis PostgreSQL técnicos da BKL-016 e nenhum humano acessa `app_private`.
+
+Appsmith será conectado somente em etapa posterior, consumindo as RPCs e views
+autorizadas; não receberá `service_role`, segredo KMS ou ciphertext.
+
 ## Segurança
 
 - `api_id`, `api_hash` e sessão em cofre de secrets;

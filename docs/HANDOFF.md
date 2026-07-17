@@ -1,5 +1,70 @@
 # Handoff — CBN Crédito
 
+## CHECKPOINT OFICIAL PARA RETOMADA — 17/07/2026
+
+Este repositório, na branch `main`, é a **fonte oficial** do projeto:
+
+```text
+https://github.com/Sholdam/cbn
+```
+
+Para continuar em outro computador, siga
+[`CONTINUAR_EM_OUTRO_COMPUTADOR.md`](CONTINUAR_EM_OUTRO_COMPUTADOR.md) e leia o
+[`AGENTS.md`](../AGENTS.md). Não use ZIPs ou cópias locais antigas como fonte.
+
+### Estado consolidado
+
+- **BKL-018 concluída e integrada:** fundação local de autenticação, perfis e
+  permissões humanas para `admin`, `operations`, `support` e `auditor`.
+- **BKL-016 — fundação concluída:** RLS, Storage privado, envelope local,
+  backup/restauração sintética, retenção/legal hold e identidades técnicas de
+  menor privilégio foram validados e integrados.
+- **BKL-016 geral permanece Em andamento:** KMS real está bloqueado por
+  faturamento; aprovação jurídica dos prazos, estratégia remota de
+  backup/produção e revisão independente continuam pendentes.
+- **Telegram MTProto validado:** sessão persistente, comunicação com o bot e
+  proteção de idempotência comprovadas.
+- **Dados reais e produção continuam proibidos** até a aprovação explícita dos
+  gates restantes.
+
+### Próxima tarefa principal
+
+**BKL-020 — trilha de auditoria canônica no PostgreSQL.**
+
+Antes de implementá-la, revisar a auditoria já criada nas BKL-016 e BKL-018,
+evitar duplicação de estruturas e definir uma única fonte append-only sem PII.
+
+### Tarefas paralelas ainda vivas
+
+- BKL-007 e BKL-011: regras e catálogo são completados durante atendimentos.
+- BKL-012: falta comprovar os campos pós-oferta do FGTS com cliente autorizado.
+- BKL-013: acompanhamento de proposta, assinatura, análise e pagamento continua
+  sendo completado por evidências reais autorizadas.
+
+### Regras para a retomada
+
+1. Confirmar `main`, árvore limpa e sincronização com `origin/main`.
+2. Criar branch `codex/<tarefa>` antes de alterar arquivos.
+3. Informar esforço como **Médio, Alto, Extralto ou Ultra**, usando o menor nível
+   compatível com o risco.
+4. Usar somente dados sintéticos em banco, Storage e testes.
+5. Não versionar `.env`, sessões, tokens, JWTs, chaves, URLs assinadas ou PII.
+6. Não alterar migrations já aplicadas; criar migrations incrementais.
+7. Não fazer merge, deploy ou conexão remota sem autorização expressa.
+8. Executar primeiro testes afetados e a suíte completa apenas uma vez ao final,
+   quando suficiente.
+
+### Arquivos de orientação
+
+- `README.md` — visão rápida e ponto de entrada.
+- `AGENTS.md` — regras automáticas para o próximo Codex.
+- `docs/BACKLOG_CHECKPOINT.md` — situação das tarefas.
+- `docs/ARQUITETURA_TECNICA.md` — decisões arquiteturais.
+- `docs/BKL-018_AUTH_PROFILES_RUNBOOK.md` — última fundação implementada.
+- `docs/RELATORIO_BKL-018_AUTH_PROFILES_LOCAL.md` — evidências da última fase.
+
+Os registros abaixo preservam o histórico detalhado das etapas anteriores.
+
 ## Correção localizada da auditoria de identidade — 16/07/2026
 
 - Migration incremental `20260721_001` completa a auditoria dos wrappers de
@@ -361,3 +426,19 @@ As suítes SQL/RLS e constraints passaram dentro da prova. RTO local final: **10
 9. não gerar nova sessão Telegram sem necessidade;
 10. não registrar segredo ou dado completo de cliente em código, planilha, print ou chat;
 11. não criar proposta sem autorização final expressa.
+
+### BKL-018 — Fundação local de autenticação e perfis
+
+Em 16/07/2026 foi validada localmente a fundação de perfis humanos. `admin`,
+`operations`, `support` e `auditor` permanecem separados dos quatro papéis
+técnicos `NOLOGIN` da BKL-016. Perfis possuem estado `ACTIVE`, `DISABLED` ou
+`PENDING_REVIEW`; somente `ACTIVE` participa das policies operacionais.
+
+A gestão de `user_profiles` não aceita DML web direto e ocorre por RPCs
+controladas, com bloqueio de autoelevação, papel técnico e `service_role` como
+identidade humana. Migration, RLS, auditoria mínima, rollback fail-closed,
+rollback limpo e reaplicação passaram somente com fixtures sintéticas locais.
+
+**Ponto de retomada:** após revisão e merge da branch, a BKL-020 cria a
+auditoria canônica. Appsmith, usuários reais, convites, MFA e produção continuam
+fora do escopo e proibidos nesta fase.
