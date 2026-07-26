@@ -3,6 +3,7 @@ import { timingSafeEqual } from 'node:crypto';
 import { getGatewayConfig } from './config.js';
 import { TelegramAdapter } from './telegram-adapter.js';
 import { runCltFlow } from './clt-flow.js';
+import { buildCltOfferList } from './clt-offers.js';
 import { deliverCallback } from './callback.js';
 import { OperationQueue } from './operation-queue.js';
 import {
@@ -57,6 +58,8 @@ const queue = new OperationQueue({
       status: 'COMPLETED',
       visibility: 'private',
       result_text: result.resultText,
+      offers: result.offers,
+      offer_list: result.offers.length > 0 ? buildCltOfferList(result.offers) : null,
       phone_requested: result.phoneSent,
     }),
   onFailure: (operation, error) =>

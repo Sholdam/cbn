@@ -1,4 +1,5 @@
 import { classifyTelegramMessage, isResultContent } from './clt-state.js';
+import { parseCltOffers } from './clt-offers.js';
 import { sanitizeTelegramText } from './validation.js';
 
 export class HumanReviewError extends Error {
@@ -76,6 +77,21 @@ export async function runCltFlow({ adapter, operationId, cpf, phone }) {
   const collected = [];
   let phoneSent = false;
 
+  const finish = () => {
+    const resultText = collected.filter(Boolean).join('\n\n').trim();
+    if (!resultText) {
+      throw new HumanReviewError(
+        'EMPTY_RESULT',
+        'A consulta terminou sem conteúdo seguro para registrar.'
+      );
+    }
+    return {
+      resultText,
+      offers: parseCltOffers(resultText),
+      phoneSent,
+    };
+  };
+
   for (;;) {
     const message = await adapter.waitAfter(cursor);
     cursor = Number(message.id);
@@ -105,15 +121,20 @@ export async function runCltFlow({ adapter, operationId, cpf, phone }) {
       collected.push(sanitizeTelegramText(message.text, { cpf, phone }).trim());
     }
 
-    if (kind === 'TERMINAL') {
-      const resultText = collected.filter(Boolean).join('\n\n').trim();
-      if (!resultText) {
+    if (kind === 'OFFER_SELECTION_PROMPT') {
+      const sent = await adapter.send(operationId, 'exit-offer-selection', '0');
+      const menu = await adapter.waitAfter(sent.id);
+      if (classifyTelegramMessage(menu.text) !== 'CLT_MENU') {
         throw new HumanReviewError(
-          'EMPTY_RESULT',
-          'A consulta terminou sem conteúdo seguro para registrar.'
+          'CLT_MENU_NOT_RESTORED',
+          'Não foi possível voltar ao menu CLT após coletar as ofertas.'
         );
       }
-      return { resultText, phoneSent };
+      return finish();
+    }
+
+    if (kind === 'TERMINAL') {
+      return finish();
     }
   }
 }

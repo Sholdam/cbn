@@ -117,3 +117,29 @@ test('não envia comando quando uma consulta anterior ainda está processando', 
   );
   assert.equal(adapter.sent.length, 0);
 });
+
+test('coleta ofertas, volta ao menu com 0 e devolve opções estruturadas', async () => {
+  const adapter = new FakeAdapter('Informe o CPF do cliente:', [
+    '⏳ Consultando bancos, esse processo pode levar até 5 minutos.',
+    'Bancos disponíveis e suas melhores ofertas:\n' +
+      '1 — Banco Alfa — 24x R$ 222,70 → R$ 2.511,07\n' +
+      '2 — Financeira Beta — 24x R$ 286,32 → R$ 3.602,99\n' +
+      'Escolha um banco para ver os prazos disponíveis.',
+    '📋 Menu Principal - CLT\n1 - Simular Todos os Bancos',
+  ]);
+
+  const result = await runCltFlow({
+    adapter,
+    operationId: 'CBN-CLT-TESTE-0005',
+    cpf,
+    phone,
+  });
+
+  assert.equal(result.offers.length, 2);
+  assert.equal(result.offers[1].institution, 'Financeira Beta');
+  assert.deepEqual(adapter.sent.at(-1), {
+    operationId: 'CBN-CLT-TESTE-0005',
+    step: 'exit-offer-selection',
+    text: '0',
+  });
+});

@@ -15,9 +15,12 @@ retorno ao n8n para registro exclusivo como nota privada do Chatwoot.
 6. Gateway seleciona `Simular Todos os Bancos`;
 7. Gateway envia o CPF;
 8. se solicitado, envia o telefone do contato do CRM;
-9. Gateway aguarda o menu `Informe outro CPF ou escolha uma opção`;
-10. Gateway envia o resultado sanitizado ao callback fixo;
-11. n8n cria mensagem `private` na mesma conversa.
+9. sem oferta, Gateway aguarda `Informe outro CPF ou escolha uma opção`;
+10. com oferta, Gateway estrutura até cinco opções e envia `0` para voltar ao
+    menu CLT sem selecionar banco;
+11. Gateway envia o resultado sanitizado e as ofertas ao callback fixo;
+12. n8n cria mensagem `private` na mesma conversa;
+13. quando existirem ofertas, n8n apresenta uma lista interativa ao cliente.
 
 Para a próxima consulta, o Gateway reconhece o menu final e envia `1`, sem
 reiniciar toda a navegação.
@@ -68,6 +71,38 @@ Sucesso:
   "status": "COMPLETED",
   "visibility": "private",
   "result_text": "retorno sanitizado do Telegram",
+  "offers": [
+    {
+      "position": 1,
+      "institution": "Banco de exemplo",
+      "installments": 24,
+      "installment_amount": "222,70",
+      "installment_amount_cents": 22270,
+      "released_amount": "2.511,07",
+      "released_amount_cents": 251107
+    }
+  ],
+  "offer_list": {
+    "type": "list",
+    "button": "Ver ofertas",
+    "sections": [
+      {
+        "title": "Opções disponíveis",
+        "rows": [
+          {
+            "id": "clt_offer_1",
+            "title": "1 - Banco de exemplo",
+            "description": "24x R$ 222,70 | Libera R$ 2.511,07"
+          },
+          {
+            "id": "clt_other_amount",
+            "title": "Outro valor",
+            "description": "Quero verificar outra condição"
+          }
+        ]
+      }
+    ]
+  },
   "phone_requested": false
 }
 ```
@@ -98,6 +133,42 @@ Criar webhook separado, protegido pelo token. Antes de criar a nota privada:
 3. impedir processamento duplicado;
 4. criar mensagem no Chatwoot com `message_type=outgoing` e `private=true`;
 5. atualizar somente estado técnico não sensível.
+
+### Lista de ofertas enviada ao cliente
+
+Quando `offers` possuir entre uma e cinco opções, o n8n deve construir uma lista
+interativa do WhatsApp:
+
+- uma linha para cada oferta, mantendo a ordem do Telegram;
+- título com posição e instituição;
+- descrição com prazo, parcela e valor liberado;
+- uma última linha fixa chamada `Outro valor`.
+
+Com duas ofertas, o cliente verá:
+
+```text
+1 — primeira oferta
+2 — segunda oferta
+3 — Outro valor
+```
+
+Com cinco ofertas, `Outro valor` será a sexta linha. A lista interativa comporta
+esse cenário sem perder opções.
+
+IDs estáveis:
+
+```text
+clt_offer_1
+clt_offer_2
+clt_offer_3
+clt_offer_4
+clt_offer_5
+clt_other_amount
+```
+
+Ao selecionar uma oferta, o n8n registra a escolha como nota privada e transfere
+para atendimento humano. Ao selecionar `Outro valor`, pergunta qual valor o
+cliente deseja e também transfere para humano. Esta etapa não cria proposta.
 
 ## Falhas que exigem humano
 

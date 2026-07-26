@@ -89,7 +89,8 @@ O endpoint de consulta exige `x-gateway-key` e recebe:
 
 O callback é enviado somente para `N8N_CALLBACK_URL`, com autenticação Bearer e
 `idempotency-key`. Em sucesso, `result_text` contém a resposta do Telegram
-sanitizada e `visibility` é sempre `private`.
+sanitizada, `offers` contém até cinco ofertas estruturadas e `visibility` é
+sempre `private`.
 
 Consulte `../docs/CLT_TELEGRAM_GATEWAY_RUNBOOK.md`.
 

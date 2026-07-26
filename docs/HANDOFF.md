@@ -15,7 +15,10 @@ dados reais, a primeira implementação de serviço do Gateway CLT.
   privada;
 - fluxo inesperado do C6, timeout ou resposta inválida falha fechado e exige
   revisão humana;
-- 12 testes sintéticos focados foram aprovados.
+- retorno com oferta é estruturado em até cinco opções;
+- o Gateway envia `0` ao bot após capturar as ofertas e restaura o menu CLT;
+- a lista destinada ao WhatsApp inclui `Outro valor` como última opção;
+- 15 testes sintéticos focados foram aprovados.
 
 Limites deliberados: fila e lock ainda são locais ao processo; reinício durante
 consulta exige retry supervisionado pelo mesmo `operation_id`. A persistência

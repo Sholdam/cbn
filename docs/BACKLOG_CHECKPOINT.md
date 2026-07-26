@@ -10,7 +10,10 @@ Status: **Pronto para revisão local; sem deploy**.
 - celular opcional vem do contato do Chatwoot;
 - callback do n8n é fixo, autenticado e destinado somente a nota privada;
 - falhas inesperadas seguem para revisão humana;
-- 12 testes sintéticos aprovados;
+- até cinco ofertas CLT estruturadas, preservando banco, prazo, parcela e valor;
+- retorno ao menu CLT após capturar ofertas, sem selecionar banco;
+- contrato de lista interativa com opção final `Outro valor`;
+- 15 testes sintéticos aprovados;
 - nenhuma credencial, sessão, CPF, telefone ou retorno real versionado.
 
 Pendente: revisão humana do diff, configuração do callback n8n, teste integrado

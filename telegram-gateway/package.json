@@ -11,7 +11,7 @@
     "idempotency:first": "node src/idempotency-test.js first",
     "idempotency:retry": "node src/idempotency-test.js retry",
     "idempotency:reset": "node src/idempotency-test.js reset",
-    "test": "node --test --test-isolation=none test/callback.test.js test/clt-flow.test.js test/operation-queue.test.js test/validation.test.js",
+    "test": "node --test --test-isolation=none test/callback.test.js test/clt-flow.test.js test/clt-offers.test.js test/operation-queue.test.js test/validation.test.js",
     "test:focused": "node --test --test-isolation=none test/clt-flow.test.js test/validation.test.js test/operation-queue.test.js"
   },
   "dependencies": {
