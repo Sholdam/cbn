@@ -449,3 +449,34 @@ rollback limpo e reaplicação passaram somente com fixtures sintéticas locais.
 **Ponto de retomada:** após revisão e merge da branch, a BKL-020 cria a
 auditoria canônica. Appsmith, usuários reais, convites, MFA e produção continuam
 fora do escopo e proibidos nesta fase.
+
+### Piloto Chatwoot — triagem automática de FGTS (26/07/2026)
+
+Foi publicado no Railway um serviço n8n dedicado, `n8n-cbn-bot`, com imagem
+fixada, volume persistente e credenciais mantidas somente no cofre do n8n. O
+workflow `CBN — Triagem FGTS até autorização` está ligado ao AgentBot
+`CBN Bot FGTS` e exclusivamente à caixa oficial `CBN Api`.
+
+O fluxo reconhece as duas frases aprovadas dos anúncios de FGTS, solicita o CPF,
+valida formato, sequência e dígitos verificadores, pede nova tentativa quando
+inválido e, quando válido, orienta a autorização da `GIRO SOCIEDADE DE CRÉDITO`.
+Depois dessa orientação, abre a conversa para o atendimento humano. Mensagens de
+outros produtos são entregues ao humano sem resposta automática.
+
+O CPF completo não é salvo em atributos, tags ou logs pelo workflow. Persistem
+somente `cbn_fgts_bot_stage` e `cbn_fgts_last_message_id`, usados para estado e
+idempotência. O endpoint público usa caminho imprevisível e não foi versionado.
+O teste remoto utilizou evento sintético descartado e não enviou mensagem a
+cliente. Durante a primeira publicação, uma conversa real recém-chegada recebeu
+a saudação do bot antes de a atualização de atributos ser corrigida; seu estado
+foi recuperado para `awaiting_cpf` e a correção foi publicada.
+
+Arquivos de referência:
+
+- `scripts/chatwoot/fgts-triage-core.mjs`;
+- `scripts/n8n/workflows/cbn-fgts-triage.json`;
+- `tests/chatwoot/fgts-triage-core.test.mjs`;
+- `docs/chatwoot/FGTS_TRIAGE_BOT.md`.
+
+Próxima extensão deliberadamente fora desta entrega: consulta bancária, resposta
+ao `PRONTO`, IA, CLT automático, armazenamento do CPF e campanhas em massa.

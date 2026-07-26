@@ -1,0 +1,251 @@
+{
+  "name": "CBN — Triagem FGTS até autorização",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "cbn-fgts-triage",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "a51a145d-7117-48a1-8e17-a4a55567cc76",
+      "name": "Webhook Chatwoot",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -640,
+        160
+      ],
+      "webhookId": "8e4bd8dd-6d2f-4b65-93d0-7d83c050482d"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body ?? $json;\nconst conversation = body.conversation ?? {};\nconst attributes = conversation.custom_attributes ?? {};\nconst event = body.event;\nconst messageType = body.message_type;\nconst messageId = body.id;\nconst inboxId = conversation.inbox_id ?? conversation.inbox?.id;\nconst content = String(body.content ?? '').trim();\nconst stage = attributes.cbn_fgts_bot_stage;\nconst lastMessageId = attributes.cbn_fgts_last_message_id;\n\nconst base = {\n  action: 'ignore',\n  accountId: 1,\n  conversationId: conversation.id,\n  inboxId,\n  messageId,\n  attributes,\n  handoff: false,\n};\n\nif (event !== 'message_created' || messageType !== 'incoming' || String(inboxId) !== '2' || !messageId || String(messageId) === String(lastMessageId ?? '')) {\n  return [];\n}\n\nconst normalizeText = (value) => String(value ?? '')\n  .normalize('NFD')\n  .replace(/\\p{Diacritic}/gu, '')\n  .toLowerCase()\n  .replace(/\\s+/g, ' ')\n  .trim();\n\nconst normalized = normalizeText(content);\nconst isFgtsLead = normalized.includes('quero simular meu fgts') || normalized.includes('quero simular minha antecipacao do fgts');\n\nif (!stage && isFgtsLead) {\n  return [{ json: {\n    ...base,\n    action: 'reply',\n    message: 'Olá! 👋 Sou a assistente virtual da CBN Crédito.\\n\\nPara verificarmos as opções disponíveis para você, envie seu CPF com os 11 números, por favor.',\n    nextAttributes: {\n      ...attributes,\n      cbn_fgts_bot_stage: 'awaiting_cpf',\n      cbn_fgts_last_message_id: String(messageId),\n    },\n  } }];\n}\n\nif (!stage) return [{ json: { ...base, action: 'handoff', handoff: true } }];\nif (stage !== 'awaiting_cpf') return [{ json: { ...base, action: 'handoff', handoff: true } }];\n\nconst normalizeCpf = (value) => {\n  const raw = String(value ?? '').trim();\n  if (!raw || /[a-z]/i.test(raw) || /[^\\d.\\-\\s]/.test(raw)) return null;\n  return raw.replace(/\\D/g, '');\n};\nconst cpf = normalizeCpf(content);\nconst calculateDigit = (value, length) => {\n  let sum = 0;\n  for (let index = 0; index < length; index += 1) sum += Number(value[index]) * (length + 1 - index);\n  const remainder = (sum * 10) % 11;\n  return remainder === 10 ? 0 : remainder;\n};\nconst validCpf = Boolean(cpf) && cpf.length === 11 && !/^(\\d)\\1{10}$/.test(cpf) && calculateDigit(cpf, 9) === Number(cpf[9]) && calculateDigit(cpf, 10) === Number(cpf[10]);\n\nif (!validCpf) {\n  return [{ json: {\n    ...base,\n    action: 'reply',\n    message: 'CPF inválido, pode enviar novamente?',\n    nextAttributes: {\n      ...attributes,\n      cbn_fgts_bot_stage: 'awaiting_cpf',\n      cbn_fgts_last_message_id: String(messageId),\n    },\n  } }];\n}\n\nreturn [{ json: {\n  ...base,\n  action: 'reply',\n  message: 'CPF recebido ✅\\n\\nAgora preciso que você autorize a consulta do seu FGTS.\\n\\nAbra o aplicativo FGTS ou a Carteira de Trabalho Digital e autorize a instituição:\\n\\nGIRO SOCIEDADE DE CRÉDITO\\n\\nQuando concluir, responda PRONTO.',\n  nextAttributes: {\n    ...attributes,\n    cbn_fgts_bot_stage: 'handed_off',\n    cbn_fgts_last_message_id: String(messageId),\n  },\n  handoff: true,\n} }];"
+      },
+      "id": "c8471190-b408-4ae0-a09d-3c20d26e4177",
+      "name": "Decidir etapa sem persistir CPF",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -400,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "543918af-100c-41e7-b322-e408010b7aa7",
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "reply",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "f3177e73-76a2-462f-aa39-4b69e0b5a34a",
+      "name": "Deve responder?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -160,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://7k.up.railway.app/api/v1/accounts/{{ $json.accountId }}/conversations/{{ $json.conversationId }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ content: $json.message, message_type: 'outgoing', private: false }) }}",
+        "options": {}
+      },
+      "id": "a6fb938c-0d01-49b8-9aae-1f6a1bf96f81",
+      "name": "Enviar resposta no Chatwoot",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        80,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://7k.up.railway.app/api/v1/accounts/{{ $('Decidir etapa sem persistir CPF').item.json.accountId }}/conversations/{{ $('Decidir etapa sem persistir CPF').item.json.conversationId }}/{{ $('Decidir etapa sem persistir CPF').item.json.nextAttributes ? 'custom_attributes' : 'toggle_status' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($('Decidir etapa sem persistir CPF').item.json.nextAttributes ? { custom_attributes: $('Decidir etapa sem persistir CPF').item.json.nextAttributes } : { status: 'open' }) }}",
+        "options": {}
+      },
+      "id": "e1147049-a35c-45c5-9c73-7c22351aeef3",
+      "name": "Atualizar estado técnico",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        320,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "17cb7d4f-46fc-4910-9b1f-14c2fb060a8c",
+              "leftValue": "={{ $('Decidir etapa sem persistir CPF').item.json.handoff }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a147b623-cf59-4c8f-993c-36a9037431aa",
+      "name": "Liberar para humano?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        560,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://7k.up.railway.app/api/v1/accounts/{{ $('Decidir etapa sem persistir CPF').item.json.accountId }}/conversations/{{ $('Decidir etapa sem persistir CPF').item.json.conversationId }}/toggle_status",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"status\":\"open\"}",
+        "options": {}
+      },
+      "id": "7c70ee9e-cfe8-472d-8d6f-02918aeb4b25",
+      "name": "Abrir para atendimento humano",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        800,
+        0
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook Chatwoot": {
+      "main": [
+        [
+          {
+            "node": "Decidir etapa sem persistir CPF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decidir etapa sem persistir CPF": {
+      "main": [
+        [
+          {
+            "node": "Deve responder?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deve responder?": {
+      "main": [
+        [
+          {
+            "node": "Enviar resposta no Chatwoot",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Atualizar estado técnico",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar resposta no Chatwoot": {
+      "main": [
+        [
+          {
+            "node": "Atualizar estado técnico",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atualizar estado técnico": {
+      "main": [
+        [
+          {
+            "node": "Liberar para humano?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Liberar para humano?": {
+      "main": [
+        [
+          {
+            "node": "Abrir para atendimento humano",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "none",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": true
+  },
+  "versionId": "39fb5418-498e-4ed0-a172-2a49c09cac93",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

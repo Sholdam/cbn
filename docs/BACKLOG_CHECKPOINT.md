@@ -299,3 +299,21 @@ Próxima após merge: **BKL-020 — trilha de auditoria canônica no PostgreSQL*
 - BKL-011 — catálogo de produtos contínuo;
 - BKL-012 — fluxo FGTS pós-oferta;
 - BKL-013 — assinatura, análise, aprovação, pagamento ou cancelamento.
+
+### Piloto operacional — bot de triagem FGTS
+
+Status: **Publicado e em validação operacional supervisionada** em 26/07/2026.
+
+- n8n dedicado com volume persistente no projeto Railway da CBN;
+- AgentBot ligado apenas à caixa oficial `CBN Api`;
+- reconhece entrada de anúncio FGTS, solicita e valida CPF;
+- CPF inválido gera nova solicitação;
+- CPF válido gera orientação para autorizar a `GIRO SOCIEDADE DE CRÉDITO`;
+- handoff humano ocorre imediatamente após a orientação;
+- outros produtos seguem ao humano sem mensagem automática;
+- nenhum CPF é persistido pelo workflow;
+- endpoint de produção protegido por caminho não versionado;
+- suíte focada e teste remoto sintético sem envio a cliente.
+
+Próximo checkpoint: acompanhar conversas reais supervisionadas e registrar
+falhas de entrega, duplicação ou roteamento antes de ampliar o fluxo.
