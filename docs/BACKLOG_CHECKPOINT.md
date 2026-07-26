@@ -314,6 +314,9 @@ Status: **Publicado e em validação operacional supervisionada** em 26/07/2026.
 - nenhum CPF é persistido pelo workflow;
 - endpoint de produção protegido por caminho não versionado;
 - suíte focada e teste remoto sintético sem envio a cliente.
+- falha inicial de persistência do estágio corrigida e republicada em
+  26/07/2026; conversas anteriores foram concluídas manualmente para evitar
+  duplicação.
 
 Próximo checkpoint: acompanhar conversas reais supervisionadas e registrar
 falhas de entrega, duplicação ou roteamento antes de ampliar o fluxo.

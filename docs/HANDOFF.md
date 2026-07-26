@@ -471,6 +471,13 @@ cliente. Durante a primeira publicação, uma conversa real recém-chegada receb
 a saudação do bot antes de a atualização de atributos ser corrigida; seu estado
 foi recuperado para `awaiting_cpf` e a correção foi publicada.
 
+Na validação supervisionada posterior, foi identificado que a URL dinâmica do
+nó `Atualizar estado técnico` ainda continha uma composição inválida. A saudação
+era enviada, porém o estágio não era persistido e a mensagem com CPF seguia
+diretamente ao humano. Em 26/07/2026, a expressão foi substituída por uma única
+expressão n8n válida e a nova versão foi publicada. As conversas anteriores
+foram concluídas manualmente para evitar resposta duplicada.
+
 Arquivos de referência:
 
 - `scripts/chatwoot/fgts-triage-core.mjs`;

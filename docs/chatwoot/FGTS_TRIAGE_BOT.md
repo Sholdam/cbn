@@ -75,3 +75,15 @@ Use apenas CPF sintético de teste e uma conversa controlada. Confirme:
 5. conversa passa para `open`;
 6. nova mensagem não recebe resposta do bot;
 7. nenhum CPF aparece nos atributos da conversa ou nos logs do n8n.
+
+## Correção operacional de 26/07/2026
+
+A primeira versão publicada continha uma expressão inválida na URL dinâmica do
+nó `Atualizar estado técnico`. A saudação era enviada, mas o estágio
+`awaiting_cpf` não era persistido; por isso, a mensagem seguinte era entregue ao
+humano sem a orientação automática da GIRO.
+
+A expressão foi substituída por uma única expressão n8n válida, publicada e
+confirmada sem erro de sintaxe. Conversas iniciadas antes da correção não são
+reprocessadas automaticamente para evitar mensagens duplicadas; nelas, a
+orientação foi concluída manualmente pelo atendimento.

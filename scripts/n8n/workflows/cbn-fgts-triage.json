@@ -87,7 +87,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://7k.up.railway.app/api/v1/accounts/{{ $('Decidir etapa sem persistir CPF').item.json.accountId }}/conversations/{{ $('Decidir etapa sem persistir CPF').item.json.conversationId }}/{{ $('Decidir etapa sem persistir CPF').item.json.nextAttributes ? 'custom_attributes' : 'toggle_status' }}",
+        "url": "={{ 'https://7k.up.railway.app/api/v1/accounts/' + $('Decidir etapa sem persistir CPF').item.json.accountId + '/conversations/' + $('Decidir etapa sem persistir CPF').item.json.conversationId + '/' + ($('Decidir etapa sem persistir CPF').item.json.nextAttributes ? 'custom_attributes' : 'toggle_status') }}",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
