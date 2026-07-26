@@ -6,7 +6,7 @@
     "node": ">=22.0.0"
   },
   "scripts": {
-    "test": "node --test supabase-storage-runtime-test.test.mjs kms-envelope/envelope-service.test.mjs backup-restore/backup-recovery.test.mjs retention/retention-runtime.test.mjs backend-identity/backend-identity-runtime.test.mjs",
+    "test": "node --test supabase-storage-runtime-test.test.mjs kms-envelope/envelope-service.test.mjs backup-restore/backup-recovery.test.mjs retention/retention-runtime.test.mjs backend-identity/backend-identity-runtime.test.mjs ../tests/whatsapp/create-ctps-template.test.mjs",
     "test:storage-runtime": "node --test supabase-storage-runtime-test.test.mjs",
     "test:kms-envelope": "node --test kms-envelope/envelope-service.test.mjs",
     "test:backup-recovery": "node --test backup-restore/backup-recovery.test.mjs",
@@ -14,9 +14,17 @@
     "test:retention": "node --test retention/retention-runtime.test.mjs",
     "run:retention-local": "node retention/retention-runtime.mjs",
     "test:backend-identity": "node --test backend-identity/backend-identity-runtime.test.mjs",
-    "run:backend-identity-local": "node backend-identity/backend-identity-runtime.mjs"
+    "run:backend-identity-local": "node backend-identity/backend-identity-runtime.mjs",
+    "test:whatsapp": "node --test ../tests/whatsapp/create-ctps-template.test.mjs",
+    "whatsapp:render-ctps-header": "node whatsapp/render-ctps-header.mjs",
+    "whatsapp:create-ctps-template": "node whatsapp/create-ctps-template.mjs",
+    "whatsapp:check-ctps-template": "node whatsapp/check-template-status.mjs",
+    "whatsapp:estimate-ctps-cost": "node whatsapp/estimate-ctps-template-cost.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.110.6"
+  },
+  "devDependencies": {
+    "@resvg/resvg-js": "2.6.2"
   }
 }

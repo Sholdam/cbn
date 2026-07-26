@@ -14,6 +14,11 @@ Para continuar em outro computador, siga
 
 ### Estado consolidado
 
+- **Modelo oficial CTPS preparado localmente em 26/07/2026:** template de
+  marketing `cbn_ctps_simulacao_v1`, arte SVG/PNG 800×418, cliente idempotente da
+  Meta, upload resumível, status, dry-run e estimador de custo foram preparados
+  sem submissão ou envio. Referência Brasil: US$ 0,0625 por mensagem de marketing
+  entregue; 22/22 testes focados aprovados.
 - **BKL-018 concluída e integrada:** fundação local de autenticação, perfis e
   permissões humanas para `admin`, `operations`, `support` e `auditor`.
 - **BKL-016 — fundação concluída:** RLS, Storage privado, envelope local,
@@ -36,6 +41,8 @@ evitar duplicação de estruturas e definir uma única fonte append-only sem PII
 
 ### Tarefas paralelas ainda vivas
 
+- Modelo CTPS: pronto para revisão local; falta autorização separada para
+  submissão à Meta e, depois de aprovado, teste controlado no Chatwoot.
 - BKL-007 e BKL-011: regras e catálogo são completados durante atendimentos.
 - BKL-012: falta comprovar os campos pós-oferta do FGTS com cliente autorizado.
 - BKL-013: acompanhamento de proposta, assinatura, análise e pagamento continua

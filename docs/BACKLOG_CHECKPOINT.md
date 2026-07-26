@@ -2,6 +2,12 @@
 
 ## Retomada oficial
 
+- **WhatsApp — modelo CTPS preparado localmente (26/07/2026):**
+  `cbn_ctps_simulacao_v1` em `MARKETING`/`pt_BR`, cabeçalho IMAGE 800×418,
+  três respostas rápidas, criação idempotente, consulta de status, dry-run e
+  estimador de custo. Referência Brasil: US$ 0,0625 por mensagem entregue
+  (aprox. R$ 0,32 na PTAX de 24/07/2026). Resultado focado: 22/22 testes.
+  Sem submissão, mensagem, lista, deploy, push ou merge.
 - Fonte: `https://github.com/Sholdam/cbn`, branch `main`.
 - **BKL-018 — Concluída e integrada:** autenticação, perfis humanos, estados de
   acesso, menor privilégio, RLS e funções administrativas controladas foram
