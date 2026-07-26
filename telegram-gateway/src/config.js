@@ -41,3 +41,40 @@ export function getCheckConfig() {
     timeoutMs: Number.isFinite(timeoutRaw) && timeoutRaw >= 5000 ? timeoutRaw : 30000,
   };
 }
+
+function positiveInteger(name, fallback, minimum = 1) {
+  const value = Number(process.env[name] || fallback);
+  if (!Number.isSafeInteger(value) || value < minimum) {
+    throw new Error(`${name} deve ser um número inteiro maior ou igual a ${minimum}.`);
+  }
+  return value;
+}
+
+function requireSecret(name) {
+  const value = requireEnv(name);
+  if (value.length < 32) {
+    throw new Error(`${name} deve possuir pelo menos 32 caracteres.`);
+  }
+  return value;
+}
+
+export function getGatewayConfig() {
+  const base = getBaseConfig({ requireSession: true });
+  const callbackUrl = new URL(requireEnv('N8N_CALLBACK_URL'));
+  if (callbackUrl.protocol !== 'https:') {
+    throw new Error('N8N_CALLBACK_URL deve usar HTTPS.');
+  }
+
+  return {
+    ...base,
+    target: requireEnv('TARGET_USERNAME'),
+    port: positiveInteger('PORT', 3000),
+    apiKey: requireSecret('GATEWAY_API_KEY'),
+    callbackUrl: callbackUrl.toString(),
+    callbackToken: requireSecret('N8N_CALLBACK_TOKEN'),
+    responseTimeoutMs: positiveInteger('CLT_RESPONSE_TIMEOUT_MS', 360000, 30000),
+    pollIntervalMs: positiveInteger('CLT_POLL_INTERVAL_MS', 1500, 250),
+    callbackTimeoutMs: positiveInteger('CALLBACK_TIMEOUT_MS', 15000, 1000),
+    callbackMaxAttempts: positiveInteger('CALLBACK_MAX_ATTEMPTS', 5, 1),
+  };
+}

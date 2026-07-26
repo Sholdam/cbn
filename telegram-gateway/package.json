@@ -1,15 +1,18 @@
 {
-  "name": "cbn-telegram-gateway-poc",
-  "version": "0.2.0",
+  "name": "cbn-telegram-gateway",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
-  "description": "Provas controladas de persistência e idempotência MTProto para o Gateway de Crédito CBN.",
+  "description": "Gateway interno e serializado para consultas CLT via Telegram MTProto.",
   "scripts": {
+    "start": "node src/server.js",
     "auth": "node src/auth.js",
     "check": "node src/check-session.js",
     "idempotency:first": "node src/idempotency-test.js first",
     "idempotency:retry": "node src/idempotency-test.js retry",
-    "idempotency:reset": "node src/idempotency-test.js reset"
+    "idempotency:reset": "node src/idempotency-test.js reset",
+    "test": "node --test --test-isolation=none test/callback.test.js test/clt-flow.test.js test/operation-queue.test.js test/validation.test.js",
+    "test:focused": "node --test --test-isolation=none test/clt-flow.test.js test/validation.test.js test/operation-queue.test.js"
   },
   "dependencies": {
     "dotenv": "^16.6.1",

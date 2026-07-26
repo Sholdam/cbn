@@ -1,5 +1,28 @@
 # Handoff — CBN Crédito
 
+## Checkpoint local — Gateway Telegram CLT (26/07/2026)
+
+Foi preparada na branch `codex/clt-telegram-gateway`, sem deploy ou conexão com
+dados reais, a primeira implementação de serviço do Gateway CLT.
+
+- sessão MTProto e idempotência já haviam sido comprovadas manualmente;
+- serviço HTTP interno aceita operação CLT autenticada;
+- CPF e telefone são validados e mantidos somente em memória;
+- comandos Telegram usam `random_id` determinístico por operação e etapa;
+- uma fila exclusiva impede operações simultâneas na mesma sessão;
+- pedido opcional de celular usa o telefone do contato do Chatwoot;
+- retorno sanitizado segue apenas para callback fixo do n8n com visibilidade
+  privada;
+- fluxo inesperado do C6, timeout ou resposta inválida falha fechado e exige
+  revisão humana;
+- 12 testes sintéticos focados foram aprovados.
+
+Limites deliberados: fila e lock ainda são locais ao processo; reinício durante
+consulta exige retry supervisionado pelo mesmo `operation_id`. A persistência
+canônica continua reservada à BKL-024. `telegram@2.26.22` está arquivado e deve
+migrar para `teleproto` antes de produção. Próximo gate: revisar e configurar o
+contrato do n8n sem efetuar deploy automático.
+
 ## CHECKPOINT OFICIAL PARA RETOMADA — 17/07/2026
 
 Este repositório, na branch `main`, é a **fonte oficial** do projeto:

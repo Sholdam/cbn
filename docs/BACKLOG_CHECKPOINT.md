@@ -1,5 +1,23 @@
 # Backlog — checkpoint oficial de 17/07/2026
 
+## Gateway CLT — implementação local de 26/07/2026
+
+Status: **Pronto para revisão local; sem deploy**.
+
+- sessão Telegram e retry idempotente comprovados no POC;
+- Gateway HTTP, fila exclusiva, validação de CPF/telefone e fluxo CLT
+  implementados;
+- celular opcional vem do contato do Chatwoot;
+- callback do n8n é fixo, autenticado e destinado somente a nota privada;
+- falhas inesperadas seguem para revisão humana;
+- 12 testes sintéticos aprovados;
+- nenhuma credencial, sessão, CPF, telefone ou retorno real versionado.
+
+Pendente: revisão humana do diff, configuração do callback n8n, teste integrado
+somente com fixture sintética, migração futura de `telegram` para `teleproto`,
+persistência de fila/lock na BKL-024 e gates explícitos antes de deploy/dados
+reais.
+
 ## Retomada oficial
 
 - Fonte: `https://github.com/Sholdam/cbn`, branch `main`.

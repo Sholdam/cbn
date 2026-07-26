@@ -1,5 +1,28 @@
 # Arquitetura Técnica — Gateway de Crédito CBN
 
+## Piloto do Gateway CLT — 26/07/2026
+
+O primeiro serviço executável do Gateway CLT foi preparado localmente:
+
+```text
+n8n
+  → POST autenticado com operation_id, CPF e telefone
+Gateway CLT (fila única em memória)
+  → sessão MTProto dedicada
+Bot operacional do Telegram
+  → resultado sanitizado
+Gateway
+  → callback fixo e autenticado
+n8n
+  → nota privada no Chatwoot
+```
+
+O contrato não aceita callback arbitrário, não registra CPF/telefone, não envia
+resultado ao cliente e falha fechado em telas inesperadas. Cada comando deriva
+`random_id` do par `operation_id + etapa`. O armazenamento canônico do lock e da
+máquina de estados permanece pendente para a BKL-024; por isso esta implementação
+é piloto supervisionado e não autoriza produção.
+
 ## Identidades técnicas mínimas do Gateway
 
 O PostgreSQL local passa a modelar autorização backend por papéis `NOLOGIN`:
