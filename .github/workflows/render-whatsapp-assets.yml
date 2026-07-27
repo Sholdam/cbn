@@ -1,0 +1,56 @@
+name: Render WhatsApp assets
+
+on:
+  push:
+    paths:
+      - 'assets/whatsapp/*.svg'
+      - '.github/workflows/render-whatsapp-assets.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install renderer
+        run: pip install --disable-pip-version-check cairosvg
+
+      - name: Render SVG files to PNG
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import cairosvg
+
+          for svg in Path('assets/whatsapp').glob('*.svg'):
+              png = svg.with_suffix('.png')
+              cairosvg.svg2png(
+                  url=str(svg),
+                  write_to=str(png),
+                  output_width=800,
+                  output_height=418,
+              )
+              print(f'Rendered {svg} -> {png}')
+          PY
+
+      - name: Commit rendered PNG files
+        run: |
+          if git diff --quiet -- 'assets/whatsapp/*.png'; then
+            echo 'No PNG changes to commit.'
+            exit 0
+          fi
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/whatsapp/*.png
+          git commit -m 'chore: render WhatsApp image assets [skip ci]'
+          git push
