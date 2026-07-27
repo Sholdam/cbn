@@ -51,7 +51,7 @@ jobs:
 
       - name: Commit rendered PNG files
         run: |
-          if git diff --quiet -- 'assets/whatsapp/*.png'; then
+          if [ -z "$(git status --porcelain -- assets/whatsapp/*.png)" ]; then
             echo 'No PNG changes to commit.'
             exit 0
           fi
