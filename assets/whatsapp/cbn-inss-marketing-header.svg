@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="418" viewBox="0 0 800 418" role="img" aria-labelledby="title desc">
+  <title id="title">CBN Crédito — Crédito para beneficiários INSS</title>
+  <desc id="desc">Cabeçalho azul-marinho com detalhes turquesa e verdes para modelo oficial de WhatsApp.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#071B33"/>
+      <stop offset="0.58" stop-color="#0A294A"/>
+      <stop offset="1" stop-color="#0D3B66"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#20C7B7"/>
+      <stop offset="1" stop-color="#4FD19B"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#20C7B7" stop-opacity=".5"/>
+      <stop offset="1" stop-color="#126FA5" stop-opacity=".08"/>
+    </linearGradient>
+    <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="10"/>
+    </filter>
+    <pattern id="dots" width="16" height="16" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.6" fill="#20C7B7" opacity=".24"/>
+    </pattern>
+  </defs>
+
+  <rect width="800" height="418" rx="28" fill="url(#background)"/>
+  <circle cx="708" cy="72" r="118" fill="#20C7B7" opacity=".08" filter="url(#softGlow)"/>
+  <path d="M498 418C560 330 612 241 665 138C705 61 749 16 800 0V418Z" fill="url(#glass)"/>
+  <path d="M552 418C616 326 669 235 721 147C748 102 774 71 800 51V418Z" fill="#20C7B7" opacity=".13"/>
+  <path d="M633 418C681 343 719 280 754 232C771 209 786 192 800 179V418Z" fill="url(#accent)" opacity=".48"/>
+  <path d="M425 388C553 339 575 199 659 112C705 64 753 43 800 36" fill="none" stroke="#20C7B7" stroke-width="2.5" opacity=".8"/>
+  <path d="M466 404C583 361 618 259 675 188C713 140 754 117 800 110" fill="none" stroke="#4FD19B" stroke-width="1.8" opacity=".7"/>
+  <circle cx="585" cy="272" r="6" fill="#20C7B7"/>
+  <circle cx="675" cy="188" r="5" fill="#4FD19B"/>
+  <circle cx="724" cy="60" r="5" fill="#20C7B7"/>
+  <rect x="684" y="276" width="90" height="88" fill="url(#dots)" opacity=".8"/>
+
+  <g id="brand" transform="translate(62 58)">
+    <rect width="54" height="54" rx="16" fill="url(#accent)"/>
+    <path d="M17 18h20M17 27h14M17 36h20" fill="none" stroke="#071B33" stroke-width="4" stroke-linecap="round"/>
+    <text x="70" y="25" fill="#FFFFFF" font-family="Arial, Segoe UI, sans-serif" font-size="25" font-weight="700" letter-spacing=".5">CBN</text>
+    <text x="70" y="47" fill="#9EE7DD" font-family="Arial, Segoe UI, sans-serif" font-size="17" font-weight="600" letter-spacing="1.8">CRÉDITO</text>
+  </g>
+
+  <g id="copy" transform="translate(62 170)">
+    <rect width="68" height="6" rx="3" fill="url(#accent)"/>
+    <text x="0" y="66" fill="#FFFFFF" font-family="Arial, Segoe UI, sans-serif" font-size="44" font-weight="700">Crédito para</text>
+    <text x="0" y="116" fill="#FFFFFF" font-family="Arial, Segoe UI, sans-serif" font-size="40" font-weight="700">beneficiários INSS</text>
+    <text x="2" y="163" fill="#A9E9E1" font-family="Arial, Segoe UI, sans-serif" font-size="24" font-weight="500">Consulte suas opções</text>
+  </g>
+</svg>
