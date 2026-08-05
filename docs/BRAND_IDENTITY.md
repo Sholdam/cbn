@@ -1,6 +1,6 @@
 # Identidade Visual — CBN Crédito
 
-**Versão:** 1.0  
+**Versão:** 1.1  
 **Consolidada em:** 04/08/2026  
 **Posicionamento:** Atendimento humano e orientação clara.
 
@@ -28,23 +28,42 @@ Manter um feed consistente, reconhecível e profissional, inspirado na disciplin
 - Textos: Medium ou Regular.
 - Prioridade absoluta para legibilidade no celular.
 
-## Logomarca
+## Logomarca oficial
 
-- Usar somente os arquivos oficiais do kit.
-- Nunca pedir para IA redesenhar, imitar ou reinterpretar a marca.
-- Fundo escuro: versão com texto branco.
-- Fundo claro: versão com texto azul-marinho.
-- Carrossel: logo completa na capa e na última página; páginas internas usam `@cbncredito`.
-- Respeitar proporção, cores e área de respiro.
+A identidade oficial possui somente estas assinaturas:
+
+1. **Símbolo oficial isolado** — marca entrelaçada que forma C, B e N.
+2. **Assinatura vertical oficial** — símbolo entrelaçado acima e texto **CBN CRÉDITO** abaixo.
+3. **Perfil oficial** — símbolo oficial isolado sobre fundo azul-marinho.
+
+### Versão inválida
+
+Não faz parte da identidade oficial:
+
+- símbolo acompanhado de traço divisor vertical;
+- texto `CBN Crédito` colocado à direita do símbolo;
+- qualquer linha fina adicional saindo da marca;
+- qualquer reconstrução, imitação ou reinterpretação feita por IA.
+
+A versão horizontal com divisor e texto à direita foi um erro de edição e está bloqueada para qualquer uso.
+
+### Regras de aplicação
+
+- Usar somente os arquivos oficiais do kit v1.1.
+- Nunca redesenhar, imitar ou reinterpretar a marca.
+- Preservar proporções, gradiente e posicionamento relativo.
+- Não acrescentar traços, molduras, slogans ou nomes ao arquivo da marca.
+- Carrossel: assinatura vertical completa na capa e na última página; páginas internas usam o símbolo isolado ou `@cbncredito`.
 
 ### Arquivos oficiais
 
-Os PNGs transparentes em alta resolução ficam na pasta oficial do Google Drive:
+Os PNGs oficiais ficam na pasta do Google Drive:
 
 - Pasta: https://drive.google.com/drive/folders/18nhsvFGnKOae7wdMDDbO2Sryb3IC-Xxq
-- Logo para fundo escuro: https://drive.google.com/file/d/1w_3J_Xc92GO_EOTVTLikYsPWhT_47GgF/view
-- Logo para fundo claro: https://drive.google.com/file/d/1RbRVr3hjOSXimZKN_OUYUKSe1K_0hWkC/view
-- Símbolo isolado: https://drive.google.com/file/d/1LulOVtWg4_i4D6mBm-BaFWI2KjyXq9gK/view
+- Assinatura vertical transparente: https://drive.google.com/file/d/1w_3J_Xc92GO_EOTVTLikYsPWhT_47GgF/view
+- Símbolo isolado transparente: https://drive.google.com/file/d/1LulOVtWg4_i4D6mBm-BaFWI2KjyXq9gK/view
+- Perfil oficial sobre fundo azul: https://drive.google.com/file/d/1RbRVr3hjOSXimZKN_OUYUKSe1K_0hWkC/view
+- Kit completo v1.1: https://drive.google.com/file/d/1OXylYsFayynnau1MHHnwhUuDDljsYGsx/view
 
 ## Pilares editoriais
 
