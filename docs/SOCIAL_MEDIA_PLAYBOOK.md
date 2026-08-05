@@ -1,6 +1,6 @@
 # Playbook Editorial — Instagram e Facebook da CBN Crédito
 
-**Versão:** 1.0  
+**Versão:** 1.1  
 **Data:** 04/08/2026  
 **Escopo:** BKL-078 — automação e operação editorial dos canais oficiais.
 
@@ -28,8 +28,9 @@
 5. Gerar cada imagem separadamente.
 6. Nunca gerar mosaico para recortar depois.
 7. Conferir dimensão, ortografia, logo e coerência antes de programar.
-8. Logo completa na capa e no encerramento.
-9. Páginas internas usam `@cbncredito` e contador discreto.
+8. Usar a **assinatura vertical oficial** na capa e no encerramento: símbolo acima e `CBN CRÉDITO` abaixo.
+9. Páginas internas usam o símbolo isolado ou `@cbncredito`, além de contador discreto.
+10. Nunca usar a variante horizontal com traço divisor e texto à direita.
 
 ## Pilares
 
@@ -54,7 +55,8 @@ A programação pode variar conforme a pauta, mas a grade deve manter equilíbri
 - Manter títulos fortes e legíveis.
 - Usar poucas informações por bloco.
 - Evitar repetição excessiva do mesmo layout.
-- Usar a logo oficial sem redesenho.
+- Usar somente a assinatura vertical oficial, o símbolo isolado ou o perfil oficial.
+- Não acrescentar linhas, divisores, molduras ou texto lateral à marca.
 
 ## CTA padrão
 
@@ -83,13 +85,15 @@ Complemento:
 - Não expor token, App Secret, código de verificação ou credenciais.
 - Não publicar rascunho automaticamente.
 - Não alterar a conta Meta, conectar número ou ativar anúncio pago sem autorização explícita.
+- Não usar a versão incorreta da logo com divisor vertical, texto à direita ou linha fina adicional.
 
 ## Checklist antes de programar
 
 - [ ] Proporção correta.
 - [ ] Todas as páginas com a mesma dimensão.
 - [ ] Ortografia revisada.
-- [ ] Logo oficial correta.
+- [ ] Assinatura vertical ou símbolo oficial correto.
+- [ ] Nenhum traço divisor ou texto lateral indevido.
 - [ ] Informações verificadas.
 - [ ] Sem promessas ou dados inventados.
 - [ ] Legenda aprovada.
