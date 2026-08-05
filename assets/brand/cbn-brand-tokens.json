@@ -1,8 +1,18 @@
 {
   "brand": "CBN Crédito",
-  "version": "1.0",
+  "version": "1.1",
   "updated_at": "2026-08-04",
   "positioning": "Atendimento humano e orientação clara.",
+  "canonical_logo": {
+    "symbol": "Símbolo entrelaçado CBN usado isoladamente.",
+    "vertical_signature": "Símbolo entrelaçado acima e texto CBN CRÉDITO abaixo.",
+    "profile": "Símbolo oficial isolado sobre fundo azul-marinho.",
+    "invalid_variants": [
+      "Símbolo com traço divisor vertical e texto CBN Crédito à direita.",
+      "Qualquer linha fina adicional saindo da marca.",
+      "Qualquer versão redesenhada, imitada ou reinterpretada."
+    ]
+  },
   "colors": {
     "navy": "#061B42",
     "petroleum_blue": "#0B3A67",
@@ -29,13 +39,14 @@
     "feed_format": "4:5",
     "feed_size_preferred": "1080x1350",
     "carousel_rule": "Gerar cada página individualmente, nunca em mosaico.",
-    "carousel_logo": "Logo completa na capa e no encerramento; @cbncredito nas páginas internas."
+    "carousel_logo": "Assinatura vertical na capa e no encerramento; símbolo isolado ou @cbncredito nas páginas internas."
   },
   "compliance": [
     "Não prometer aprovação.",
     "Não inventar taxas, valores, prazos ou condições.",
     "Não usar dados reais de clientes.",
     "Não redesenhar a logomarca.",
+    "Não usar a variante horizontal com divisor e texto à direita.",
     "Não publicar sem aprovação humana."
   ],
   "assets_drive_folder": "https://drive.google.com/drive/folders/18nhsvFGnKOae7wdMDDbO2Sryb3IC-Xxq"
