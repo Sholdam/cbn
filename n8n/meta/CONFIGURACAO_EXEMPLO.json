@@ -1,0 +1,17 @@
+{
+  "PAUSA_GERAL": "SIM",
+  "MODO_TESTE": "SIM",
+  "META_GRAPH_VERSION": "v23.0",
+  "IG_USER_ID": "CONFIGURE_AQUI",
+  "FB_PAGE_ID": "CONFIGURE_AQUI",
+  "SPREADSHEET_ID": "1ytO0uRH8ImzUL8wgedPjtEKZfJBIVxhai-VU0nhGhtE",
+  "CALENDAR_SHEET": "Calendário Meta",
+  "LOG_SHEET": "Meta - Log de publicações",
+  "MAX_POSTS_PER_EXECUTION": 1,
+  "MAX_ATTEMPTS": 2,
+  "credentials": {
+    "google_sheets": "Selecionar no n8n após a importação",
+    "instagram_http_header_auth": "Authorization: Bearer <TOKEN>",
+    "facebook_http_header_auth": "Authorization: Bearer <PAGE_ACCESS_TOKEN>"
+  }
+}

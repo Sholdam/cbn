@@ -1,0 +1,23 @@
+{
+  "artifact": "CBN_META_03_PUBLICADOR_TESTE_SEGURO_V1.json",
+  "workflow_name": "CBN META 03 — PUBLICADOR — TESTE SEGURO — V1",
+  "generated_at": "2026-08-05",
+  "scope": "post_estatico_manual",
+  "active": false,
+  "schedule_trigger_present": false,
+  "credential_objects_present": false,
+  "node_count": 26,
+  "connection_sources": 23,
+  "sha256": "5196d39239c64c1ab93f379514c6517917d576498478e81eb7521285c84462ba",
+  "size_bytes": 51462,
+  "local_validation": {
+    "json_syntax": "ok",
+    "all_connection_targets_exist": true
+  },
+  "live_validation": {
+    "n8n_import": "not_run",
+    "meta_api_call": "not_run"
+  },
+  "versioning_policy": "O JSON completo será versionado no repositório após o primeiro smoke test de importação, para evitar consolidar um export incompatível com a versão real do n8n no Railway.",
+  "branch": "codex/meta-publicador-static-mvp"
+}
