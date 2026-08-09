@@ -1,25 +1,37 @@
-# CBN customization: optionally prepend the human agent name to WhatsApp session messages.
+# CBN customization: optionally prepend the human agent display name to
+# WhatsApp Cloud messages at the exact Message#outgoing_content boundary used
+# by the provider.
 #
 # We intentionally reuse Inbox#sender_name_type for the per-inbox switch:
 #   friendly     => disabled
 #   professional => enabled
 #
-# This is scoped to WhatsApp only, so the original email semantics remain untouched.
+# The prefix is delivery-only: the original message content stored in Chatwoot
+# remains unchanged.
 module CbnWhatsappAgentName
   def outgoing_content
     rendered_content = super
 
-    return rendered_content unless conversation&.inbox&.whatsapp?
-    return rendered_content unless conversation.inbox.professional?
-    return rendered_content unless sender.is_a?(User)
+    return rendered_content unless inbox&.whatsapp?
+    return rendered_content unless inbox.professional?
+    return rendered_content unless outgoing?
+    return rendered_content unless sender_type == 'User'
+    return rendered_content if sender.blank? || sender.name.blank?
     return rendered_content if rendered_content.blank?
 
-    "*#{sender.name}:*\n\n#{rendered_content}"
+    # Do not alter automated/campaign/template deliveries.
+    return rendered_content if content_attributes&.dig('automation_rule_id').present?
+    return rendered_content if additional_attributes&.dig('campaign_id').present?
+    return rendered_content if additional_attributes&.dig('template_params').present?
+
+    prefix = "#{sender.name}:"
+    return rendered_content if rendered_content.start_with?(prefix)
+
+    Rails.logger.info("[CBN_AGENT_NAME] applied message_id=#{id} inbox_id=#{inbox_id} sender_id=#{sender_id}")
+    "#{prefix}\n\n#{rendered_content}"
   end
 end
 
 Rails.application.config.to_prepare do
-  unless MessageContentPresenter.ancestors.include?(CbnWhatsappAgentName)
-    MessageContentPresenter.prepend(CbnWhatsappAgentName)
-  end
+  Message.prepend(CbnWhatsappAgentName) unless Message.ancestors.include?(CbnWhatsappAgentName)
 end
