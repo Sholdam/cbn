@@ -1,5 +1,17 @@
 # Handoff — CBN Crédito
 
+## Publicador Meta V2 preparado — 08/08/2026
+
+- Branch `codex/meta-publicador-v2-production` prepara o workflow unificado de
+  Instagram e Facebook com Schedule de um minuto, mantendo Manual Trigger.
+- O workflow é entregue inativo, com pausa fail-closed lida de `Automação Meta`,
+  agendamento em `America/Sao_Paulo`, idempotência e retry por canal.
+- A migração AM:AR está documentada, mas não foi aplicada à planilha real.
+- Validação offline: 24/24 testes aprovados, sem token, chamada Meta, ativação,
+  deploy, merge ou publicação.
+- Próximo gate: revisão do PR, migração manual da planilha e importação inativa;
+  qualquer smoke test real exige autorização separada.
+
 ## CHECKPOINT OFICIAL PARA RETOMADA — 17/07/2026
 
 Este repositório, na branch `main`, é a **fonte oficial** do projeto:

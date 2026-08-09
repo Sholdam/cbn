@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CBN Meta V2 — configuração não secreta",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "PAUSA_GERAL",
+    "MAX_ATTEMPTS_CANAL",
+    "RETRY_1_MINUTES",
+    "RETRY_2_MINUTES",
+    "TIMEZONE"
+  ],
+  "properties": {
+    "PAUSA_GERAL": { "enum": ["SIM", "NAO"] },
+    "MAX_ATTEMPTS_CANAL": { "const": 3 },
+    "RETRY_1_MINUTES": { "const": 10 },
+    "RETRY_2_MINUTES": { "const": 30 },
+    "TIMEZONE": { "const": "America/Sao_Paulo" }
+  }
+}
