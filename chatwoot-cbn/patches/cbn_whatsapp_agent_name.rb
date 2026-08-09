@@ -16,7 +16,7 @@ module CbnWhatsappAgentName
     return rendered_content unless inbox.professional?
     return rendered_content unless outgoing?
     return rendered_content unless sender_type == 'User'
-    return rendered_content if sender.blank? || sender.name.blank?
+    return rendered_content if sender.blank?
     return rendered_content if rendered_content.blank?
 
     # Do not alter automated/campaign/template deliveries.
@@ -24,11 +24,15 @@ module CbnWhatsappAgentName
     return rendered_content if additional_attributes&.dig('campaign_id').present?
     return rendered_content if additional_attributes&.dig('template_params').present?
 
-    prefix = "#{sender.name}:"
-    return rendered_content if rendered_content.start_with?(prefix)
+    display_name = sender.try(:available_name).presence || sender.name
+    return rendered_content if display_name.blank?
 
-    Rails.logger.info("[CBN_AGENT_NAME] applied message_id=#{id} inbox_id=#{inbox_id} sender_id=#{sender_id}")
-    "#{prefix}\n\n#{rendered_content}"
+    plain_prefix = "#{display_name}:"
+    bold_prefix = "*#{display_name}:*"
+    return rendered_content if rendered_content.start_with?(plain_prefix, bold_prefix)
+
+    Rails.logger.info("[CBN_AGENT_NAME] applied message_id=#{id} inbox_id=#{inbox_id} sender_id=#{sender_id} display_name=#{display_name.inspect}")
+    "#{bold_prefix}\n\n#{rendered_content}"
   end
 end
 
