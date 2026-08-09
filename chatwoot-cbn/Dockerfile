@@ -3,11 +3,11 @@ FROM chatwoot/chatwoot:v4.16.2
 USER root
 
 # Backend patch loaded by both Rails web and Sidekiq.
-COPY chatwoot-cbn/patches/cbn_whatsapp_agent_name.rb /app/config/initializers/cbn_whatsapp_agent_name.rb
+COPY patches/cbn_whatsapp_agent_name.rb /app/config/initializers/cbn_whatsapp_agent_name.rb
 
 # Patch the existing Chatwoot settings source, then rebuild production assets so
 # WhatsApp inboxes get a real on/off switch in the dashboard.
-COPY chatwoot-cbn/patches/patch_settings.rb /tmp/cbn_patch_settings.rb
+COPY patches/patch_settings.rb /tmp/cbn_patch_settings.rb
 
 RUN ruby /tmp/cbn_patch_settings.rb \
   && ln -sf /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
