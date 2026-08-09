@@ -1,0 +1,2109 @@
+{
+  "name": "CBN META 03 — PUBLICADOR META — V2 PRODUÇÃO",
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0141b0ac-9732-4366-b389-1b9ffe0522a1",
+              "leftValue": "={{ String($json.id || '').trim() }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "1d9f9ae8-48f2-4e7e-a368-14b9bab869cd",
+      "name": "Container Instagram criado?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        608,
+        640
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const original = $('Loop por canal1').item.json;\nconst response = $json || {};\nconst errorObj = response.error ?? response;\nlet errorText = '';\ntry { errorText = typeof errorObj === 'string' ? errorObj : JSON.stringify(errorObj); }\ncatch { errorText = String(errorObj); }\nerrorText = errorText.slice(0, 1500);\nif (!errorText || errorText === '{}') errorText = 'Falha ao criar o contêiner de mídia no Instagram.';\nreturn [{\n  json: {\n    ...original,\n    Canal: 'instagram',\n    success: false,\n    media_id: '',\n    published_url: '',\n    error_text: errorText\n  }\n}];"
+      },
+      "id": "b3eb3a19-f798-4cf6-8e23-1dac7fc22d9a",
+      "name": "Normalizar erro criação Instagram",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1056,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1ytO0uRH8ImzUL8wgedPjtEKZfJBIVxhai-VU0nhGhtE",
+          "mode": "id",
+          "cachedResultName": "CBN Crédito — Fluxo Operacional",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ytO0uRH8ImzUL8wgedPjtEKZfJBIVxhai-VU0nhGhtE/edit"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Meta - Log de publicações",
+          "mode": "name",
+          "cachedResultName": "Meta - Log de publicações"
+        },
+        "options": {}
+      },
+      "id": "0eb9b6bf-c9c5-463c-ae90-04a285963f80",
+      "name": "Ler log pós-publicação",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -512,
+        544
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "eTOPBhLw2IAnrRAd",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Somente configuração não secreta. Tokens permanecem nas credenciais do n8n.\nreturn [{ json: {\n  META_GRAPH_VERSION: 'v26.0',\n  IG_USER_ID: '17841446264766146',\n  FB_PAGE_ID: '492773484524523',\n  SPREADSHEET_ID: '1ytO0uRH8ImzUL8wgedPjtEKZfJBIVxhai-VU0nhGhtE',\n  CALENDAR_SHEET: 'Calendário Meta',\n  LOG_SHEET: 'Meta - Log de publicações',\n  CONFIG_SHEET: 'Automação Meta',\n  WORKFLOW: 'CBN META 03 — PUBLICADOR META — V2 PRODUÇÃO',\n  MAX_POSTS_PER_EXECUTION: 1\n} }];"
+      },
+      "id": "14384bae-dcc6-4103-8bfa-f95852a1915b",
+      "name": "Configuração central — SEM SEGREDOS1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3200,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1ytO0uRH8ImzUL8wgedPjtEKZfJBIVxhai-VU0nhGhtE",
+          "mode": "list",
+          "cachedResultName": "CBN Crédito — Fluxo Operacional",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ytO0uRH8ImzUL8wgedPjtEKZfJBIVxhai-VU0nhGhtE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1349158277,
+          "mode": "list",
+          "cachedResultName": "Calendário Meta",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ytO0uRH8ImzUL8wgedPjtEKZfJBIVxhai-VU0nhGhtE/edit#gid=1349158277"
+        },
+        "options": {}
+      },
+      "id": "46faa296-70b3-4c88-aed9-97f5924de16f",
+      "name": "Ler Calendário Meta — SOMENTE LEITURA1",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -2304,
+        736
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "eTOPBhLw2IAnrRAd",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1ytO0uRH8ImzUL8wgedPjtEKZfJBIVxhai-VU0nhGhtE",
+          "mode": "id",
+          "cachedResultName": "CBN Crédito — Fluxo Operacional",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ytO0uRH8ImzUL8wgedPjtEKZfJBIVxhai-VU0nhGhtE/edit"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Meta - Log de publicações",
+          "mode": "name",
+          "cachedResultName": "Meta - Log de publicações"
+        },
+        "options": {}
+      },
+      "id": "ae3b2898-5b3c-45e1-a359-51fef4ecf920",
+      "name": "Ler log para idempotência1",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -2080,
+        736
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "eTOPBhLw2IAnrRAd",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const config = $('Validar configuração fail-closed').first().json;\nconst rows = $items('Ler Calendário Meta — SOMENTE LEITURA1').map(item => item.json || {});\nconst logs = $input.all().map(item => item.json || {});\nconst norm = value => String(value ?? '').trim();\nconst upper = value => norm(value).toUpperCase();\nconst asInt = value => /^\\d+$/.test(norm(value)) ? Number(value) : 0;\nconst now = new Date();\n\nconst parseScheduled = (dateValue, timeValue) => {\n  const dateMatch = norm(dateValue).match(/^(\\d{1,2})[\\/-](\\d{1,2})[\\/-](\\d{4})$/);\n  const timeMatch = norm(timeValue).match(/^(\\d{1,2}):(\\d{2})(?::\\d{2})?$/);\n  if (!dateMatch || !timeMatch) return null;\n  const [, day, month, year] = dateMatch;\n  const [, hour, minute] = timeMatch;\n  const iso = year + '-' + month.padStart(2, '0') + '-' + day.padStart(2, '0') + 'T' + hour.padStart(2, '0') + ':' + minute + ':00-03:00';\n  const parsed = new Date(iso);\n  if (Number.isNaN(parsed.getTime())) return null;\n  const formatter = new Intl.DateTimeFormat('en-CA', { timeZone: config.TIMEZONE, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });\n  const parts = Object.fromEntries(formatter.formatToParts(parsed).filter(part => part.type !== 'literal').map(part => [part.type, part.value]));\n  if (parts.year !== year || parts.month !== month.padStart(2, '0') || parts.day !== day.padStart(2, '0') || parts.hour !== hour.padStart(2, '0') || parts.minute !== minute) return null;\n  return parsed;\n};\n\nconst latestByComposite = new Map();\nfor (const log of logs) {\n  const key = norm(log['Publish Key']);\n  const channel = upper(log.Canal);\n  const status = upper(log.Status);\n  if (!key || !['INSTAGRAM', 'FACEBOOK'].includes(channel)) continue;\n  if (upper(key).includes('{ $JSON') || key.includes('{{') || channel.includes('{{')) continue;\n  if (!['RESERVADO', 'PUBLICANDO', 'PUBLICADO', 'ERRO'].includes(status)) continue;\n  latestByComposite.set(key + ':' + channel, log);\n}\n\nconst candidates = [];\nfor (const row of rows) {\n  const postId = norm(row.post_id);\n  if (!postId || upper(row.Aprovação) !== 'APROVADO') continue;\n  if (!['APROVADO_PUBLICAR', 'PARCIAL', 'ERRO'].includes(upper(row.Status))) continue;\n  if (upper(row.Formato) !== 'POST ESTÁTICO') continue;\n  if (upper(row.Status) === 'PUBLICANDO' || norm(row.locked_at)) continue;\n\n  const scheduledAt = parseScheduled(row.Data, row.Horário);\n  if (!scheduledAt || scheduledAt.getTime() > now.getTime()) continue;\n\n  let urls = [];\n  const rawJson = norm(row.media_urls_json);\n  if (rawJson) {\n    try { const parsed = JSON.parse(rawJson); urls = Array.isArray(parsed) ? parsed : []; }\n    catch { continue; }\n  } else if (norm(row['Arquivo / URL da mídia'])) {\n    urls = [norm(row['Arquivo / URL da mídia'])];\n  }\n  urls = urls.map(norm).filter(Boolean);\n  if (urls.length !== 1 || !String(urls[0]).toLowerCase().startsWith('https://')) continue;\n  const caption = norm(row['Legenda / roteiro-base']);\n  if (!caption) continue;\n\n  const publishKey = norm(row.publish_key) || (postId + ':' + norm(row.Data) + ':' + norm(row.Horário) + ':STATIC_V2');\n  const channels = [];\n  const attemptsByChannel = {};\n\n  const inspectChannel = (channel, enabledField, statusField, idField, attemptsField, nextRetryField) => {\n    if (upper(row[enabledField]) !== 'SIM') return;\n    const channelUpper = channel.toUpperCase();\n    const latest = latestByComposite.get(publishKey + ':' + channelUpper);\n    const latestStatus = upper(latest?.Status);\n    const alreadyPublished = upper(row[statusField]) === 'PUBLICADO' || Boolean(norm(row[idField])) || latestStatus === 'PUBLICADO';\n    if (alreadyPublished) return;\n    if (['PUBLICANDO'].includes(upper(row[statusField])) || ['RESERVADO', 'PUBLICANDO'].includes(latestStatus)) return;\n    const attempts = asInt(row[attemptsField]);\n    if (attempts >= Number(config.MAX_ATTEMPTS_CANAL)) return;\n    const nextRetry = norm(row[nextRetryField]);\n    if (nextRetry) {\n      const retryAt = new Date(nextRetry);\n      if (Number.isNaN(retryAt.getTime()) || retryAt.getTime() > now.getTime()) return;\n    }\n    channels.push(channel);\n    attemptsByChannel[channel] = attempts + 1;\n  };\n\n  inspectChannel('instagram', 'Instagram', 'instagram_status', 'ID Instagram', 'instagram_attempts', 'instagram_next_retry_at');\n  inspectChannel('facebook', 'Facebook', 'facebook_status', 'ID Facebook', 'facebook_attempts', 'facebook_next_retry_at');\n  if (!channels.length) continue;\n\n  candidates.push({ json: {\n    ...row,\n    post_id: postId,\n    publish_key: publishKey,\n    media_url: urls[0],\n    caption,\n    channels,\n    attempts_by_channel: attemptsByChannel,\n    row_version_before: asInt(row.row_version),\n    scheduled_at: scheduledAt.toISOString(),\n    meta_graph_version: config.META_GRAPH_VERSION,\n    ig_user_id: config.IG_USER_ID,\n    fb_page_id: config.FB_PAGE_ID,\n    workflow: config.WORKFLOW,\n    max_attempts_channel: config.MAX_ATTEMPTS_CANAL,\n    retry_1_minutes: config.RETRY_1_MINUTES,\n    retry_2_minutes: config.RETRY_2_MINUTES\n  } });\n  if (candidates.length >= Number(config.MAX_POSTS_PER_EXECUTION || 1)) break;\n}\nreturn candidates;"
+      },
+      "id": "d08a8881-3313-400a-860c-b3e1990ab378",
+      "name": "Selecionar 1 post estático seguro1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1856,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const post = $json;\nconst igSelected = (post.channels || []).includes('instagram');\nconst fbSelected = (post.channels || []).includes('facebook');\nconst igAttempts = igSelected ? Number(post.attempts_by_channel.instagram) : Number(post.instagram_attempts || 0);\nconst fbAttempts = fbSelected ? Number(post.attempts_by_channel.facebook) : Number(post.facebook_attempts || 0);\nreturn [{ json: {\n  ...post,\n  Status: 'PUBLICANDO',\n  attempts: String(Math.max(igAttempts, fbAttempts)),\n  locked_at: new Date().toISOString(),\n  last_error_json: '',\n  row_version: String(Number(post.row_version_before || 0) + 1),\n  instagram_status: igSelected ? 'PUBLICANDO' : String(post.instagram_status || ''),\n  facebook_status: fbSelected ? 'PUBLICANDO' : String(post.facebook_status || ''),\n  instagram_attempts: String(igAttempts),\n  facebook_attempts: String(fbAttempts)\n} }];"
+      },
+      "id": "4e8b4f3a-98a9-42f8-a12a-1f99b2c8251c",
+      "name": "Preparar lock PUBLICANDO1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1632,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1ytO0uRH8ImzUL8wgedPjtEKZfJBIVxhai-VU0nhGhtE",
+          "mode": "id",
+          "cachedResultName": "CBN Crédito — Fluxo Operacional",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ytO0uRH8ImzUL8wgedPjtEKZfJBIVxhai-VU0nhGhtE/edit"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Calendário Meta",
+          "mode": "name",
+          "cachedResultName": "Calendário Meta"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "post_id": "={{ $json.post_id }}",
+            "Status": "={{ $json.Status }}",
+            "publish_key": "={{ $json.publish_key }}",
+            "attempts": "={{ $json.attempts }}",
+            "locked_at": "={{ $json.locked_at }}",
+            "last_error_json": "={{ $json.last_error_json }}",
+            "row_version": "={{ $json.row_version }}",
+            "instagram_status": "={{ $json.instagram_status }}",
+            "facebook_status": "={{ $json.facebook_status }}",
+            "instagram_attempts": "={{ $json.instagram_attempts }}",
+            "facebook_attempts": "={{ $json.facebook_attempts }}"
+          },
+          "matchingColumns": [
+            "post_id"
+          ],
+          "schema": [
+            {
+              "id": "post_id",
+              "displayName": "post_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "publish_key",
+              "displayName": "publish_key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "attempts",
+              "displayName": "attempts",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "locked_at",
+              "displayName": "locked_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "last_error_json",
+              "displayName": "last_error_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_version",
+              "displayName": "row_version",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "instagram_status",
+              "displayName": "instagram_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "facebook_status",
+              "displayName": "facebook_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ID Instagram",
+              "displayName": "ID Instagram",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ID Facebook",
+              "displayName": "ID Facebook",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Horário publicado",
+              "displayName": "Horário publicado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Erro",
+              "displayName": "Erro",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "instagram_url",
+              "displayName": "instagram_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "facebook_url",
+              "displayName": "facebook_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "instagram_attempts",
+              "displayName": "instagram_attempts",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "facebook_attempts",
+              "displayName": "facebook_attempts",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "9254e2c8-eae0-4073-9ab4-891d1b3d82f2",
+      "name": "Marcar PUBLICANDO no calendário1",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1408,
+        736
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "eTOPBhLw2IAnrRAd",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $items('Selecionar 1 post estático seguro1').map(item => ({ json: item.json }));"
+      },
+      "id": "01477c6e-e7bd-438e-be56-da1b0aa2195c",
+      "name": "Restaurar post selecionado1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1184,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const post = $json;\nreturn (post.channels || []).map(Canal => ({ json: {\n  ...post,\n  Canal,\n  channel_attempt: Number(post.attempts_by_channel?.[Canal] || 0)\n} }));"
+      },
+      "id": "1c80f819-b407-438e-b97f-4a5582ef0d01",
+      "name": "Expandir canais solicitados1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -960,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "b184d6a4-f606-4fc8-858c-d24b6e5853a0",
+      "name": "Loop por canal1",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -736,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $('Loop por canal1').item.json;\nreturn [{ json: {\n  'Execução': String($execution.id),\n  'Post ID': String(item.post_id),\n  'Publish Key': String(item.publish_key),\n  'Canal': String(item.Canal),\n  'Status': 'RESERVADO',\n  'Media ID': '',\n  'URL': '',\n  'Data/Hora': new Date().toISOString(),\n  'Erro': '',\n  'Tentativa': String(item.channel_attempt),\n  'Detalhes': 'Reserva por canal registrada antes da chamada à Meta.',\n  'Workflow': String(item.workflow),\n  'Row Version': String(Number(item.row_version_before || 0) + 1)\n} }];"
+      },
+      "id": "bfe4659f-593e-458a-a7b0-99d5457422d3",
+      "name": "Preparar reserva no log1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -512,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1ytO0uRH8ImzUL8wgedPjtEKZfJBIVxhai-VU0nhGhtE",
+          "mode": "id",
+          "cachedResultName": "CBN Crédito — Fluxo Operacional",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ytO0uRH8ImzUL8wgedPjtEKZfJBIVxhai-VU0nhGhtE/edit"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Meta - Log de publicações",
+          "mode": "name",
+          "cachedResultName": "Meta - Log de publicações"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Execução": "={{ $json['Execução'] }}",
+            "Post ID": "={{ $json['Post ID'] }}",
+            "Publish Key": "={{ $json['Publish Key'] }}",
+            "Canal": "={{ $json['Canal'] }}",
+            "Status": "={{ $json['Status'] }}",
+            "Media ID": "={{ $json['Media ID'] }}",
+            "URL": "={{ $json['URL'] }}",
+            "Data/Hora": "={{ $json['Data/Hora'] }}",
+            "Erro": "={{ $json['Erro'] }}",
+            "Tentativa": "={{ $json['Tentativa'] }}",
+            "Detalhes": "={{ $json['Detalhes'] }}",
+            "Workflow": "={{ $json['Workflow'] }}",
+            "Row Version": "={{ $json['Row Version'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Execução",
+              "displayName": "Execução",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Post ID",
+              "displayName": "Post ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Publish Key",
+              "displayName": "Publish Key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Canal",
+              "displayName": "Canal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Media ID",
+              "displayName": "Media ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Data/Hora",
+              "displayName": "Data/Hora",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Erro",
+              "displayName": "Erro",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tentativa",
+              "displayName": "Tentativa",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Detalhes",
+              "displayName": "Detalhes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Workflow",
+              "displayName": "Workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Row Version",
+              "displayName": "Row Version",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "2d72b22c-1909-4d25-aa1c-a261ab2b23a4",
+      "name": "Registrar reserva — APPEND1",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -288,
+        736
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "eTOPBhLw2IAnrRAd",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: $('Loop por canal1').item.json }];"
+      },
+      "id": "8295dc83-892c-48d6-8abb-e732a8e218a7",
+      "name": "Restaurar item do canal1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "81b85f88-73a6-4af9-9268-9e86a7c0c95f",
+              "leftValue": "={{ $json.Canal }}",
+              "rightValue": "instagram",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "9681595c-6eff-43df-b7e1-d95f50098326",
+      "name": "É Instagram?1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        160,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'https://graph.facebook.com/' + $json.meta_graph_version + '/' + $json.ig_user_id + '/media' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "image_url",
+              "value": "={{ $json.media_url }}"
+            },
+            {
+              "name": "caption",
+              "value": "={{ $json.caption }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8fc90290-0dc9-4f67-a067-e2bf411da0b9",
+      "name": "Instagram — criar contêiner1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        384,
+        640
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "KZoi1xx5K482E4RA",
+          "name": "CBN META — Page Access Token"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'https://graph.facebook.com/' + $('Loop por canal1').item.json.meta_graph_version + '/' + $('Loop por canal1').item.json.ig_user_id + '/media_publish' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "creation_id",
+              "value": "={{ $json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5fed2555-671f-406f-a24f-d775462c7617",
+      "name": "Instagram — publicar contêiner1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        832,
+        544
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "KZoi1xx5K482E4RA",
+          "name": "CBN META — Page Access Token"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const original = $('Loop por canal1').item.json;\nconst publishResponse = $('Instagram — publicar contêiner1').item.json || {};\nconst permalinkResponse = $json || {};\nconst mediaId = String(publishResponse.id ?? publishResponse.media_id ?? '').trim();\nlet errorText = '';\nif (!mediaId) {\n  const errorObj = publishResponse.error ?? publishResponse;\n  try { errorText = typeof errorObj === 'string' ? errorObj : JSON.stringify(errorObj); }\n  catch { errorText = String(errorObj); }\n  if (!errorText || errorText === '{}') errorText = 'A Meta não retornou ID da mídia publicada.';\n}\nreturn [{ json: {\n  ...original,\n  Canal: 'instagram',\n  success: Boolean(mediaId),\n  media_id: mediaId,\n  published_url: mediaId ? String(permalinkResponse.permalink || original.instagram_url || '') : '',\n  error_text: errorText.slice(0, 1500)\n} }];"
+      },
+      "id": "a6fb518d-e592-4965-9581-de733a1faf9b",
+      "name": "Normalizar Instagram1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1056,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'https://graph.facebook.com/' + $json.meta_graph_version + '/' + $json.fb_page_id + '/photos' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "url",
+              "value": "={{ $json.media_url }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.caption }}"
+            },
+            {
+              "name": "published",
+              "value": "true"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b6a4d8fa-3db1-46b4-beb5-eb365598e03d",
+      "name": "Facebook — publicar foto1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        832,
+        928
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "KZoi1xx5K482E4RA",
+          "name": "CBN META — Page Access Token"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const original = $('Loop por canal1').item.json;\nconst response = $json || {};\nconst mediaId = String(response.post_id ?? response.id ?? '').trim();\nconst errorObj = response.error ?? response;\nlet errorText = '';\nif (!mediaId) {\n  try { errorText = typeof errorObj === 'string' ? errorObj : JSON.stringify(errorObj); }\n  catch { errorText = String(errorObj); }\n  errorText = errorText.slice(0, 1500);\n  if (!errorText || errorText === '{}') errorText = 'A Meta não retornou ID da publicação no Facebook.';\n}\nreturn [{\n  json: {\n    ...original,\n    Canal: 'facebook',\n    success: Boolean(mediaId),\n    media_id: mediaId,\n    published_url: mediaId ? `https://www.facebook.com/${mediaId}` : '',\n    error_text: errorText\n  }\n}];"
+      },
+      "id": "b1d31338-bde5-4393-9063-b7a9a9045e96",
+      "name": "Normalizar Facebook1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1056,
+        928
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $json;\nreturn [{ json: {\n  'Execução': String($execution.id),\n  'Post ID': String(item.post_id),\n  'Publish Key': String(item.publish_key),\n  'Canal': String(item.Canal),\n  'Status': item.success ? 'PUBLICADO' : 'ERRO',\n  'Media ID': String(item.media_id || ''),\n  'URL': String(item.published_url || ''),\n  'Data/Hora': new Date().toISOString(),\n  'Erro': String(item.error_text || '').slice(0, 1500),\n  'Tentativa': String(item.channel_attempt),\n  'Detalhes': item.success ? 'Publicação confirmada pela API da Meta.' : 'Falha do canal registrada para retry controlado ou revisão humana.',\n  'Workflow': String(item.workflow),\n  'Row Version': String(Number(item.row_version_before || 0) + 1)\n} }];"
+      },
+      "id": "021ae242-1470-4a20-b6f8-e33eae7bfde4",
+      "name": "Preparar log do resultado1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1280,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1ytO0uRH8ImzUL8wgedPjtEKZfJBIVxhai-VU0nhGhtE",
+          "mode": "id",
+          "cachedResultName": "CBN Crédito — Fluxo Operacional",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ytO0uRH8ImzUL8wgedPjtEKZfJBIVxhai-VU0nhGhtE/edit"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Meta - Log de publicações",
+          "mode": "name",
+          "cachedResultName": "Meta - Log de publicações"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Execução": "={{ $json['Execução'] }}",
+            "Post ID": "={{ $json['Post ID'] }}",
+            "Publish Key": "={{ $json['Publish Key'] }}",
+            "Canal": "={{ $json['Canal'] }}",
+            "Status": "={{ $json['Status'] }}",
+            "Media ID": "={{ $json['Media ID'] }}",
+            "URL": "={{ $json['URL'] }}",
+            "Data/Hora": "={{ $json['Data/Hora'] }}",
+            "Erro": "={{ $json['Erro'] }}",
+            "Tentativa": "={{ $json['Tentativa'] }}",
+            "Detalhes": "={{ $json['Detalhes'] }}",
+            "Workflow": "={{ $json['Workflow'] }}",
+            "Row Version": "={{ $json['Row Version'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Execução",
+              "displayName": "Execução",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Post ID",
+              "displayName": "Post ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Publish Key",
+              "displayName": "Publish Key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Canal",
+              "displayName": "Canal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Media ID",
+              "displayName": "Media ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Data/Hora",
+              "displayName": "Data/Hora",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Erro",
+              "displayName": "Erro",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tentativa",
+              "displayName": "Tentativa",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Detalhes",
+              "displayName": "Detalhes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Workflow",
+              "displayName": "Workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Row Version",
+              "displayName": "Row Version",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "f7af45a7-9d1e-4c8f-a233-47ab77e55bf1",
+      "name": "Registrar resultado — APPEND1",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1520,
+        912
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "eTOPBhLw2IAnrRAd",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const post = $('Selecionar 1 post estático seguro1').first().json;\nconst executionId = String($execution.id);\nconst logs = $input.all().map(item => item.json || {});\nconst norm = value => String(value ?? '').trim();\nconst upper = value => norm(value).toUpperCase();\nconst required = new Set(post.channels || []);\nconst now = new Date();\n\nconst findFinal = channel => {\n  const matches = logs.filter(log =>\n    norm(log['Execução']) === executionId &&\n    norm(log['Post ID']) === norm(post.post_id) &&\n    norm(log['Publish Key']) === norm(post.publish_key) &&\n    upper(log.Canal) === channel.toUpperCase() &&\n    ['PUBLICADO', 'ERRO'].includes(upper(log.Status))\n  );\n  return matches.at(-1) || null;\n};\n\nconst result = {};\nfor (const channel of ['instagram', 'facebook']) {\n  const requested = upper(post[channel === 'instagram' ? 'Instagram' : 'Facebook']) === 'SIM';\n  const statusField = channel + '_status';\n  const idField = channel === 'instagram' ? 'ID Instagram' : 'ID Facebook';\n  const currentPublished = upper(post[statusField]) === 'PUBLICADO' || Boolean(norm(post[idField]));\n  const executionLog = required.has(channel) ? findFinal(channel) : null;\n  const published = currentPublished || upper(executionLog?.Status) === 'PUBLICADO';\n  const failed = required.has(channel) && !published;\n  const attempt = required.has(channel) ? Number(post.attempts_by_channel?.[channel] || 0) : Number(post[channel + '_attempts'] || 0);\n  let nextRetry = '';\n  if (failed && attempt < Number(post.max_attempts_channel || 3)) {\n    const minutes = attempt === 1 ? Number(post.retry_1_minutes || 10) : Number(post.retry_2_minutes || 30);\n    nextRetry = new Date(now.getTime() + minutes * 60000).toISOString();\n  }\n  result[channel] = {\n    requested,\n    status: published ? 'PUBLICADO' : (failed ? 'ERRO' : (norm(post[statusField]) || 'PENDENTE')),\n    id: norm(executionLog?.['Media ID']) || norm(post[idField]),\n    url: norm(executionLog?.URL) || norm(post[channel + '_url']),\n    attempts: attempt,\n    error: failed ? (norm(executionLog?.Erro) || 'Resultado final não localizado no log desta execução.').slice(0, 1500) : '',\n    nextRetry\n  };\n}\n\nconst requested = Object.values(result).filter(channel => channel.requested);\nconst publishedCount = requested.filter(channel => channel.status === 'PUBLICADO').length;\nconst failedCount = requested.filter(channel => channel.status === 'ERRO').length;\nconst generalStatus = requested.length > 0 && publishedCount === requested.length\n  ? 'PUBLICADO'\n  : publishedCount > 0\n    ? 'PARCIAL'\n    : failedCount > 0\n      ? 'ERRO'\n      : 'APROVADO_PUBLICAR';\nconst errors = Object.fromEntries(Object.entries(result).filter(([, value]) => value.error).map(([key, value]) => [key, value.error]));\n\nreturn [{ json: {\n  post_id: post.post_id,\n  Status: generalStatus,\n  publish_key: post.publish_key,\n  attempts: String(Math.max(result.instagram.attempts, result.facebook.attempts)),\n  locked_at: '',\n  last_error_json: Object.keys(errors).length ? JSON.stringify(errors).slice(0, 1500) : '',\n  row_version: String(Number(post.row_version_before || 0) + 2),\n  instagram_status: result.instagram.status,\n  facebook_status: result.facebook.status,\n  'ID Instagram': result.instagram.id,\n  'ID Facebook': result.facebook.id,\n  'Horário publicado': generalStatus === 'PUBLICADO' ? now.toISOString() : String(post['Horário publicado'] || ''),\n  Erro: Object.values(errors).join(' | ').slice(0, 1500),\n  instagram_url: result.instagram.url,\n  facebook_url: result.facebook.url,\n  instagram_attempts: String(result.instagram.attempts),\n  facebook_attempts: String(result.facebook.attempts),\n  instagram_last_error_json: result.instagram.error,\n  facebook_last_error_json: result.facebook.error,\n  instagram_next_retry_at: result.instagram.nextRetry,\n  facebook_next_retry_at: result.facebook.nextRetry\n} }];"
+      },
+      "id": "c8f390a2-93a9-488a-8077-ad6d263df610",
+      "name": "Consolidar resultado final1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -288,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1ytO0uRH8ImzUL8wgedPjtEKZfJBIVxhai-VU0nhGhtE",
+          "mode": "id",
+          "cachedResultName": "CBN Crédito — Fluxo Operacional",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ytO0uRH8ImzUL8wgedPjtEKZfJBIVxhai-VU0nhGhtE/edit"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Calendário Meta",
+          "mode": "name",
+          "cachedResultName": "Calendário Meta"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "post_id": "={{ $json.post_id }}",
+            "Status": "={{ $json.Status }}",
+            "publish_key": "={{ $json.publish_key }}",
+            "attempts": "={{ $json.attempts }}",
+            "locked_at": "={{ $json.locked_at }}",
+            "last_error_json": "={{ $json.last_error_json }}",
+            "row_version": "={{ $json.row_version }}",
+            "instagram_status": "={{ $json.instagram_status }}",
+            "facebook_status": "={{ $json.facebook_status }}",
+            "ID Instagram": "={{ $json['ID Instagram'] }}",
+            "ID Facebook": "={{ $json['ID Facebook'] }}",
+            "Horário publicado": "={{ $json['Horário publicado'] }}",
+            "Erro": "={{ $json.Erro }}",
+            "instagram_url": "={{ $json.instagram_url }}",
+            "facebook_url": "={{ $json.facebook_url }}",
+            "instagram_attempts": "={{ $json.instagram_attempts }}",
+            "facebook_attempts": "={{ $json.facebook_attempts }}",
+            "instagram_last_error_json": "={{ $json.instagram_last_error_json }}",
+            "facebook_last_error_json": "={{ $json.facebook_last_error_json }}",
+            "instagram_next_retry_at": "={{ $json.instagram_next_retry_at }}",
+            "facebook_next_retry_at": "={{ $json.facebook_next_retry_at }}"
+          },
+          "matchingColumns": [
+            "post_id"
+          ],
+          "schema": [
+            {
+              "id": "post_id",
+              "displayName": "post_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "publish_key",
+              "displayName": "publish_key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "attempts",
+              "displayName": "attempts",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "locked_at",
+              "displayName": "locked_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "last_error_json",
+              "displayName": "last_error_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_version",
+              "displayName": "row_version",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "instagram_status",
+              "displayName": "instagram_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "facebook_status",
+              "displayName": "facebook_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ID Instagram",
+              "displayName": "ID Instagram",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ID Facebook",
+              "displayName": "ID Facebook",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Horário publicado",
+              "displayName": "Horário publicado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Erro",
+              "displayName": "Erro",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "instagram_url",
+              "displayName": "instagram_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "facebook_url",
+              "displayName": "facebook_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "instagram_attempts",
+              "displayName": "instagram_attempts",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "facebook_attempts",
+              "displayName": "facebook_attempts",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "instagram_last_error_json",
+              "displayName": "instagram_last_error_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "facebook_last_error_json",
+              "displayName": "facebook_last_error_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "instagram_next_retry_at",
+              "displayName": "instagram_next_retry_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "facebook_next_retry_at",
+              "displayName": "facebook_next_retry_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "7b7b8def-176b-4045-99ab-1d0d47243dac",
+      "name": "Atualizar resultado no calendário1",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -64,
+        544
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "eTOPBhLw2IAnrRAd",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "4d16e645-2916-4538-90f9-9f9ed59a2e6d",
+      "name": "Fim do teste1",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        160,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## CBN META 03 — V2 PRODUÇÃO\n\nExportado **inativo**. Schedule a cada 1 minuto (America/Sao_Paulo).\n\nAntes de importar: aplique a migração AM:AR e configure a aba Automação Meta. PAUSA_GERAL ausente, inválida ou SIM impede qualquer mutação/chamada à Meta.\n\nNunca cole tokens neste JSON; mantenha-os somente nas credenciais do n8n.",
+        "height": 430,
+        "width": 720,
+        "color": 5
+      },
+      "id": "8b850465-da44-4177-9967-9a882794b4a9",
+      "name": "LEIA ANTES DE EXECUTAR1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3056,
+        272
+      ]
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -3648,
+        656
+      ],
+      "id": "bacf53a6-3e1a-47d4-87d5-66178e11bc3b",
+      "name": "Gatilho manual — teste controlado"
+    },
+    {
+      "parameters": {
+        "jsCode": "const config = $json || {};\nif (config.PAUSA_GERAL !== 'NAO' || config.PUBLICACAO_LIBERADA !== true) throw new Error('FAIL_CLOSED: publicação não liberada.');\nif (!/^v\\d+\\.\\d+$/.test(String(config.META_GRAPH_VERSION || '').trim())) throw new Error('META_GRAPH_VERSION inválida.');\nfor (const field of ['IG_USER_ID', 'FB_PAGE_ID']) {\n  if (!/^\\d+$/.test(String(config[field] || '').trim())) throw new Error('Configuração ausente ou inválida: ' + field);\n}\nreturn [{ json: config }];"
+      },
+      "id": "92b33ab5-e377-4705-a9bc-958210a540a7",
+      "name": "Validar configuracao e pausa antes da Meta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2976,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ 'https://graph.facebook.com/' + $json.META_GRAPH_VERSION + '/' + $json.FB_PAGE_ID }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "fields",
+              "value": "id,name"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "939a67d0-9000-4ab3-bcbd-9bc566dab094",
+      "name": "Meta - validar Page Access Token",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2752,
+        736
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "KZoi1xx5K482E4RA",
+          "name": "CBN META — Page Access Token"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "616d199d-e414-41a2-b63b-44f8dd327c33",
+              "leftValue": "={{ String($json.id || '').trim() }}",
+              "rightValue": "={{ String($('Configuração central — SEM SEGREDOS1').first().json.FB_PAGE_ID || '').trim() }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "c89ac077-bc49-4014-b6a4-f0de6cb4fd8b",
+      "name": "Credencial Meta valida?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -2528,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $json || {};\nconst raw = response.error?.message || response.message || response.description || '';\nlet detail = String(raw || '').trim();\nif (!detail) { try { detail = JSON.stringify(response); } catch { detail = String(response); } }\ndetail = detail.slice(0, 800);\nthrow new Error('Falha no preflight da Meta: o Page Access Token nao foi aceito para a Pagina configurada. ' + detail + ' Revise a credencial Header Auth: Name=Authorization; Value=Bearer + espaco + token completo da Pagina CBN, sem aspas, igual, quebras ou valor mascarado. Nenhuma tentativa de publicacao foi consumida.');"
+      },
+      "id": "f1936b89-d87d-40f2-91c5-a12720b4536c",
+      "name": "Abortar - credencial Meta invalida",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2304,
+        944
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "schedule-v2-every-minute",
+      "name": "Agendamento — a cada 1 minuto",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -3648,
+        816
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1ytO0uRH8ImzUL8wgedPjtEKZfJBIVxhai-VU0nhGhtE",
+          "mode": "list",
+          "cachedResultName": "CBN Crédito — Fluxo Operacional",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ytO0uRH8ImzUL8wgedPjtEKZfJBIVxhai-VU0nhGhtE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Automação Meta",
+          "mode": "name",
+          "cachedResultName": "Automação Meta"
+        },
+        "options": {}
+      },
+      "id": "read-meta-automation-config-v2",
+      "name": "Ler configuração — Automação Meta",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -2976,
+        736
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "eTOPBhLw2IAnrRAd",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst base = $('Configuração central — SEM SEGREDOS1').first().json || {};\nconst rows = $input.all().map(item => item.json || {});\nif (!rows.length) throw new Error('FAIL_CLOSED: aba Automação Meta vazia ou ilegível.');\n\nconst canonical = value => String(value ?? '').trim().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_|_$/g, '');\nconst required = new Set(['PAUSA_GERAL', 'MAX_ATTEMPTS_CANAL', 'RETRY_1_MINUTES', 'RETRY_2_MINUTES', 'TIMEZONE']);\nconst found = {};\n\nfor (const row of rows) {\n  const entries = Object.entries(row);\n  for (const [header, value] of entries) {\n    const key = canonical(header);\n    if (required.has(key) && String(value ?? '').trim()) found[key] = String(value).trim();\n  }\n\n  const keyEntry = entries.find(([header]) => ['CHAVE', 'CONFIGURACAO', 'PARAMETRO', 'NOME', 'VARIAVEL'].includes(canonical(header)));\n  const valueEntry = entries.find(([header]) => ['VALOR', 'VALUE'].includes(canonical(header)));\n  if (keyEntry && valueEntry && required.has(canonical(keyEntry[1]))) {\n    found[canonical(keyEntry[1])] = String(valueEntry[1] ?? '').trim();\n  }\n\n  const values = entries.map(([, value]) => value);\n  for (let index = 0; index < values.length - 1; index += 1) {\n    const key = canonical(values[index]);\n    if (required.has(key) && String(values[index + 1] ?? '').trim()) found[key] = String(values[index + 1]).trim();\n  }\n}\n\nfor (const key of required) {\n  if (!found[key]) throw new Error('FAIL_CLOSED: configuração obrigatória ausente em Automação Meta: ' + key);\n}\n\nconst pause = canonical(found.PAUSA_GERAL);\nif (!['SIM', 'NAO'].includes(pause)) throw new Error('FAIL_CLOSED: PAUSA_GERAL deve ser SIM ou NAO.');\nconst maxAttempts = Number(found.MAX_ATTEMPTS_CANAL);\nconst retry1 = Number(found.RETRY_1_MINUTES);\nconst retry2 = Number(found.RETRY_2_MINUTES);\nif (maxAttempts !== 3) throw new Error('FAIL_CLOSED: MAX_ATTEMPTS_CANAL deve ser 3 na V2.');\nif (retry1 !== 10 || retry2 !== 30) throw new Error('FAIL_CLOSED: retries da V2 devem ser 10 e 30 minutos.');\nif (found.TIMEZONE !== 'America/Sao_Paulo') throw new Error('FAIL_CLOSED: TIMEZONE deve ser America/Sao_Paulo.');\n\nreturn [{ json: {\n  ...base,\n  PAUSA_GERAL: pause,\n  MAX_ATTEMPTS_CANAL: maxAttempts,\n  RETRY_1_MINUTES: retry1,\n  RETRY_2_MINUTES: retry2,\n  TIMEZONE: found.TIMEZONE,\n  PUBLICACAO_LIBERADA: pause === 'NAO'\n} }];\n"
+      },
+      "id": "normalize-meta-automation-config-v2",
+      "name": "Validar configuração fail-closed",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2752,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "meta-pause-v2",
+              "leftValue": "={{ $json.PUBLICACAO_LIBERADA }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-meta-publishing-enabled-v2",
+      "name": "PAUSA_GERAL permite publicar?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -2528,
+        736
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "paused-noop-v2",
+      "name": "Fim seguro — PAUSA_GERAL ativa",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -2304,
+        976
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ig-published-v2",
+              "leftValue": "={{ Boolean($json.id || $json.media_id) }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-instagram-published-v2",
+      "name": "Instagram publicado?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1056,
+        464
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ 'https://graph.facebook.com/' + $('Loop por canal1').item.json.meta_graph_version + '/' + ($json.id || $json.media_id) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "fields",
+              "value": "id,permalink"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "instagram-get-permalink-v2",
+      "name": "Instagram — obter permalink",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1280,
+        448
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "KZoi1xx5K482E4RA",
+          "name": "CBN META — Page Access Token"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "Container Instagram criado?": {
+      "main": [
+        [
+          {
+            "node": "Instagram — publicar contêiner1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Normalizar erro criação Instagram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar erro criação Instagram": {
+      "main": [
+        [
+          {
+            "node": "Preparar log do resultado1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ler log pós-publicação": {
+      "main": [
+        [
+          {
+            "node": "Consolidar resultado final1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Configuração central — SEM SEGREDOS1": {
+      "main": [
+        [
+          {
+            "node": "Ler configuração — Automação Meta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ler Calendário Meta — SOMENTE LEITURA1": {
+      "main": [
+        [
+          {
+            "node": "Ler log para idempotência1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ler log para idempotência1": {
+      "main": [
+        [
+          {
+            "node": "Selecionar 1 post estático seguro1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Selecionar 1 post estático seguro1": {
+      "main": [
+        [
+          {
+            "node": "Preparar lock PUBLICANDO1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar lock PUBLICANDO1": {
+      "main": [
+        [
+          {
+            "node": "Marcar PUBLICANDO no calendário1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marcar PUBLICANDO no calendário1": {
+      "main": [
+        [
+          {
+            "node": "Restaurar post selecionado1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restaurar post selecionado1": {
+      "main": [
+        [
+          {
+            "node": "Expandir canais solicitados1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Expandir canais solicitados1": {
+      "main": [
+        [
+          {
+            "node": "Loop por canal1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop por canal1": {
+      "main": [
+        [
+          {
+            "node": "Ler log pós-publicação",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar reserva no log1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar reserva no log1": {
+      "main": [
+        [
+          {
+            "node": "Registrar reserva — APPEND1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar reserva — APPEND1": {
+      "main": [
+        [
+          {
+            "node": "Restaurar item do canal1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restaurar item do canal1": {
+      "main": [
+        [
+          {
+            "node": "É Instagram?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "É Instagram?1": {
+      "main": [
+        [
+          {
+            "node": "Instagram — criar contêiner1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Facebook — publicar foto1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instagram — criar contêiner1": {
+      "main": [
+        [
+          {
+            "node": "Container Instagram criado?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instagram — publicar contêiner1": {
+      "main": [
+        [
+          {
+            "node": "Instagram publicado?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar Instagram1": {
+      "main": [
+        [
+          {
+            "node": "Preparar log do resultado1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Facebook — publicar foto1": {
+      "main": [
+        [
+          {
+            "node": "Normalizar Facebook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar Facebook1": {
+      "main": [
+        [
+          {
+            "node": "Preparar log do resultado1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar log do resultado1": {
+      "main": [
+        [
+          {
+            "node": "Registrar resultado — APPEND1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar resultado — APPEND1": {
+      "main": [
+        [
+          {
+            "node": "Loop por canal1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consolidar resultado final1": {
+      "main": [
+        [
+          {
+            "node": "Atualizar resultado no calendário1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atualizar resultado no calendário1": {
+      "main": [
+        [
+          {
+            "node": "Fim do teste1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar configuracao e pausa antes da Meta": {
+      "main": [
+        [
+          {
+            "node": "Meta - validar Page Access Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Meta - validar Page Access Token": {
+      "main": [
+        [
+          {
+            "node": "Credencial Meta valida?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Credencial Meta valida?": {
+      "main": [
+        [
+          {
+            "node": "Ler Calendário Meta — SOMENTE LEITURA1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Abortar - credencial Meta invalida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gatilho manual — teste controlado": {
+      "main": [
+        [
+          {
+            "node": "Configuração central — SEM SEGREDOS1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agendamento — a cada 1 minuto": {
+      "main": [
+        [
+          {
+            "node": "Configuração central — SEM SEGREDOS1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ler configuração — Automação Meta": {
+      "main": [
+        [
+          {
+            "node": "Validar configuração fail-closed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar configuração fail-closed": {
+      "main": [
+        [
+          {
+            "node": "PAUSA_GERAL permite publicar?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PAUSA_GERAL permite publicar?": {
+      "main": [
+        [
+          {
+            "node": "Validar configuracao e pausa antes da Meta",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fim seguro — PAUSA_GERAL ativa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instagram publicado?": {
+      "main": [
+        [
+          {
+            "node": "Instagram — obter permalink",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Normalizar Instagram1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instagram — obter permalink": {
+      "main": [
+        [
+          {
+            "node": "Normalizar Instagram1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timezone": "America/Sao_Paulo"
+  },
+  "nodeGroups": [],
+  "tags": []
+}
