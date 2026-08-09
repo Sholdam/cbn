@@ -1,4 +1,5 @@
-path = '/app/app/javascript/dashboard/routes/dashboard/settings/inbox/Settings.vue'
+root = ENV.fetch('CHATWOOT_ROOT', '/app')
+path = File.join(root, 'app/javascript/dashboard/routes/dashboard/settings/inbox/Settings.vue')
 source = File.read(path)
 
 replacements = {
