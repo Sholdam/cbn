@@ -1,10 +1,19 @@
 # Migração da planilha — CBN Meta V2
 
+## Estado da aplicação
+
+Aplicada na planilha oficial em 08/08/2026:
+
+- `Calendário Meta!AM1:AR501` criado sem mover colunas anteriores;
+- cabeçalhos escritos em `AM1:AR1`;
+- bloco não secreto criado em `Automação Meta!A47:C52`;
+- `PAUSA_GERAL` mantida em `SIM`;
+- valores de configuração protegidos por validações restritivas.
+
 ## Escopo
 
-Esta migração não foi aplicada automaticamente. Faça uma cópia de segurança e
-execute-a manualmente na planilha `CBN Crédito — Fluxo Operacional` antes de
-importar o workflow V2.
+As instruções abaixo permanecem como referência auditável e para reprodução em
+outro ambiente. Não reaplique as colunas na planilha oficial.
 
 ## Aba `Calendário Meta`
 

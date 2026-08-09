@@ -11,6 +11,19 @@
 - workflow ativado: não;
 - publicação real: nenhuma.
 
+## Migração live verificada
+
+Em 08/08/2026, após autorização explícita, a planilha oficial foi atualizada e
+relida pela API do Google Sheets:
+
+- `Calendário Meta` passou de 38 para 44 colunas;
+- `AM1:AR1` contém os seis cabeçalhos V2 na ordem documentada;
+- `Automação Meta!A47:C52` contém as cinco configurações críticas;
+- `PAUSA_GERAL=SIM` permanece bloqueando publicação;
+- valores, validações e formatação das áreas alteradas foram confirmados.
+
+Não houve importação, ativação ou execução do workflow n8n nessa validação.
+
 ## Cobertura
 
 Foram aprovados os 17 cenários obrigatórios:
@@ -48,7 +61,7 @@ node n8n/meta-publicador-v2/validate-meta-publicador-v2.mjs
 
 - A importação real pode revelar diferenças de versão do n8n não detectáveis
   pelo validador offline.
-- A migração da planilha e as credenciais devem ser conferidas manualmente.
+- As credenciais e a importação no n8n ainda devem ser conferidas manualmente.
 - Um lock/log ambíguo exige revisão humana; não existe replay cego.
 - O primeiro teste deve usar somente conteúdo sintético/controlado.
 - Ativação, `PAUSA_GERAL=NAO` e publicação real não fazem parte desta entrega.

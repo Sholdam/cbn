@@ -5,8 +5,8 @@
 - V2 de produção preparada em branch, sem ativação ou publicação real.
 - Schedule de um minuto, Manual Trigger, timezone São Paulo, pausa fail-closed,
   lock, log append-only, idempotência e retry por canal implementados.
-- Migração `Calendário Meta` AM:AR e configuração `Automação Meta` documentadas,
-  não aplicadas remotamente.
+- Migração `Calendário Meta` AM:AR e configuração `Automação Meta!A47:C52`
+  aplicadas em 08/08/2026, com `PAUSA_GERAL=SIM` e validações restritivas.
 - Resultado local: 24/24 testes offline aprovados.
 - Status: **Em revisão**. Pendente importar inativo, conferir credenciais e
   executar smoke test sintético somente após autorização específica.

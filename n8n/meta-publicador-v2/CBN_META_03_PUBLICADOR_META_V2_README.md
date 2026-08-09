@@ -20,12 +20,15 @@ O workflow possui 39 nós e é entregue com `active=false`. Ele contém:
 - consulta simples do permalink do Instagram após publicação;
 - retry técnico HTTP com `maxTries=2` e retry funcional com até três tentativas.
 
+Estado atual: a migração da planilha oficial foi aplicada em 08/08/2026 e
+permanece com `PAUSA_GERAL=SIM`. O workflow ainda não foi importado ou ativado.
+
 ## Ordem segura para adoção
 
 1. Revise este diretório e o relatório de validação.
-2. Aplique manualmente a migração descrita em
-   `CBN_META_V2_MIGRACAO_PLANILHA.md`.
-3. Preencha `Automação Meta` com `PAUSA_GERAL=SIM` e as demais configurações.
+2. Confirme os intervalos já migrados conforme
+   `CBN_META_V2_MIGRACAO_PLANILHA.md`; não reaplique as colunas.
+3. Confirme `PAUSA_GERAL=SIM` em `Automação Meta!C48`.
 4. Importe o JSON no n8n sem ativá-lo.
 5. Confirme as referências de credenciais Google Sheets e HTTP Header Auth.
 6. Confirme que os tokens existem somente em Credentials do n8n.
@@ -45,7 +48,8 @@ canais antes de qualquer nova tentativa.
 ## Limitações
 
 - A validação desta entrega é offline; o JSON não foi importado no n8n real.
-- A planilha real não foi modificada.
+- A planilha real recebeu somente a migração documentada; nenhum post foi
+  alterado ou publicado.
 - O workflow não foi ativado e nenhuma chamada real à Meta foi feita.
 - A URL HTTPS é validada sintaticamente. A disponibilidade pública continua
   sendo responsabilidade do operador antes da aprovação.

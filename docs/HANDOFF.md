@@ -6,11 +6,12 @@
   Instagram e Facebook com Schedule de um minuto, mantendo Manual Trigger.
 - O workflow é entregue inativo, com pausa fail-closed lida de `Automação Meta`,
   agendamento em `America/Sao_Paulo`, idempotência e retry por canal.
-- A migração AM:AR está documentada, mas não foi aplicada à planilha real.
+- A migração AM:AR e o bloco `Automação Meta!A47:C52` foram aplicados à
+  planilha oficial em 08/08/2026, mantendo `PAUSA_GERAL=SIM`.
 - Validação offline: 24/24 testes aprovados, sem token, chamada Meta, ativação,
   deploy, merge ou publicação.
-- Próximo gate: revisão do PR, migração manual da planilha e importação inativa;
-  qualquer smoke test real exige autorização separada.
+- Próximo gate: revisão do PR e importação inativa no n8n; qualquer ativação ou
+  smoke test real exige autorização separada.
 
 ## CHECKPOINT OFICIAL PARA RETOMADA — 17/07/2026
 
