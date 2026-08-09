@@ -1,0 +1,24 @@
+name: Chatwoot CBN build
+
+on:
+  push:
+    branches:
+      - feat/chatwoot-whatsapp-agent-name
+    paths:
+      - 'chatwoot-cbn/**'
+      - '.github/workflows/chatwoot-cbn-build.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build custom Chatwoot image
+        run: docker build --progress=plain -f chatwoot-cbn/Dockerfile chatwoot-cbn
