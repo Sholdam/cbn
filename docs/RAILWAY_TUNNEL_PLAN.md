@@ -62,14 +62,20 @@ Railway durante a operação para manter a meta de US$5/mês.
 
 ## Operação e limites
 
+O canal WhatsApp planejado agora é WAHA local. A ponte WAHA–Chatwoot deverá
+usar a rede interna dos contêineres; a sessão WAHA sairá diretamente pela
+internet deste PC. Não é necessário abrir uma rota pública para webhook da
+Meta para essa integração. O canal antigo da API oficial permanece inerte.
+
 1. Com o Toshiba conectado, executar `infra/scripts/start-cbn-public.ps1` para
    reabrir o cofre, iniciar o clone e ligar o cliente do túnel. Para retirar o
    HD, executar `infra/scripts/stop-cbn-clone.ps1`, que agora para o túnel antes
    de fechar o cofre. O ciclo parar, fechar, reabrir e publicar foi executado
    com sucesso em 29/09. O perfil `public` continua sem início automático.
-2. A prévia é navegável; login humano no Chatwoot e fluxo completo de anexos na
-   interface ainda não foram exercitados. URL assinada, handshake WebSocket e
-   HTTP foram validados separadamente.
+2. A prévia é navegável. Na interface local do Chatwoot, uma nota privada foi
+   salva e permaneceu após recarregar a conversa. Login pelo domínio público e
+   fluxo completo de anexos na interface ainda não foram exercitados. URL
+   assinada, handshake WebSocket e HTTP foram validados separadamente.
 3. O site CBN permanece em `127.0.0.1:3002` e tem prévia em `/site/`;
    Sidekiq, n8n, Telegram,
    webhooks e mensageria continuam desligados. Os domínios originais

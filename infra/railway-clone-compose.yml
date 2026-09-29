@@ -102,6 +102,61 @@ services:
       - 127.0.0.1:3002:3000
     networks: [frontend]
 
+  waha-redis:
+    image: redis:8.2.1
+    profiles: [waha]
+    restart: "no"
+    environment:
+      SKIP_FIX_PERMS: "1"
+    command: [redis-server, /usr/local/etc/redis/redis.conf]
+    volumes:
+      - /srv/cbn-production/waha/redis:/data
+      - /srv/cbn-production/secrets/waha-redis.conf:/usr/local/etc/redis/redis.conf:ro
+    networks: [backend]
+    healthcheck:
+      test: [CMD-SHELL, 'REDISCLI_AUTH="$$(tail -n 1 /usr/local/etc/redis/redis.conf | cut -d " " -f2)" redis-cli ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  waha:
+    image: devlikeapro/waha@sha256:41283bd89922ec3f722e5a772b844c451634d4aa72e9c34043c3480184f970fe
+    profiles: [waha]
+    restart: "no"
+    env_file:
+      - /srv/cbn-production/secrets/waha.env
+    depends_on:
+      waha-redis:
+        condition: service_healthy
+    volumes:
+      - /srv/cbn-production/waha/sessions:/app/.sessions
+      - /srv/cbn-production/waha/media:/app/.media
+    ports:
+      - 127.0.0.1:3003:3000
+    networks: [backend, frontend]
+
+  chatwoot-waha-worker:
+    image: cbn/chatwoot:4.16.2-cbn-local
+    profiles: [waha]
+    restart: "no"
+    env_file:
+      - /srv/cbn-production/secrets/chatwoot-local.env
+      - path: /srv/cbn-production/secrets/waha-chatwoot.env
+        required: false
+    entrypoint: [sh, /app/cbn-waha-worker.sh]
+    command: [-q, critical, -q, medium, -q, active_storage_analysis, -c, "2"]
+    depends_on:
+      chatwoot-web:
+        condition: service_started
+      waha:
+        condition: service_started
+    volumes:
+      - /srv/cbn-production/chatwoot_storage:/app/storage
+      - ./waha-sidekiq-schedule.yml:/app/config/schedule.yml:ro
+      - ./waha-local-webhook.rb:/app/config/initializers/cbn_waha_local_webhook.rb:ro
+      - ./scripts/run-cbn-waha-worker.sh:/app/cbn-waha-worker.sh:ro
+    networks: [backend, frontend]
+
   n8n-volume-check:
     image: n8nio/n8n:2.28.7
     profiles: [inert]

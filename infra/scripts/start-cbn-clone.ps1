@@ -57,3 +57,7 @@ Write-Output 'cofre=LUKS2_montado'
 Write-Output 'crm=http://127.0.0.1:3000/'
 Write-Output 'site=http://127.0.0.1:3002/'
 Write-Output 'automacoes=desligadas'
+& wsl.exe -d Ubuntu-CBN -u root -- test -f /srv/cbn-production/secrets/waha-chatwoot.json
+if ($LASTEXITCODE -eq 0) {
+    & (Join-Path $PSScriptRoot 'start-cbn-waha.ps1')
+}

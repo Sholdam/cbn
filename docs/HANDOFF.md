@@ -1,5 +1,66 @@
 # Handoff — CBN Crédito
 
+## Decisão de canal — WAHA local (29/09/2026)
+
+- WAHA **2026.9.1 / GOWS / CORE** instalado e iniciado no PC, com imagem
+  fixada por digest, Redis próprio e volumes persistentes no cofre Toshiba.
+  A nova caixa **CBN WhatsApp (WAHA)** é `Channel::Api`, inbox `5`; o app
+  Chatwoot interno foi criado. A sessão `default` está aguardando leitura do
+  QR Code. Nenhum envio WAHA foi declarado entregue.
+- Chatwoot local passou a usar Redis DB `1`; DB `0` e os trabalhos herdados
+  foram preservados. Regras automáticas `1,3,4,5,6` foram pausadas no clone.
+  O worker novo processa somente `critical`, `medium` e
+  `active_storage_analysis`, sem cron herdado. O canal Meta, n8n e worker
+  legado continuam inertes. A conta técnica WAHA permanece agente; a
+  permissão administrativa temporária usada para criar os atributos foi
+  retirada após configurar o app.
+- Webhook WAHA usa apenas a rede Docker interna. A exceção de acesso privado
+  é limitada ao destino exato provisionado, sem redirecionamentos; o filtro
+  SSRF normal segue para os demais destinos. API/admin WAHA em loopback
+  `3003`; página temporária de QR em loopback `3004`, sem chave no navegador.
+  Ver [`WAHA_LOCAL_RUNBOOK.md`](WAHA_LOCAL_RUNBOOK.md).
+
+- O usuário confirmou que o WhatsApp operacional será pelo **WAHA**, não pela
+  API oficial da Meta. A tentativa `hello_world` abaixo registra apenas a
+  falha do canal legado; não repetir esse envio nem usar a verificação da
+  conta Meta como próximo passo da migração.
+- O WAHA deve rodar neste PC, com sessão persistida no Toshiba e saída para o
+  WhatsApp pela conexão local brasileira. O Railway permanece como entrada
+  pública do CRM/site, sem intermediar a saída do WAHA. WAHA foi acrescentado
+  ao clone local; não existe serviço WAHA no projeto Railway.
+- A integração atual `CBN Api` é `Channel::Whatsapp` da Meta. Preparar uma
+  caixa `Channel::Api` separada para o app Chatwoot integrado do WAHA,
+  preservando o histórico da caixa antiga. Antes de ativar envios, conferir
+  vínculo de contatos/conversas, sessão via QR no aparelho comercial, filas,
+  anexos e ida/volta com número de teste. O app integrado do WAHA usa Redis e
+  não exige n8n apenas para a ponte com o Chatwoot.
+
+## Atualização — teste funcional e custo medido (29/09/2026)
+
+- A interface local do Chatwoot abriu a conversa de teste e salvou uma nota
+  privada. A nota permaneceu após recarregar a página e foi confirmada no
+  PostgreSQL como mensagem `2035`.
+- Um único modelo neutro `hello_world` foi criado como mensagem `2036`. O
+  trabalho de envio correspondente foi retirado da fila antes da execução
+  isolada, sem iniciar Sidekiq. A primeira tentativa foi recusada pela Meta:
+  o identificador de telefone salvo no clone não existia mais. A chave da API
+  e a conta WhatsApp Business responderam normalmente; a lista da Meta tinha
+  um único telefone correspondente ao número configurado no canal. O
+  `phone_number_id` do **clone local** foi atualizado e validado contra essa
+  lista.
+- A repetição da mesma mensagem foi recusada com `(#133010) Account not
+  registered`. A Meta retornou `code_verification_status=NOT_VERIFIED`,
+  `platform_type=NOT_APPLICABLE` e `name_status=PENDING_REVIEW` para o telefone.
+  A mensagem `2036` está `failed`, sem ID externo e sem trabalho de envio
+  pendente. Os quatro webhooks de bot gerados pelos dois registros de teste
+  foram retirados da fila; outros trabalhos foram preservados. Não há
+  evidência de entrega. Não registrar o número ou mudar
+  webhook/canal sem tratar o estado da conta na Meta; automações seguem inertes.
+- `railway usage projects --project CBN --period current --json` indicou
+  US$ 0,1951 para o projeto CBN e US$ 0,000248 para `cbn-tunnel-gateway` no
+  ciclo de 21/09 a 21/10, na leitura de 29/09 às 15h BRT. A amostra do túnel
+  é curta e não constitui projeção mensal.
+
 ## Atualização — túnel Railway ativo para prévia (29/09/2026)
 
 - O usuário autorizou e foi implantado `cbn-tunnel-gateway`. O cliente frpc

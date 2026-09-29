@@ -1,5 +1,19 @@
 # Backlog — checkpoint oficial de 17/07/2026
 
+## Trilha paralela — WAHA local preparado (29/09/2026)
+
+- Canal confirmado pelo usuário: WAHA, com o mesmo número comercial e
+  aparelho disponível. WAHA 2026.9.1/GOWS e Redis próprio estão no PC;
+  sessão e mídia persistem no cofre Toshiba. Nova caixa API `5` criada,
+  preservando a `CBN Api` e seu histórico. App Chatwoot provisionado.
+- Filas Chatwoot isoladas no Redis DB `1`, mantendo DB `0`. Cinco regras
+  herdadas pausadas; worker limitado a eventos, webhooks e análise de mídia,
+  sem cron. n8n e canal Meta seguem inertes.
+- QR aberto em página temporária local. Pendentes: leitura no aparelho,
+  conferência do número pareado, recebimento e único envio ao número de teste,
+  anexos e recuperação da sessão. Não há entrega WAHA confirmada ainda.
+  Procedimento em [`WAHA_LOCAL_RUNBOOK.md`](WAHA_LOCAL_RUNBOOK.md).
+
 ## Trilha paralela — túnel Railway ativo para prévia (29/09/2026)
 
 - Serviço `cbn-tunnel-gateway` implantado no Railway e cliente frpc conectado
