@@ -1,5 +1,55 @@
 # Backlog — checkpoint oficial de 17/07/2026
 
+## Trilha paralela — clone retomado (29/09/2026)
+
+- Toshiba reconectado; cofre LUKS2, PostgreSQL, Redis, S3, Chatwoot Web e site
+  voltaram. Web e site responderam HTTP 200. Inicio seguro reproduzível por
+  `infra/scripts/start-cbn-clone.ps1`.
+- Bucket S3: 56/56 objetos reconferidos. Dos 64 blobs, dois S3 já faltavam na
+  origem e quatro arquivos locais estão no volume Sidekiq separado; os volumes
+  foram preservados sem mesclar. Web alcança 58/64 arquivos.
+- n8n, Sidekiq e Telegram seguem inertes. Recuperação independente da chave,
+  backup e validação funcional completa ainda impedem promover o clone.
+
+## Trilha paralela — clone Railway local (29/09/2026)
+
+- Banco físico, Redis, cinco volumes, segredos e 56 objetos S3 foram copiados
+  para o cofre LUKS2 no Toshiba. Chatwoot real e site responderam localmente.
+  Sidekiq, Telegram e n8n permanecem inertes, sem cutover.
+- A conferência de 64 blobs apontou seis referências sem objeto local. Falta
+  comparar essas seis com o bucket de origem.
+- O HD externo desapareceu do Windows após reinicialização às 08:36, deixando
+  o WSL e o clone indisponíveis. Primeiro reconectar e conferir integridade;
+  depois validar dados/serviços e concluir backup recuperável.
+- A origem Railway foi restaurada ao estado sem deploy ativo nos serviços usados
+  para extração. O status detalhado está em
+  [`CRM_INFRA_MIGRATION_STATUS.md`](CRM_INFRA_MIGRATION_STATUS.md).
+
+## Trilha paralela — migração da infraestrutura CRM (28/09/2026)
+
+- A meta foi confirmada como clone fiel do Railway. Inventário de nove serviços,
+  cinco volumes e bucket S3 documentado. PgVector foi iniciado apenas para
+  extração via SSH, e desligado após salvar dump cifrado com DPAPI no Toshiba.
+- O clone real não foi restaurado. A tentativa de cofre LUKS no HD falhou;
+  armazenamento criptografado confiável e backup recuperável seguem pendentes.
+- Ubuntu 24.04.5 em WSL2 e Docker Engine/Compose no HD externo; `hello-world`
+  confirmado. A composição sintética de Postgres/pgvector, Redis, Chatwoot CBN
+  e um Sidekiq está saudável, aguardando onboarding manual.
+- Nenhum DNS/webhook ou serviço de mensageria foi alterado. O único dado real
+  transferido está cifrado em staging, sem aplicação produtiva.
+- Seguem pendentes as decisões externas e gates BKL-016 registrados em
+  [`CRM_INFRA_MIGRATION_STATUS.md`](CRM_INFRA_MIGRATION_STATUS.md).
+
+## Trilha paralela — migração da infraestrutura CRM (25/09/2026)
+
+- Etapa 0 de auditoria somente leitura concluída; nenhuma mudança no Railway nem
+  transferência de dados foi feita.
+- Etapa 1 pendente de espaço local e confirmação para habilitar WSL2/Docker
+  Desktop no host Windows.
+- Dumps, anexos e sessões reais permanecem proibidos até aprovação dos gates
+  externos BKL-016.
+- Acompanhar [`CRM_INFRA_MIGRATION_STATUS.md`](CRM_INFRA_MIGRATION_STATUS.md).
+
 ## Retomada oficial
 
 - Fonte: `https://github.com/Sholdam/cbn`, branch `main`.

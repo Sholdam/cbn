@@ -1,0 +1,122 @@
+# Real-data clone foundation. Start only after /srv/cbn-production is LUKS-mounted.
+name: cbn-railway-clone
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg18
+    profiles: [clone]
+    restart: "no"
+    environment:
+      POSTGRES_DB: railway
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    secrets:
+      - postgres_password
+    volumes:
+      - /srv/cbn-production/postgres:/var/lib/postgresql
+      - /srv/cbn-production/backups:/restore:ro
+    networks: [backend]
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  postgres-physical:
+    image: pgvector/pgvector:pg18
+    profiles: [physical]
+    restart: "no"
+    environment:
+      PGDATA: /var/lib/postgresql/physical
+      POSTGRES_DB: railway
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    secrets:
+      - postgres_password
+    volumes:
+      - /srv/cbn-production/postgres-physical:/var/lib/postgresql/physical
+    networks: [backend]
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  redis:
+    image: redis:8.2.1
+    profiles: [physical]
+    restart: "no"
+    command: [redis-server, /usr/local/etc/redis/redis.conf]
+    volumes:
+      - /srv/cbn-production/redis:/data
+      - /srv/cbn-production/secrets/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    networks: [backend]
+
+  garage:
+    image: dxflrs/garage:v2.4.1
+    profiles: [physical]
+    restart: "no"
+    command: [/garage, server, --single-node, --default-bucket]
+    env_file:
+      - /srv/cbn-production/secrets/garage.env
+    volumes:
+      - /srv/cbn-production/secrets/garage.toml:/etc/garage.toml:ro
+      - /srv/cbn-production/garage/meta:/var/lib/garage/meta
+      - /srv/cbn-production/garage/data:/var/lib/garage/data
+    ports:
+      - 127.0.0.1:3900:3900
+    networks: [backend, frontend]
+
+  chatwoot-web:
+    image: cbn/chatwoot:4.16.2-cbn-local
+    profiles: [web]
+    restart: "no"
+    env_file:
+      - /srv/cbn-production/secrets/chatwoot-local.env
+    entrypoint: [docker/entrypoints/rails.sh]
+    command: [bundle, exec, rails, s, -p, "3000", -b, 0.0.0.0]
+    depends_on:
+      postgres-physical:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      garage:
+        condition: service_started
+    volumes:
+      - /srv/cbn-production/chatwoot_storage:/app/storage
+    ports:
+      - 127.0.0.1:3000:3000
+    networks: [backend, frontend]
+
+  cbn-site:
+    image: node:20-alpine
+    profiles: [site]
+    restart: "no"
+    working_dir: /app
+    command: [node, server.mjs]
+    volumes:
+      - /mnt/d/CBN/source/site:/app:ro
+    ports:
+      - 127.0.0.1:3002:3000
+    networks: [frontend]
+
+  n8n-volume-check:
+    image: n8nio/n8n:2.28.7
+    profiles: [inert]
+    restart: "no"
+    entrypoint: [/bin/sh, -c]
+    command: ["exec sleep infinity"]
+    volumes:
+      - /srv/cbn-production/n8n:/home/node/.n8n:ro
+    networks: [backend]
+
+secrets:
+  postgres_password:
+    file: /srv/cbn-production/secrets/postgres_password
+
+networks:
+  backend:
+    internal: true
+  frontend:

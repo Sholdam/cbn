@@ -15,7 +15,7 @@ RUN ruby /tmp/cbn_patch_settings.rb \
   && npm install -g pnpm@10.2.0 \
   && cd /app \
   && pnpm install --frozen-lockfile --prod=false \
-  && SECRET_KEY_BASE=precompile_placeholder RAILS_LOG_TO_STDOUT=enabled bundle exec rake assets:precompile \
+  && SECRET_KEY_BASE=precompile_placeholder RAILS_LOG_TO_STDOUT=enabled NODE_OPTIONS=--max-old-space-size=4096 bundle exec rake assets:precompile \
   && rm -rf /app/node_modules /app/tmp/cache /tmp/cbn_patch_settings.rb
 
 WORKDIR /app

@@ -1,5 +1,70 @@
 # Handoff — CBN Crédito
 
+## Atualização — clone retomado após reconexão (29/09/2026)
+
+- Toshiba reconhecido novamente em `D:`; WSL e cofre LUKS2 reabertos.
+  PostgreSQL, Redis, Garage, Chatwoot Web e site CBN operam localmente. Web
+  respondeu HTTP 200 e o dashboard CBN abriu em `http://127.0.0.1:3000/`;
+  site em `:3002/`. Pilha sintética anterior parada, com volumes preservados.
+- Os 56 objetos S3 foram relidos com SHA-256 idêntico. Dos 64 blobs no banco,
+  dois S3 já faltavam na origem, quatro arquivos locais estão no volume Sidekiq
+  separado, e 58 são acessíveis pelo Web. Volumes originais preservados.
+- n8n confirmou 6 workflows, 10 credenciais e 5.091 execuções em modo inerte.
+  Sidekiq e Telegram não foram ativados.
+- Scripts de início/parada segura: [`start-cbn-clone.ps1`](../infra/scripts/start-cbn-clone.ps1)
+  e [`stop-cbn-clone.ps1`](../infra/scripts/stop-cbn-clone.ps1). O ciclo real
+  parar/desmontar/remontar/iniciar foi concluído com Web e site HTTP 200. Recuperação
+  independente da chave, backup externo e validação funcional ainda pendentes.
+
+## Atualização — clone Railway local (29/09/2026)
+
+- A cópia física PgVector, Redis, os volumes Chatwoot/n8n/Sidekiq e os 56 objetos
+  S3 foram obtidos e restaurados em cofre LUKS2 no Toshiba. A interface real do
+  Chatwoot respondeu na porta 3001 e o site CBN na porta 3002. Sidekiq,
+  gateway Telegram e workflows n8n continuam inertes.
+- Seis de 64 referências ActiveStorage não foram encontradas no S3 local;
+  comparar com a origem para separar lacuna de dados preexistente de erro de
+  migração. O comando de comparação foi interrompido na reinicialização.
+- Após a reinicialização do Windows às 08:36, o Toshiba deixou de constar em
+  `Get-Disk`/`Get-Volume`; `D:` e o WSL `Ubuntu-CBN` ficaram indisponíveis.
+  Reconectar a unidade e verificar integridade antes de reabrir o cofre e
+  reiniciar serviços. O estado anterior de 28/09 abaixo foi superado.
+- A origem Railway voltou a não ter deploy ativo nos serviços extraídos; Git e
+  comandos originais foram restaurados. Nenhum DNS/webhook foi alterado.
+  Detalhes: [`CRM_INFRA_MIGRATION_STATUS.md`](CRM_INFRA_MIGRATION_STATUS.md).
+
+## Atualização — preparação de migração do CRM (28/09/2026)
+
+- A meta foi confirmada como clone fiel do estado Railway. O inventário atual
+  identificou nove serviços sem deploy ativo antes da extração, cinco volumes
+  preservados e bucket S3 com 56 objetos. Consulte
+  [`RAILWAY_PARITY_INVENTORY.md`](RAILWAY_PARITY_INVENTORY.md).
+- Por autorização posterior do usuário, PgVector foi iniciado para uma cópia
+  lógica via SSH. O dump foi cifrado com DPAPI no HD externo, verificado e o
+  serviço Railway voltou ao estado sem deploy ativo. Não houve cutover.
+- A tentativa de cofre LUKS em arquivo NTFS/WSL falhou; a imagem incompleta de
+  50 GB permanece em `D:\CBN\vault`, sem dados reais. A restauração aguarda
+  proteção de disco confiável. Após reiniciar a distro, o stack sintético
+  voltou a ficar saudável.
+- Ubuntu 24.04.5 foi verificado pelo SHA-256 oficial e importado como
+  `Ubuntu-CBN` em `D:\CBN\wsl\Ubuntu-CBN`, no HD Toshiba externo.
+- Docker Engine 29.8.1 e Compose 5.5.1 foram instalados dentro do WSL; o serviço
+  está ativo e o contêiner oficial `hello-world` executou com sucesso.
+- A composição sintética de Postgres/pgvector, Redis, Chatwoot CBN e um Sidekiq
+  está saudável; `http://127.0.0.1:3000/` redireciona ao onboarding inicial.
+  Nenhuma conta foi criada. Os gates BKL-016 para aplicação produtiva seguem.
+- Detalhes e próximos bloqueios: [`CRM_INFRA_MIGRATION_STATUS.md`](CRM_INFRA_MIGRATION_STATUS.md).
+
+## Atualização — preparação de migração do CRM (25/09/2026)
+
+- A Etapa 0 de leitura da infraestrutura Railway e do host local foi concluída;
+  nenhuma configuração de produção ou dado foi alterado/exportado.
+- A Etapa 1 aguarda espaço local suficiente e confirmação antes de instalar WSL2
+  e Docker Desktop, pois isso modifica componentes do Windows e pode exigir
+  privilégios administrativos e reinicialização.
+- A migração de dados reais continua bloqueada pelos gates externos da BKL-016.
+- Plano e estado da trilha: [`CRM_INFRA_MIGRATION_STATUS.md`](CRM_INFRA_MIGRATION_STATUS.md).
+
 ## CHECKPOINT OFICIAL PARA RETOMADA — 17/07/2026
 
 Este repositório, na branch `main`, é a **fonte oficial** do projeto:
