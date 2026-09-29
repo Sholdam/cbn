@@ -1,11 +1,21 @@
 name: cbn-outbound-tunnel
 
 services:
+  site-preview:
+    image: nginx:1.27-alpine
+    profiles: [public]
+    restart: "no"
+    network_mode: host
+    volumes:
+      - /mnt/c/Users/GUILHERME/OneDrive/Documentos/ChatGPT/CBN/cbn-infrastructure-migration/infra/tunnel/local/site-preview.conf:/etc/nginx/conf.d/default.conf:ro
+
   frpc:
     image: ghcr.io/fatedier/frpc:v0.71.0
     profiles: [public]
     restart: "no"
     network_mode: host
+    depends_on:
+      - site-preview
     command: [-c, /etc/frp/frpc.toml]
     env_file:
       - /srv/cbn-production/secrets/frp/client.env

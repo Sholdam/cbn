@@ -7,6 +7,9 @@ if ($LASTEXITCODE -ne 0 -or $mountedSource.Trim() -ne '/dev/mapper/cbn_productio
 }
 
 $compose = '/mnt/c/Users/GUILHERME/OneDrive/Documentos/ChatGPT/CBN/cbn-infrastructure-migration/infra/railway-clone-compose.yml'
+$tunnelCompose = '/mnt/c/Users/GUILHERME/OneDrive/Documentos/ChatGPT/CBN/cbn-infrastructure-migration/infra/tunnel/local/compose.yml'
+& wsl.exe -d Ubuntu-CBN -u root -- docker compose -f $tunnelCompose --profile public stop frpc site-preview
+if ($LASTEXITCODE -ne 0) { throw 'Falha ao parar o tunel CBN.' }
 & wsl.exe -d Ubuntu-CBN -u root -- docker compose -f $compose --profile physical --profile web --profile site --profile inert stop chatwoot-web cbn-site n8n-volume-check garage redis postgres-physical
 if ($LASTEXITCODE -ne 0) { throw 'Falha ao parar um ou mais servicos CBN.' }
 

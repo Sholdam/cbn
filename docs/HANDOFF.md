@@ -1,12 +1,19 @@
 # Handoff — CBN Crédito
 
-## Atualização — túnel Railway preparado (29/09/2026)
+## Atualização — túnel Railway ativo para prévia (29/09/2026)
 
-- O usuário escolheu usar um domínio Railway como entrada e conexão de saída
-  do PC; a topologia e os arquivos frps/frpc estão em
-  [`RAILWAY_TUNNEL_PLAN.md`](RAILWAY_TUNNEL_PLAN.md). Credenciais locais ficam
-  apenas no cofre LUKS. Configurações validadas, sem serviço implantado,
-  túnel ativado, domínio movido ou tráfego público para o clone.
+- O usuário autorizou e foi implantado `cbn-tunnel-gateway`. O cliente frpc
+  iniciou conexão de saída do PC. A prévia pública protegida por senha está em
+  <https://cbn-tunnel-gateway-production.up.railway.app/>. HTTP 200 com
+  credencial, HTTP 401 sem credencial, URL S3 assinada e WebSocket foram
+  validados. Segredos permanecem no cofre LUKS e nas variáveis do gateway;
+  detalhes em [`RAILWAY_TUNNEL_PLAN.md`](RAILWAY_TUNNEL_PLAN.md).
+- O site CBN tem prévia no mesmo domínio, em `/site/`; seu HTML foi comparado
+  com o local e é idêntico. O domínio público original do site não mudou.
+- Início após reinício: [`start-cbn-public.ps1`](../infra/scripts/start-cbn-public.ps1).
+  Antes de retirar o Toshiba, [`stop-cbn-clone.ps1`](../infra/scripts/stop-cbn-clone.ps1)
+  para o túnel e fecha o cofre. O ciclo de parada e retorno público foi executado
+  com sucesso. Domínios originais e automações não mudaram.
 - A cópia de segurança independente foi adiada por decisão do usuário. Não
   armazenar backups reais nem segredos no repositório GitHub CBN.
 

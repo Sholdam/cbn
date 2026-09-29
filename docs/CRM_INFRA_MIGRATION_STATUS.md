@@ -1,5 +1,21 @@
 # Migração da infraestrutura do CRM CBN
 
+## Entrada pública de prévia — 29/09/2026
+
+O gateway `cbn-tunnel-gateway` foi implantado no Railway com um domínio novo;
+o cliente no WSL conecta por TCP de saída com TLS e token. A prévia protegida
+por HTTP Basic Auth está em <https://cbn-tunnel-gateway-production.up.railway.app/>.
+Raiz e login responderam HTTP 200 com credencial; sem credencial, HTTP 401;
+uma URL S3 assinada retornou o objeto original com SHA-256 idêntico; e
+`/cable` abriu WebSocket. `FRONTEND_URL` e `STORAGE_ENDPOINT` locais apontam
+para esse domínio. O site CBN responde em `/site/` no mesmo gateway com HTML
+idêntico ao local. O uso observado do gateway foi 0,013 GB de RAM, sem promessa
+de custo mensal fixo. Ver [`RAILWAY_TUNNEL_PLAN.md`](RAILWAY_TUNNEL_PLAN.md).
+
+Os domínios originais, site público original, webhooks, Sidekiq, Telegram e
+workflows n8n não foram movidos ou ativados. A entrada pública é uma prévia do
+Web, não um corte operacional. A cópia de segurança independente foi adiada.
+
 ## Checkpoint atual — 29/09/2026 09:16 BRT
 
 **O Toshiba foi reconectado e o clone local voltou a funcionar.** O Windows reconheceu `D:` (`FAMULUS_DATA`, NTFS saudável); WSL, Docker e o cofre LUKS2 reabriram. Um processo WSL oculto mantém a distro ativa nesta sessão. O script [`start-cbn-clone.ps1`](../infra/scripts/start-cbn-clone.ps1) agora valida disco/montagem e inicia apenas os componentes locais sem automações; [`stop-cbn-clone.ps1`](../infra/scripts/stop-cbn-clone.ps1) foi preparado para parada e desmontagem segura antes de remover o HD.

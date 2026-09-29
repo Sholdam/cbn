@@ -1,12 +1,24 @@
 # Infraestrutura interna CBN
 
-## Túnel de entrada Railway — preparado, desligado
+## Túnel de entrada Railway — prévia ativa
 
 O desenho para manter um endereço Railway com o CRM neste PC está em
 [`../docs/RAILWAY_TUNNEL_PLAN.md`](../docs/RAILWAY_TUNNEL_PLAN.md).
-As configurações locais ficam em `tunnel/`; credenciais foram geradas dentro
-do cofre LUKS. O perfil `public` do frpc não inicia com o clone, e nenhum
-gateway foi implantado no Railway.
+As configurações locais ficam em `tunnel/`; credenciais estão no cofre LUKS.
+O gateway `cbn-tunnel-gateway` foi implantado no Railway. Para iniciar o clone
+e sua entrada pública após conectar o Toshiba:
+
+```powershell
+& .\infra\scripts\start-cbn-public.ps1
+```
+
+O endereço retornado pede usuário `cbn-preview` e a senha guardada no cofre.
+O site tem prévia em `<endereço retornado>/site/` no mesmo gateway.
+Para copiar essa senha à área de transferência sem mostrá-la no terminal,
+executar `& .\infra\scripts\copy-cbn-preview-password.ps1`; após colar,
+limpar a área de transferência.
+O perfil `public` não inicia com o clone local por padrão. Os serviços de
+automação continuam desligados.
 
 ## Clone local com dados Railway — estado em 29/09/2026
 

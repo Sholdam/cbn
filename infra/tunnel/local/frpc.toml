@@ -24,3 +24,11 @@ localIP = "127.0.0.1"
 localPort = 3900
 customDomains = ["{{ .Envs.FRP_CRM_DOMAIN }}"]
 locations = ["/{{ .Envs.FRP_BUCKET_NAME }}"]
+
+[[proxies]]
+name = "cbn-site-preview"
+type = "http"
+localIP = "127.0.0.1"
+localPort = 3901
+customDomains = ["{{ .Envs.FRP_CRM_DOMAIN }}"]
+locations = ["/site"]

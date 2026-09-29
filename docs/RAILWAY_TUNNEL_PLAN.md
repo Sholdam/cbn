@@ -1,9 +1,12 @@
 # Entrada Railway com CRM no Toshiba
 
-Atualizado em 29/09/2026. O usuário escolheu manter um endereço Railway e
-fazer o PC iniciar a conexão de saída. Os arquivos estão preparados localmente;
-**nenhum serviço de túnel foi implantado no Railway e o cliente local não foi
-iniciado**.
+Atualizado em 29/09/2026. O usuário autorizou um gateway de baixo custo no
+Railway, com conexão de saída iniciada pelo PC. **A prévia pública está ativa**
+em <https://cbn-tunnel-gateway-production.up.railway.app/>. Ela pede HTTP
+Basic Auth com usuário `cbn-preview`; a senha está somente no cofre LUKS do
+Toshiba. O site tem prévia em
+<https://cbn-tunnel-gateway-production.up.railway.app/site/> no mesmo serviço.
+Os domínios antigos do CRM e do site não foram movidos.
 
 ## Topologia preparada
 
@@ -13,6 +16,7 @@ navegador HTTPS -> domínio *.up.railway.app -> frps no Railway (:8080)
                                              -> frpc no WSL/Toshiba
                                              -> Chatwoot 127.0.0.1:3000
                                              -> Garage 127.0.0.1:3900
+                                             -> site via Nginx local :3901 -> :3002
 
 PC -> conexão TCP de saída -> Railway TCP Proxy -> frps (:7000)
 ```
@@ -21,9 +25,11 @@ Não é preciso abrir uma porta de entrada no roteador. O Railway continua a
 receber pedidos públicos e a terminar HTTPS; a aplicação e seus dados seguem
 no Toshiba. A conexão frpc/frps exige token aleatório e TLS com certificado
 verificado contra a CA privada CBN. O Chatwoot de prévia tem autenticação HTTP
-adicional; objetos S3 continuam protegidos por URLs assinadas. As duas rotas
-compartilham o domínio: `/` vai ao CRM e `/<bucket-local>` vai ao Garage sem
-reescrever caminho nem Host, requisitos para a assinatura S3.
+adicional; objetos S3 continuam protegidos por URLs assinadas. As rotas
+compartilham o domínio: `/` vai ao CRM, `/<bucket-local>` vai ao Garage sem
+reescrever caminho nem Host, e `/site/` vai ao site local com remoção desse
+prefixo pelo Nginx. Preservar caminho e Host no Garage é necessário para a
+assinatura S3.
 
 ## Artefatos locais
 
@@ -36,34 +42,44 @@ reescrever caminho nem Host, requisitos para a assinatura S3.
 - [`../infra/scripts/configure-cbn-tunnel.sh`](../infra/scripts/configure-cbn-tunnel.sh):
   registra o endpoint TCP e domínio Railway, quando existirem, no mesmo cofre.
 
-As configurações frps/frpc passaram pelo validador `verify` da versão 0.71.0
-com valores de exemplo. Isso não prova conexão pela rede Railway nem URLs S3.
-Nenhum token, chave privada ou dado de cliente entra no Git.
+As configurações frps/frpc passaram pelo validador `verify` da versão 0.71.0.
+O serviço Railway `cbn-tunnel-gateway` foi implantado a partir do Dockerfile,
+com domínio HTTPS novo na porta interna 8080 e TCP Proxy na porta interna 7000.
+O cliente local conectou com TLS e token. O domínio retornou 401 sem credencial,
+200 na raiz e no login com credencial, uma URL S3 assinada retornou 200 e SHA-256
+igual ao manifesto, e `/cable` aceitou o handshake WebSocket. A rota `/site/`
+retornou HTTP 200 e HTML idêntico ao site local, sem outro serviço Railway.
+O Chatwoot Web
+usa o domínio novo em `FRONTEND_URL` e `STORAGE_ENDPOINT`; o arquivo anterior
+foi preservado no cofre como `chatwoot-local.env.pre-tunnel`. `FORCE_SSL=false`
+preserva o acesso local; o HTTPS público é terminado no Railway. Nenhum token,
+chave privada ou dado de cliente entra no Git.
 
-## Etapas ainda necessárias
+O gateway foi observado consumindo cerca de 0,013 GB de RAM e CPU quase ociosa
+logo após a ativação. O projeto CBN acumulava aproximadamente US$0,19 neste
+ciclo, mas a medição curta não garante o total mensal. Conferir o uso do projeto
+Railway durante a operação para manter a meta de US$5/mês.
 
-1. Revisar custo e criar um serviço gateway no projeto Railway usando o
-   Dockerfile acima; atribuir primeiro um domínio Railway novo com porta HTTP
-   interna `8080` e depois um TCP Proxy para a porta interna `7000`. Os domínios atuais
-   `7k.up.railway.app` e `cbncredito.up.railway.app` permanecem nos serviços
-   originais. Reutilizá-los exigirá uma mudança posterior de roteamento.
-2. Configurar no serviço `FRP_TOKEN`, `FRP_SERVER_CERT_B64` e
-   `FRP_SERVER_KEY_B64`, obtidos do cofre por canal seguro. Essa etapa envia
-   credenciais ao Railway e inicia um serviço com custo; requer aprovação
-   específica antes de executá-la.
-3. Com domínio e endpoint TCP reais, executar `configure-cbn-tunnel.sh` no
-   WSL e iniciar explicitamente o perfil `public` do frpc. A autenticação HTTP
-   da prévia impede o acesso anônimo ao CRM.
-4. Testar login, WebSocket, anexos e URL assinada por HTTPS. Para que o navegador
-   use mídia no domínio público, ajustar `FRONTEND_URL`, `FORCE_SSL` e
-   `STORAGE_ENDPOINT` do Chatwoot local de forma controlada. O estado local
-   atual usa URLs `localhost` e endpoint Docker interno.
-5. Definir entrada separada para o site CBN e revisar webhooks, Sidekiq,
-   n8n e Telegram antes de qualquer operação pública. A cópia de segurança
-   independente foi adiada a pedido do usuário e permanece um risco de corte.
+## Operação e limites
 
-O fallback é não iniciar frpc; sem cliente conectado, o gateway não encaminha
-tráfego ao PC. O clone local em `127.0.0.1:3000` continua disponível.
+1. Com o Toshiba conectado, executar `infra/scripts/start-cbn-public.ps1` para
+   reabrir o cofre, iniciar o clone e ligar o cliente do túnel. Para retirar o
+   HD, executar `infra/scripts/stop-cbn-clone.ps1`, que agora para o túnel antes
+   de fechar o cofre. O ciclo parar, fechar, reabrir e publicar foi executado
+   com sucesso em 29/09. O perfil `public` continua sem início automático.
+2. A prévia é navegável; login humano no Chatwoot e fluxo completo de anexos na
+   interface ainda não foram exercitados. URL assinada, handshake WebSocket e
+   HTTP foram validados separadamente.
+3. O site CBN permanece em `127.0.0.1:3002` e tem prévia em `/site/`;
+   Sidekiq, n8n, Telegram,
+   webhooks e mensageria continuam desligados. Os domínios originais
+   `7k.up.railway.app` e `cbncredito.up.railway.app` não mudaram. O corte e a
+   paridade operacional completa dependem de revisão própria.
+4. A cópia de segurança independente foi adiada a pedido do usuário e
+   permanece um risco de recuperação.
+
+Ao parar `frpc`, o gateway não encaminha tráfego ao PC. O clone local em
+`127.0.0.1:3000` continua disponível enquanto o Toshiba estiver montado.
 
 Referências: [Railway HTTP e TCP no mesmo serviço](https://docs.railway.com/networking/tcp-proxy#using-http-and-tcp-together),
 [frp HTTP](https://gofrp.org/en/docs/examples/vhost-http/),

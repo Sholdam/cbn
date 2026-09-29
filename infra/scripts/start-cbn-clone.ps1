@@ -41,7 +41,7 @@ $compose = '/mnt/c/Users/GUILHERME/OneDrive/Documentos/ChatGPT/CBN/cbn-infrastru
 if ($LASTEXITCODE -ne 0) { throw 'Falha ao iniciar o clone local.' }
 
 $webReady = $false
-for ($attempt = 0; $attempt -lt 12; $attempt++) {
+for ($attempt = 0; $attempt -lt 30; $attempt++) {
     try {
         $response = Invoke-WebRequest -Uri 'http://127.0.0.1:3000/' -SkipHttpErrorCheck -TimeoutSec 2 -ErrorAction Stop
         if ([int]$response.StatusCode -eq 200) { $webReady = $true; break }
