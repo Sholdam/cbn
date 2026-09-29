@@ -1,5 +1,13 @@
 # Infraestrutura interna CBN
 
+## Túnel de entrada Railway — preparado, desligado
+
+O desenho para manter um endereço Railway com o CRM neste PC está em
+[`../docs/RAILWAY_TUNNEL_PLAN.md`](../docs/RAILWAY_TUNNEL_PLAN.md).
+As configurações locais ficam em `tunnel/`; credenciais foram geradas dentro
+do cofre LUKS. O perfil `public` do frpc não inicia com o clone, e nenhum
+gateway foi implantado no Railway.
+
 ## Clone local com dados Railway — estado em 29/09/2026
 
 O clone real usa [`railway-clone-compose.yml`](railway-clone-compose.yml). No

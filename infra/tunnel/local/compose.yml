@@ -1,0 +1,15 @@
+name: cbn-outbound-tunnel
+
+services:
+  frpc:
+    image: ghcr.io/fatedier/frpc:v0.71.0
+    profiles: [public]
+    restart: "no"
+    network_mode: host
+    command: [-c, /etc/frp/frpc.toml]
+    env_file:
+      - /srv/cbn-production/secrets/frp/client.env
+    volumes:
+      - /mnt/c/Users/GUILHERME/OneDrive/Documentos/ChatGPT/CBN/cbn-infrastructure-migration/infra/tunnel/local/frpc.toml:/etc/frp/frpc.toml:ro
+      - /srv/cbn-production/secrets/frp/token:/etc/frp/token:ro
+      - /srv/cbn-production/secrets/frp/ca.crt:/etc/frp/ca.crt:ro

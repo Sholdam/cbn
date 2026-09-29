@@ -1,0 +1,26 @@
+serverAddr = "{{ .Envs.FRP_SERVER_ADDR }}"
+serverPort = {{ .Envs.FRP_SERVER_PORT }}
+
+auth.tokenSource.type = "file"
+auth.tokenSource.file.path = "/etc/frp/token"
+transport.tls.enable = true
+transport.tls.trustedCaFile = "/etc/frp/ca.crt"
+transport.tls.serverName = "frps.cbn.internal"
+
+[[proxies]]
+name = "cbn-crm"
+type = "http"
+localIP = "127.0.0.1"
+localPort = 3000
+customDomains = ["{{ .Envs.FRP_CRM_DOMAIN }}"]
+locations = ["/"]
+httpUser = "cbn-preview"
+httpPassword = "{{ .Envs.FRP_PREVIEW_PASSWORD }}"
+
+[[proxies]]
+name = "cbn-media"
+type = "http"
+localIP = "127.0.0.1"
+localPort = 3900
+customDomains = ["{{ .Envs.FRP_CRM_DOMAIN }}"]
+locations = ["/{{ .Envs.FRP_BUCKET_NAME }}"]

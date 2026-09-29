@@ -1,5 +1,15 @@
 # Handoff — CBN Crédito
 
+## Atualização — túnel Railway preparado (29/09/2026)
+
+- O usuário escolheu usar um domínio Railway como entrada e conexão de saída
+  do PC; a topologia e os arquivos frps/frpc estão em
+  [`RAILWAY_TUNNEL_PLAN.md`](RAILWAY_TUNNEL_PLAN.md). Credenciais locais ficam
+  apenas no cofre LUKS. Configurações validadas, sem serviço implantado,
+  túnel ativado, domínio movido ou tráfego público para o clone.
+- A cópia de segurança independente foi adiada por decisão do usuário. Não
+  armazenar backups reais nem segredos no repositório GitHub CBN.
+
 ## Atualização — clone retomado após reconexão (29/09/2026)
 
 - Toshiba reconhecido novamente em `D:`; WSL e cofre LUKS2 reabertos.

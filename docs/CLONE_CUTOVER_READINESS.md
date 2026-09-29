@@ -3,6 +3,11 @@
 Atualizado em 29/09/2026. Este documento registra evidência e decisões pendentes;
 não autoriza mudar DNS, webhooks ou iniciar mensageria.
 
+O usuário escolheu manter um domínio Railway com túnel de saída do PC. O
+gateway e o cliente foram preparados localmente, sem implantação ou exposição;
+ver [`RAILWAY_TUNNEL_PLAN.md`](RAILWAY_TUNNEL_PLAN.md). A cópia de segurança
+independente foi adiada pelo usuário; dados reais não serão enviados ao GitHub.
+
 ## Estado reproduzido localmente
 
 - O Toshiba `D:` contém `Ubuntu-CBN`, Docker e o cofre LUKS2. O CRM real abre em
@@ -42,8 +47,8 @@ não autoriza mudar DNS, webhooks ou iniciar mensageria.
    validar anexos presentes sem enviar mensagens.
 2. Definir tratamento das 6 referências não acessíveis pelo Web e validar
    upload/download do S3 local em um domínio de teste.
-3. Criar backup criptografado em destino independente, preservar chave de
-   recuperação fora deste perfil Windows e executar uma restauração de prova.
+3. Quando houver outro destino, criar backup criptografado independente,
+   preservar chave de recuperação fora deste perfil Windows e provar restauração.
 4. Definir ingresso público/TLS, DNS, webhooks e um único consumidor Sidekiq;
    revisar os 3 workflows n8n ativos e a sessão Telegram antes de executar.
 5. Registrar uma captura final da origem e do destino sem escritas concorrentes;

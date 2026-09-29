@@ -1,5 +1,14 @@
 # Backlog — checkpoint oficial de 17/07/2026
 
+## Trilha paralela — túnel Railway preparado (29/09/2026)
+
+- Proxy frps no Railway e cliente frpc de saída no PC foram preparados em
+  arquivos locais e validados sintaticamente. Nenhum serviço remoto foi criado
+  e o túnel não foi ligado. Ver `docs/RAILWAY_TUNNEL_PLAN.md`.
+- Backup independente adiado pelo usuário. Nenhum dado real foi enviado ao
+  GitHub; a futura implantação do gateway requer revisão de custo, segredos e
+  exposição pública.
+
 ## Trilha paralela — clone retomado (29/09/2026)
 
 - Toshiba reconectado; cofre LUKS2, PostgreSQL, Redis, S3, Chatwoot Web e site

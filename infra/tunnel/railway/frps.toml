@@ -1,0 +1,11 @@
+bindAddr = "0.0.0.0"
+bindPort = 7000
+vhostHTTPPort = 8080
+vhostHTTPTimeout = 120
+detailedErrorsToClient = false
+
+auth.tokenSource.type = "file"
+auth.tokenSource.file.path = "/run/frp/token"
+transport.tls.force = true
+transport.tls.certFile = "/run/frp/server.crt"
+transport.tls.keyFile = "/run/frp/server.key"

@@ -7,3 +7,4 @@ supabase/.temp/
 !/infra/.env.example
 /infra/data/
 /infra/backups/
+/infra/tunnel/local/*.env
