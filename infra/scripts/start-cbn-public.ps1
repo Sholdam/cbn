@@ -34,7 +34,9 @@ for ($attempt = 0; $attempt -lt 12; $attempt++) {
     try {
         $crm = Invoke-WebRequest -Uri "$baseUrl/" -SkipHttpErrorCheck -TimeoutSec 3
         $site = Invoke-WebRequest -Uri "$baseUrl/site/" -SkipHttpErrorCheck -TimeoutSec 3
-        if ([int]$crm.StatusCode -eq 401 -and [int]$site.StatusCode -eq 200) {
+        $privateApi = Invoke-WebRequest -Uri "$baseUrl/api/v1/accounts/1/inboxes" -SkipHttpErrorCheck -TimeoutSec 3
+        if ([int]$crm.StatusCode -eq 200 -and [int]$site.StatusCode -eq 200 -and
+            [int]$privateApi.StatusCode -eq 401 -and -not $crm.Headers.ContainsKey('WWW-Authenticate')) {
             $publicReady = $true
             break
         }

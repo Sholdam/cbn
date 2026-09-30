@@ -1,5 +1,16 @@
 # Backlog — checkpoint oficial de 17/07/2026
 
+## Acesso e atendimento — atualização de 29/09/2026
+
+- Cinco regras de etiquetas/saudação/apresentação reativadas somente para
+  entrada não privada na caixa WAHA `5`; sem reprocessar histórico.
+- Outros três usuários humanos removidos, preservando proprietário `1` e
+  conta técnica `7`, como confirmado pelo usuário. Histórico preservado.
+- Senha HTTP extra removida; login próprio, cadastro público bloqueado,
+  APIs privadas 401, S3 sem assinatura 403 e limite de login 429 conferidos.
+- Usuário escolheu somente as regras de atendimento do CRM nesta etapa;
+  consultas Telegram e publicações n8n continuam desligadas.
+
 ## Trilha paralela — WAHA local conectado (29/09/2026)
 
 - Canal confirmado pelo usuário: WAHA, com o mesmo número comercial e
@@ -7,7 +18,7 @@
   sessão e mídia persistem no cofre Toshiba. Nova caixa API `5` criada,
   preservando a `CBN Api` e seu histórico. App Chatwoot provisionado.
 - Filas Chatwoot isoladas no Redis DB `1`, mantendo DB `0`. Cinco regras
-  herdadas pausadas; worker limitado a eventos, webhooks e análise de mídia,
+  reativadas na caixa WAHA após os testes; worker limitado a eventos, webhooks e análise de mídia,
   sem cron. n8n e canal Meta seguem inertes.
 - QR pareado; número comercial conferido sem expor identificador. Um envio
   pelo CRM ficou `read`, e uma resposta entrou na mesma conversa, com um

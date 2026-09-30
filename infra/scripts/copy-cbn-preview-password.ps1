@@ -1,6 +1,11 @@
 param()
 
 $ErrorActionPreference = 'Stop'
+$clientConfig = Join-Path $PSScriptRoot '..\tunnel\local\frpc.toml'
+if (-not (Select-String -LiteralPath $clientConfig -Pattern '^httpUser\s*=' -Quiet)) {
+    Write-Output 'senha_extra=desativada_use_o_login_do_CRM'
+    exit 0
+}
 $mountedSource = & wsl.exe -d Ubuntu-CBN -u root -- findmnt -n -o SOURCE --target /srv/cbn-production
 if ($LASTEXITCODE -ne 0 -or $mountedSource.Trim() -ne '/dev/mapper/cbn_production') {
     throw 'O cofre CBN precisa estar montado no Toshiba.'

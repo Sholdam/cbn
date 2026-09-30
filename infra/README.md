@@ -12,13 +12,13 @@ e sua entrada pública após conectar o Toshiba:
 & .\infra\scripts\start-cbn-public.ps1
 ```
 
-O endereço retornado pede usuário `cbn-preview` e a senha guardada no cofre.
+O endereço retornado abre o login normal do CRM. A senha HTTP extra foi
+retirada por autorização do usuário após conferir autenticação, cadastro
+público bloqueado e limite de tentativas de login.
 O site tem prévia em `<endereço retornado>/site/` no mesmo gateway.
-Para copiar essa senha à área de transferência sem mostrá-la no terminal,
-executar `& .\infra\scripts\copy-cbn-preview-password.ps1`; após colar,
-limpar a área de transferência.
-O perfil `public` não inicia com o clone local por padrão. Os serviços de
-automação continuam desligados.
+O helper antigo de cópia da senha informa que a proteção extra está desativada.
+O perfil `public` não inicia com o clone local por padrão. As cinco regras de
+atendimento Chatwoot estão ativas na caixa WAHA; fluxos n8n continuam desligados.
 
 ## Clone local com dados Railway — estado em 29/09/2026
 
@@ -32,7 +32,8 @@ PowerShell desta máquina, com o Toshiba `FAMULUS_DATA` em `D:`, iniciar por:
 O script mantém o WSL acordado, reabre o cofre LUKS2, confere a montagem e
 inicia PgVector, Redis, Garage, Chatwoot Web e o site. Aguarda HTTP 200 do Web.
 CRM: `http://127.0.0.1:3000/`; site: `http://127.0.0.1:3002/`.
-Sidekiq, Telegram e workflows n8n do clone real continuam desligados.
+O worker limitado WAHA inicia se a integração já estiver provisionada.
+O Sidekiq legado, Telegram e workflows n8n continuam desligados.
 
 Antes de desconectar o HD, usar:
 

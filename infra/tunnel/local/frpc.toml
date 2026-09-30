@@ -14,8 +14,6 @@ localIP = "127.0.0.1"
 localPort = 3000
 customDomains = ["{{ .Envs.FRP_CRM_DOMAIN }}"]
 locations = ["/"]
-httpUser = "cbn-preview"
-httpPassword = "{{ .Envs.FRP_PREVIEW_PASSWORD }}"
 
 [[proxies]]
 name = "cbn-media"

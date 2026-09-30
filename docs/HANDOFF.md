@@ -1,5 +1,29 @@
 # Handoff — CBN Crédito
 
+## Acesso e regras de atendimento — autorização de 29/09/2026
+
+- Usuário pediu reativar as regras do CRM, remover os outros usuários e
+  retirar Basic Auth se a autenticação própria estivesse protegida. Depois
+  confirmou manter a conta técnica WAHA e limitar a retomada às regras do
+  CRM; adaptação de consultas Telegram e publicações n8n ficou para depois.
+- Regras `1,3,4,5,6` ativas na caixa WAHA `5`, somente para mensagens de
+  entrada não privadas. As condições de conteúdo foram mantidas; as duas
+  alternativas de saudação agora usam uma lista no mesmo filtro, evitando
+  que um `OR` ignore o filtro de caixa/tipo. Nada foi reenviado pelo agente.
+- Usuários humanos `2,3,4` removidos; ficou o proprietário `1` e a conta
+  técnica `7`. Um vínculo órfão de usuário já inexistente foi limpo. Contagens
+  de contatos, conversas e mensagens foram preservadas. Limpeza executou só
+  os callbacks dessa operação, sem consumir a fila legada `low`.
+- Basic Auth removido de frpc. HTTPS/login/site retornaram 200 sem senha
+  extra; APIs de inboxes/perfil retornaram 401 sem autenticação; listagem S3
+  sem assinatura retornou 403. Cadastro público permanece bloqueado. Login
+  sintético foi recusado e a 11ª tentativa recebeu 429 por limite de e-mail.
+  São verificações funcionais, não uma auditoria completa de segurança.
+- WAHA permaneceu `WORKING`; acesso API com a conta técnica retornou 200.
+  O script de início exige agora página pública 200 e API privada 401.
+  Não criar outro usuário sem novo pedido; membros futuros precisam de
+  credenciais individuais do CRM, pois compartilhar o endereço não dá acesso.
+
 ## Decisão de canal — WAHA local (29/09/2026)
 
 - **Pareamento e texto concluídos:** usuário leu o QR; sessão `default`
@@ -39,7 +63,8 @@
   Chatwoot interno foi criado. O teste de texto está confirmado acima;
   a sessão autenticada persiste no cofre.
 - Chatwoot local passou a usar Redis DB `1`; DB `0` e os trabalhos herdados
-  foram preservados. Regras automáticas `1,3,4,5,6` foram pausadas no clone.
+  foram preservados. Regras automáticas `1,3,4,5,6` foram pausadas durante a
+  migração e depois reativadas na caixa WAHA conforme a autorização acima.
   O worker novo processa somente `critical`, `medium` e
   `active_storage_analysis`, sem cron herdado. O canal Meta, n8n e worker
   legado continuam inertes. A conta técnica WAHA permanece agente; a

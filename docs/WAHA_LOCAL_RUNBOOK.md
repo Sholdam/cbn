@@ -54,10 +54,21 @@ Redis DB `1`, que estava vazio na troca. A DB `0` continua preservada.
 recusa iniciar se a DB não for `1` ou faltar o destino da nova caixa.
 Não habilitar `high`, mailers, cron, n8n ou worker legado durante a conexão.
 
-Regras automáticas `1,3,4,5,6` foram pausadas no clone; a lista original
-está no estado privado da integração. Autoatribuição, saudação, CSAT e
-coleta de e-mail estão desativados na nova caixa. Não ligar essas regras
-sem revisar seu alcance e as respostas que enviam.
+Regras automáticas `1,3,4,5,6` foram pausadas durante o pareamento. Após os
+testes, o usuário autorizou reativá-las; elas estão ativas somente na caixa
+WAHA `5`, para entrada não privada com os conteúdos originais. A saudação
+com duas alternativas usa lista no mesmo filtro, sem `OR` que ultrapasse
+o filtro de caixa/tipo. A ativação não reprocessa mensagens históricas.
+Autoatribuição, saudação própria da caixa, CSAT e coleta de e-mail continuam
+desativados; a saudação é enviada pela regra existente. n8n/Telegram ficam
+desligados por escolha expressa do usuário nesta etapa.
+
+O usuário também autorizou remover os outros usuários humanos, mantendo
+proprietário `1` e conta técnica WAHA `7`. API da integração reconferida:
+HTTP 200. Não excluir a conta técnica nem compartilhar o login principal.
+O endereço público agora usa somente autenticação própria do CRM; cadastro
+público está bloqueado, APIs privadas recusam acesso anônimo e limite de
+tentativas de login foi exercitado com identidade sintética.
 
 ## Início e parada
 

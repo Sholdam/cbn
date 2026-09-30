@@ -2,9 +2,10 @@
 
 Atualizado em 29/09/2026. O usuário autorizou um gateway de baixo custo no
 Railway, com conexão de saída iniciada pelo PC. **A prévia pública está ativa**
-em <https://cbn-tunnel-gateway-production.up.railway.app/>. Ela pede HTTP
-Basic Auth com usuário `cbn-preview`; a senha está somente no cofre LUKS do
-Toshiba. O site tem prévia em
+em <https://cbn-tunnel-gateway-production.up.railway.app/>. Por autorização
+posterior do usuário, Basic Auth foi removido: o acesso agora abre o login
+normal do CRM. Cadastro público bloqueado, APIs privadas 401 e limite de
+tentativas de login 429 foram conferidos antes da remoção. O site tem prévia em
 <https://cbn-tunnel-gateway-production.up.railway.app/site/> no mesmo serviço.
 Os domínios antigos do CRM e do site não foram movidos.
 
@@ -24,8 +25,8 @@ PC -> conexão TCP de saída -> Railway TCP Proxy -> frps (:7000)
 Não é preciso abrir uma porta de entrada no roteador. O Railway continua a
 receber pedidos públicos e a terminar HTTPS; a aplicação e seus dados seguem
 no Toshiba. A conexão frpc/frps exige token aleatório e TLS com certificado
-verificado contra a CA privada CBN. O Chatwoot de prévia tem autenticação HTTP
-adicional; objetos S3 continuam protegidos por URLs assinadas. As rotas
+verificado contra a CA privada CBN. O Chatwoot usa sua autenticação própria;
+objetos S3 continuam protegidos por URLs assinadas. As rotas
 compartilham o domínio: `/` vai ao CRM, `/<bucket-local>` vai ao Garage sem
 reescrever caminho nem Host, e `/site/` vai ao site local com remoção desse
 prefixo pelo Nginx. Preservar caminho e Host no Garage é necessário para a
@@ -49,6 +50,12 @@ O cliente local conectou com TLS e token. O domínio retornou 401 sem credencial
 200 na raiz e no login com credencial, uma URL S3 assinada retornou 200 e SHA-256
 igual ao manifesto, e `/cable` aceitou o handshake WebSocket. A rota `/site/`
 retornou HTTP 200 e HTML idêntico ao site local, sem outro serviço Railway.
+Esses foram os testes da fase com Basic Auth. Após a retirada autorizada,
+raiz/login/site responderam 200 sem credenciais extras, APIs privadas de
+inboxes/perfil responderam 401 e listagem S3 sem assinatura respondeu 403.
+O cadastro público segue bloqueado. Um login sintético foi recusado, com
+HTTP 429 na 11ª tentativa para o mesmo e-mail. Isso valida controles específicos;
+não constitui auditoria completa de segurança.
 O Chatwoot Web
 usa o domínio novo em `FRONTEND_URL` e `STORAGE_ENDPOINT`; o arquivo anterior
 foi preservado no cofre como `chatwoot-local.env.pre-tunnel`. `FORCE_SSL=false`
@@ -77,8 +84,10 @@ Meta para essa integração. O canal antigo da API oficial permanece inerte.
    fluxo completo de anexos na interface ainda não foram exercitados. URL
    assinada, handshake WebSocket e HTTP foram validados separadamente.
 3. O site CBN permanece em `127.0.0.1:3002` e tem prévia em `/site/`;
-   Sidekiq, n8n, Telegram,
-   webhooks e mensageria continuam desligados. Os domínios originais
+   O worker limitado e a ponte WAHA estão ativos. Cinco regras de atendimento
+   Chatwoot foram reativadas para entrada não privada na caixa WAHA. Sidekiq
+   legado, n8n e Telegram continuam desligados; o usuário escolheu retomar
+   somente as regras de atendimento do CRM nesta etapa. Os domínios originais
    `7k.up.railway.app` e `cbncredito.up.railway.app` não mudaram. O corte e a
    paridade operacional completa dependem de revisão própria.
 4. A cópia de segurança independente foi adiada a pedido do usuário e
