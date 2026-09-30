@@ -17,8 +17,25 @@ retirada por autorização do usuário após conferir autenticação, cadastro
 público bloqueado e limite de tentativas de login.
 O site tem prévia em `<endereço retornado>/site/` no mesmo gateway.
 O helper antigo de cópia da senha informa que a proteção extra está desativada.
-O perfil `public` não inicia com o clone local por padrão. As cinco regras de
+O endereço ativo é <https://crmcbn.up.railway.app/>. As cinco regras de
 atendimento Chatwoot estão ativas na caixa WAHA; fluxos n8n continuam desligados.
+
+## Recuperação automática instalada em 30/09/2026
+
+`CBN-WSL-Keepalive` mantém o WSL ativo fora do terminal/chat.
+`CBN-Service-Recovery` confere serviços por minuto e no logon do proprietário,
+recuperando o perfil público com o Toshiba correto e o cofre montado.
+Reinstalação nesta máquina:
+
+```powershell
+& .\infra\scripts\install-cbn-service-recovery.ps1
+```
+
+A parada segura grava `%USERPROFILE%\.cbn\maintenance.flag` e suspende a
+recuperação até um início manual. Eventos ficam em `.cbn/service-recovery.log`.
+Não habilitar restart Docker indiscriminado: containers precisam do cofre
+montado antes de iniciar, para não criar dados fora do volume criptografado.
+Sem energia, internet, HD ou logon após reboot, a recuperação não garante acesso.
 
 ## Clone local com dados Railway — estado em 29/09/2026
 

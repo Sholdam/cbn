@@ -1,5 +1,34 @@
 # Handoff — CBN Crédito
 
+## Disponibilidade e endereço curto — 30/09/2026
+
+- Usuário mostrou página 404 do frp. Toshiba estava saudável, mas
+  `Ubuntu-CBN` estava `Stopped` e não havia processo keepalive no Windows.
+  Serviços e túnel foram retomados. A causa do encerramento anterior não
+  foi determinada; não atribuir a falha ao HD ou à conversa `187`.
+- Usuário exigiu continuidade dos serviços e pediu endereço começando em
+  `crmcbn`. O domínio Railway do gateway CBN foi renomeado para
+  <https://crmcbn.up.railway.app/>; não usar o endereço longo anterior.
+  `FRP_CRM_DOMAIN`, `FRONTEND_URL` e endpoint S3 foram atualizados no cofre.
+  Página/API/login e foto proxy/S3 foram reconferidos; WAHA `WORKING`.
+- Windows: `CBN-WSL-Keepalive` executa WSL pelo Agendador de Tarefas, fora
+  do ciclo de vida do terminal/chat. `CBN-Service-Recovery` verifica a cada
+  minuto e ao entrar no Windows, com a identidade interativa do proprietário,
+  sem senha armazenada nem alteração de ExecutionPolicy. Houve execução com
+  resultado 0 e evento `recovered`; nova checagem devolveu `healthy: true`.
+- Recuperação exige Toshiba correto/saudável e cofre montado em
+  `/dev/mapper/cbn_production`. Confere dez containers, HTTP local/público,
+  API privada 401 e sessão WAHA. Não ativa n8n, Telegram ou filas herdadas.
+  Reinício WAHA em falha é limitado a uma tentativa por 15 minutos; não
+  reinicia sessão em leitura de QR ou inicialização. Sessão expirada pode
+  precisar do celular. Não prometer disponibilidade sem PC, energia ou rede.
+- `maintenance.flag` em `%USERPROFILE%\.cbn` preserva parada manual:
+  `stop-cbn-clone.ps1` pausa recuperação, fecha cofre e encerra WSL antes de
+  retirar HD. Início manual limpa a flag; recuperação automática não limpa.
+  Script de parada revisado e validado por sintaxe, sem parar os serviços
+  nesta etapa. O início após logon foi configurado, sem teste de reboot.
+  Eventos técnicos ficam em `.cbn/service-recovery.log`, sem dados pessoais.
+
 ## Acesso e regras de atendimento — autorização de 29/09/2026
 
 - Usuário pediu reativar as regras do CRM, remover os outros usuários e

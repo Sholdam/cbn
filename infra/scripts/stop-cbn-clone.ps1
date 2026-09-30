@@ -1,6 +1,12 @@
 param()
 
 $ErrorActionPreference = 'Stop'
+$stateDirectory = Join-Path $env:USERPROFILE '.cbn'
+[void][System.IO.Directory]::CreateDirectory($stateDirectory)
+Set-Content -LiteralPath (Join-Path $stateDirectory 'maintenance.flag') -Value 'safe_stop_requested'
+if (Get-ScheduledTask -TaskName 'CBN-Service-Recovery' -ErrorAction SilentlyContinue) {
+    Stop-ScheduledTask -TaskName 'CBN-Service-Recovery' -ErrorAction SilentlyContinue
+}
 $mountedSource = & wsl.exe -d Ubuntu-CBN -u root -- findmnt -n -o SOURCE --target /srv/cbn-production
 if ($LASTEXITCODE -ne 0 -or $mountedSource.Trim() -ne '/dev/mapper/cbn_production') {
     throw 'O cofre CBN nao esta montado no dispositivo esperado.'
@@ -19,6 +25,9 @@ if ($LASTEXITCODE -ne 0) { throw 'Falha ao sincronizar o HD.' }
 if ($LASTEXITCODE -ne 0) { throw 'Cofre em uso; nao e seguro remover o HD.' }
 & wsl.exe -d Ubuntu-CBN -u root -- cryptsetup close cbn_production
 if ($LASTEXITCODE -ne 0) { throw 'Falha ao fechar o cofre.' }
+if (Get-ScheduledTask -TaskName 'CBN-WSL-Keepalive' -ErrorAction SilentlyContinue) {
+    Stop-ScheduledTask -TaskName 'CBN-WSL-Keepalive'
+}
 
 $pidFile = Join-Path (Join-Path $env:USERPROFILE '.cbn') 'wsl-keepalive.pid'
 if (Test-Path -LiteralPath $pidFile -PathType Leaf) {
@@ -32,4 +41,6 @@ if (Test-Path -LiteralPath $pidFile -PathType Leaf) {
     }
     Remove-Item -LiteralPath $pidFile
 }
-Write-Output 'clone_parado_cofre_fechado'
+& wsl.exe --terminate Ubuntu-CBN
+if ($LASTEXITCODE -ne 0) { throw 'Cofre fechado, mas o WSL nao encerrou; aguarde antes de retirar o HD.' }
+Write-Output 'clone_parado_cofre_fechado_wsl_encerrado'

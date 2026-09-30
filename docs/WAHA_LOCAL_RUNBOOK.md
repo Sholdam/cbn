@@ -1,5 +1,17 @@
 # WAHA local e Chatwoot CBN
 
+## Acesso e recuperação — 30/09/2026
+
+CRM: <https://crmcbn.up.railway.app/>. Domínio antigo renomeado; ambiente
+FRONTEND/S3 e frpc atualizados. WAHA permanece local, com a mesma identidade
+e token; não foi reprovisionado nem enviado novo teste de mensagem.
+
+Keepalive e recuperação rodam pelo Agendador do Windows, por minuto e no
+logon. O supervisor confere cofre, containers, interfaces e sessão; falhas
+podem recuperar serviços, mas expiração do vínculo WhatsApp pode precisar
+do celular. Não repetir reinícios durante QR. Parada manual usa flag de
+manutenção, que só é removida por início manual. Ver `infra/README.md`.
+
 ## Estado conectado em 29/09/2026
 
 O usuário autorizou WAHA para o mesmo número comercial do canal legado e

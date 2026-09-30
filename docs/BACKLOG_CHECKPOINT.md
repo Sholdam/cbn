@@ -1,5 +1,16 @@
 # Backlog — checkpoint oficial de 17/07/2026
 
+## Disponibilidade e endereço — 30/09/2026
+
+- Acesso restaurado após encontrar WSL parado, com Toshiba saudável.
+  Endereço ativo renomeado: <https://crmcbn.up.railway.app/>.
+- Keepalive independente do chat pelo Agendador do Windows; recuperação
+  configurada por minuto e no logon. Execução retornou 0; checagem confirmou
+  cofre, dez containers, HTTP 200, API privada 401 e WAHA `WORKING`.
+- Parada segura tem flag de manutenção; reinício automático não deve
+  reabrir cofre após pedido de parada. PC/HD/internet continuam necessários.
+  Não foi feito reboot nem parada artificial para provar recuperação.
+
 ## Acesso e atendimento — atualização de 29/09/2026
 
 - Cinco regras de etiquetas/saudação/apresentação reativadas somente para

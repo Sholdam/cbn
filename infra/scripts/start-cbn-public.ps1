@@ -1,7 +1,7 @@
-param()
+param([switch]$AutomaticRecovery)
 
 $ErrorActionPreference = 'Stop'
-& (Join-Path $PSScriptRoot 'start-cbn-clone.ps1') | Out-Null
+& (Join-Path $PSScriptRoot 'start-cbn-clone.ps1') -AutomaticRecovery:$AutomaticRecovery | Out-Null
 
 $mountedSource = & wsl.exe -d Ubuntu-CBN -u root -- findmnt -n -o SOURCE --target /srv/cbn-production
 if ($LASTEXITCODE -ne 0 -or $mountedSource.Trim() -ne '/dev/mapper/cbn_production') {

@@ -1,12 +1,13 @@
 # Entrada Railway com CRM no Toshiba
 
-Atualizado em 29/09/2026. O usuário autorizou um gateway de baixo custo no
+Atualizado em 30/09/2026. O usuário autorizou um gateway de baixo custo no
 Railway, com conexão de saída iniciada pelo PC. **A prévia pública está ativa**
-em <https://cbn-tunnel-gateway-production.up.railway.app/>. Por autorização
+em <https://crmcbn.up.railway.app/>. O domínio longo anterior foi renomeado
+por pedido do usuário. Por autorização
 posterior do usuário, Basic Auth foi removido: o acesso agora abre o login
 normal do CRM. Cadastro público bloqueado, APIs privadas 401 e limite de
 tentativas de login 429 foram conferidos antes da remoção. O site tem prévia em
-<https://cbn-tunnel-gateway-production.up.railway.app/site/> no mesmo serviço.
+<https://crmcbn.up.railway.app/site/> no mesmo serviço.
 Os domínios antigos do CRM e do site não foram movidos.
 
 ## Topologia preparada
@@ -78,7 +79,10 @@ Meta para essa integração. O canal antigo da API oficial permanece inerte.
    reabrir o cofre, iniciar o clone e ligar o cliente do túnel. Para retirar o
    HD, executar `infra/scripts/stop-cbn-clone.ps1`, que agora para o túnel antes
    de fechar o cofre. O ciclo parar, fechar, reabrir e publicar foi executado
-   com sucesso em 29/09. O perfil `public` continua sem início automático.
+   com sucesso em 29/09. Em 30/09 foram instaladas as tarefas Windows de
+   keepalive e recuperação do perfil público por minuto e no logon; o início
+   exige o Toshiba correto e cofre montado. A flag de manutenção preserva
+   parada explícita. Início após reboot não foi exercitado nesta etapa.
 2. A prévia é navegável. Na interface local do Chatwoot, uma nota privada foi
    salva e permaneceu após recarregar a conversa. Login pelo domínio público e
    fluxo completo de anexos na interface ainda não foram exercitados. URL
