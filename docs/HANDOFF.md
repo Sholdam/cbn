@@ -1,5 +1,15 @@
 # Handoff — CBN Crédito
 
+## Usuário adicional autorizado — 30/09/2026
+
+- Criado agente humano `8`, confirmado, com acesso somente à caixa WAHA `5`,
+  após pedido explícito do proprietário. A senha escolhida foi ajustada para
+  atender à exigência de maiúscula, com confirmação do usuário. Correspondência
+  da senha verificada no servidor; não registrar e-mail nem senha no Git.
+- O CRM agora tem proprietário `1`, conta técnica WAHA `7` e agente `8`.
+  Não excluir o novo agente ao repetir a limpeza antiga; o script de limpeza
+  recusa usuários humanos fora da lista anteriormente autorizada.
+
 ## Disponibilidade e endereço curto — 30/09/2026
 
 - Usuário mostrou página 404 do frp. Toshiba estava saudável, mas

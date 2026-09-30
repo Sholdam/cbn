@@ -1,5 +1,11 @@
 # Backlog — checkpoint oficial de 17/07/2026
 
+## Acesso adicional — 30/09/2026
+
+- Agente humano `8` criado e confirmado por autorização explícita, somente
+  na caixa WAHA `5`. Proprietário `1` e conta técnica `7` preservados.
+  Credenciais não pertencem ao repositório.
+
 ## Disponibilidade e endereço — 30/09/2026
 
 - Acesso restaurado após encontrar WSL parado, com Toshiba saudável.
