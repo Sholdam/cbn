@@ -70,11 +70,14 @@ services:
     networks: [backend, frontend]
 
   chatwoot-web:
-    image: cbn/chatwoot:4.16.2-cbn-local
+    image: cbn/chatwoot:4.16.2-cbn-waha-media
     profiles: [web]
     restart: "no"
     env_file:
       - /srv/cbn-production/secrets/chatwoot-local.env
+    environment:
+      CBN_LOCAL_MEDIA_PROXY: "true"
+      CBN_STORAGE_INTERNAL_ENDPOINT: http://garage:3900
     entrypoint: [docker/entrypoints/rails.sh]
     command: [bundle, exec, rails, s, -p, "3000", -b, 0.0.0.0]
     depends_on:
@@ -86,6 +89,7 @@ services:
         condition: service_started
     volumes:
       - /srv/cbn-production/chatwoot_storage:/app/storage
+      - ./cbn-local-media.rb:/app/config/initializers/cbn_local_media.rb:ro
     ports:
       - 127.0.0.1:3000:3000
     networks: [backend, frontend]
@@ -136,13 +140,16 @@ services:
     networks: [backend, frontend]
 
   chatwoot-waha-worker:
-    image: cbn/chatwoot:4.16.2-cbn-local
+    image: cbn/chatwoot:4.16.2-cbn-waha-media
     profiles: [waha]
     restart: "no"
     env_file:
       - /srv/cbn-production/secrets/chatwoot-local.env
       - path: /srv/cbn-production/secrets/waha-chatwoot.env
         required: false
+    environment:
+      CBN_LOCAL_MEDIA_PROXY: "true"
+      CBN_STORAGE_INTERNAL_ENDPOINT: http://garage:3900
     entrypoint: [sh, /app/cbn-waha-worker.sh]
     command: [-q, critical, -q, medium, -q, active_storage_analysis, -c, "2"]
     depends_on:
@@ -154,6 +161,7 @@ services:
       - /srv/cbn-production/chatwoot_storage:/app/storage
       - ./waha-sidekiq-schedule.yml:/app/config/schedule.yml:ro
       - ./waha-local-webhook.rb:/app/config/initializers/cbn_waha_local_webhook.rb:ro
+      - ./cbn-local-media.rb:/app/config/initializers/cbn_local_media.rb:ro
       - ./scripts/run-cbn-waha-worker.sh:/app/cbn-waha-worker.sh:ro
     networks: [backend, frontend]
 

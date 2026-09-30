@@ -1,9 +1,33 @@
 # WAHA local e Chatwoot CBN
 
-## Estado preparado em 29/09/2026
+## Estado conectado em 29/09/2026
 
-O usuário autorizou WAHA para o mesmo número comercial do canal legado,
-com aparelho disponível. A sessão ainda precisa ser pareada por QR.
+O usuário autorizou WAHA para o mesmo número comercial do canal legado e
+concluiu a leitura do QR. A sessão ficou `WORKING`; a identidade foi
+comparada ao número esperado sem imprimir o identificador.
+
+Teste de texto: conversa `185`, saída `2208` com estado `read`, entrada
+`2209`. Um mapeamento por direção no banco WAHA e contato existente
+reutilizado. O container foi reiniciado e retomou `WORKING` sem QR.
+Foto de teste `2217` recebida e salva. Com autorização adicional, a mesma
+foto foi devolvida como `2222` e ficou `read`, com um mapeamento WAHA.
+Fotos/miniaturas responderam HTTP 200 local e publicamente com autenticação;
+áudio de teste respondeu HTTP 206 com Range nas duas superfícies.
+O checkpoint privado está em `secrets/waha-test.json`; não repetir os
+envios iniciais.
+
+O build offline do Vite concluiu, e web/worker usam
+`cbn/chatwoot:4.16.2-cbn-waha-media` (imagem
+`sha256:2a4161519d3deeb925c8e5c265c5b8c69b6562b7e0c80a066d805cd567f69220`).
+Fontes corrigidas e manifest dos assets foram conferidos nos containers.
+Fotos renderizaram na interface após a correção do proxy. A última conferência
+visual do player de áudio após o novo build ficou pendente: a política do
+navegador bloqueou a automação. A resposta HTTP 206 não comprova reprodução.
+
+Houve reinício inesperado do WSL após o build, com causa ainda desconhecida.
+`start-cbn-public.ps1` recuperou cofre, CRM, site, túnel e WAHA; a sessão
+retornou a `WORKING` com identidade, sem QR, e os dois envios permaneceram
+`read`. O helper temporário de pareamento já foi encerrado.
 
 - WAHA 2026.9.1 CORE, engine GOWS, imagem oficial fixada por digest no Compose.
 - Sessão `default`, app Chatwoot, nova caixa `CBN WhatsApp (WAHA)` / inbox `5`.
@@ -34,6 +58,20 @@ coleta de e-mail estão desativados na nova caixa. Não ligar essas regras
 sem revisar seu alcance e as respostas que enviam.
 
 ## Início e parada
+
+A imagem local com suporte às URLs relativas de mídia é construída a partir
+da imagem CBN 4.16.2 já preservada. O ajuste é aplicado ao código fonte e o
+Vite recompila os assets com novos nomes, sem editar bundles minificados:
+
+```powershell
+wsl.exe -d Ubuntu-CBN -u root -- docker build -t cbn/chatwoot:4.16.2-cbn-waha-media -f /mnt/c/Users/GUILHERME/OneDrive/Documentos/ChatGPT/CBN/cbn-infrastructure-migration/infra/chatwoot-media.Dockerfile /mnt/c/Users/GUILHERME/OneDrive/Documentos/ChatGPT/CBN/cbn-infrastructure-migration/infra
+```
+
+O build usa dependências já disponíveis no cache local (`pnpm --offline`)
+e não usa credenciais ou banco de produção. `node_modules` é temporário em
+memória para reduzir operações pequenas no HD externo. Web e worker precisam usar a
+mesma imagem. O helper de áudio deve resolver URLs relativas usando a
+origem da página; sem esse ajuste, `new URL` recusa o caminho proxy.
 
 No Windows, na raiz do repositório:
 
@@ -91,6 +129,18 @@ A caixa antiga `CBN Api` continua com seu histórico. A nova caixa recebe
 os eventos WAHA; não alterar o tipo do canal antigo nem apagar conversas.
 
 ## Ponte interna
+
+`infra/cbn-local-media.rb` mantém a leitura/gravação de objetos do servidor
+na rede local Garage e preserva assinaturas públicas dos uploads diretos.
+Fotos, miniaturas e áudio usados pela interface têm caminhos proxy relativos,
+que usam a origem da página e evitam outro desafio BasicAuth ao acessar pelo
+localhost. A página pública mantém sua autenticação normal.
+
+O worker transforma somente anexos da caixa WAHA no webhook interno em URLs
+proxy absolutas `http://chatwoot-web:3000`, preservando extensão/MIME. A
+leitura desses anexos não precisa atravessar o Railway. Integrações externas
+legadas ainda inativas devem revisar o uso de caminhos relativos antes de
+serem reativadas.
 
 O webhook da caixa aponta para o container WAHA pela rede Docker.
 O initializer `infra/waha-local-webhook.rb` autoriza somente POST para a

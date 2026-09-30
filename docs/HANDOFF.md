@@ -2,11 +2,41 @@
 
 ## Decisão de canal — WAHA local (29/09/2026)
 
+- **Pareamento e texto concluídos:** usuário leu o QR; sessão `default`
+  ficou `WORKING`, com identidade correspondente ao número comercial
+  esperado. Um único envio pelo CRM foi criado na conversa `185`, mensagem
+  `2208`, e chegou ao estado `read`. A resposta entrou como `2209` na mesma
+  conversa, reutilizando o contato existente. O banco WAHA confirmou um
+  mapeamento de saída e um de entrada, sem duplicação. Reinício do container
+  WAHA retornou a `WORKING` sem novo QR.
+- **Foto concluída:** entrada `2217`, arquivo JPEG íntegro no S3 local.
+  Usuário autorizou devolver a mesma foto como envio adicional; saída `2222`
+  ficou `read`, com um mapeamento WAHA. O checkpoint privado impede repetir
+  os envios iniciais. Fotos e miniaturas responderam HTTP 200 localmente e
+  pelo gateway autenticado; áudio de teste respondeu HTTP 206 com Range.
+- A interface local revelou falha de mídia: URLs absolutas apontavam para
+  a prévia pública e recebiam 401 ao abrir pelo localhost. Corrigido por
+  rotas proxy relativas ao endereço atual, nas duas aplicações Chatwoot.
+  O transporte S3 do servidor usa Garage interno; assinaturas de upload
+  direto continuam usando o gateway público. A ponte WAHA recebe URL
+  absoluta interna de mídia. Nenhuma nova mensagem foi enviada por essa
+  correção; dados e filas preservados.
+- Web e worker usam a imagem local `cbn/chatwoot:4.16.2-cbn-waha-media`.
+  O build offline do Vite concluiu; os helpers de áudio e imagem resolvem
+  caminhos relativos com a origem da página. Fontes e novo manifest foram
+  conferidos no container ativo. A última conferência visual do player de
+  áudio ficou pendente: a política do navegador bloqueou a seleção da página
+  pela automação. HTTP 206 comprova acesso ao arquivo, não reprodução no player.
+- Após um reinício inesperado do WSL, o início público reabriu o cofre e
+  recuperou CRM, site, túnel e WAHA. A sessão voltou a `WORKING`, com identidade,
+  sem novo QR; texto `2208` e foto `2222` continuaram `read`. A causa desse
+  reinício não foi determinada. O helper temporário de QR foi encerrado.
+
 - WAHA **2026.9.1 / GOWS / CORE** instalado e iniciado no PC, com imagem
   fixada por digest, Redis próprio e volumes persistentes no cofre Toshiba.
   A nova caixa **CBN WhatsApp (WAHA)** é `Channel::Api`, inbox `5`; o app
-  Chatwoot interno foi criado. A sessão `default` está aguardando leitura do
-  QR Code. Nenhum envio WAHA foi declarado entregue.
+  Chatwoot interno foi criado. O teste de texto está confirmado acima;
+  a sessão autenticada persiste no cofre.
 - Chatwoot local passou a usar Redis DB `1`; DB `0` e os trabalhos herdados
   foram preservados. Regras automáticas `1,3,4,5,6` foram pausadas no clone.
   O worker novo processa somente `critical`, `medium` e

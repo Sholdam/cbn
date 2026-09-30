@@ -1,6 +1,6 @@
 # Backlog — checkpoint oficial de 17/07/2026
 
-## Trilha paralela — WAHA local preparado (29/09/2026)
+## Trilha paralela — WAHA local conectado (29/09/2026)
 
 - Canal confirmado pelo usuário: WAHA, com o mesmo número comercial e
   aparelho disponível. WAHA 2026.9.1/GOWS e Redis próprio estão no PC;
@@ -9,9 +9,17 @@
 - Filas Chatwoot isoladas no Redis DB `1`, mantendo DB `0`. Cinco regras
   herdadas pausadas; worker limitado a eventos, webhooks e análise de mídia,
   sem cron. n8n e canal Meta seguem inertes.
-- QR aberto em página temporária local. Pendentes: leitura no aparelho,
-  conferência do número pareado, recebimento e único envio ao número de teste,
-  anexos e recuperação da sessão. Não há entrega WAHA confirmada ainda.
+- QR pareado; número comercial conferido sem expor identificador. Um envio
+  pelo CRM ficou `read`, e uma resposta entrou na mesma conversa, com um
+  mapeamento por direção no WAHA. Contato existente reutilizado. Reinício
+  WAHA retomou `WORKING` sem QR. Foto recebida, salva e devolvida com autorização
+  adicional; envio ficou `read`. Fotos/miniaturas responderam HTTP 200 no PC
+  e pela prévia autenticada; áudio respondeu HTTP 206 com Range. Rotas de
+  mídia agora usam a origem atual e transporte S3 interno no servidor.
+  Build offline do Vite concluído e imagem com ajuste dos helpers ativa em
+  web/worker. Após reinício do WSL, serviços recuperados e sessão `WORKING`
+  sem novo QR. Reprodução visual do áudio ainda não reconferida: política
+  do navegador bloqueou a automação na última tentativa; acesso HTTP validado.
   Procedimento em [`WAHA_LOCAL_RUNBOOK.md`](WAHA_LOCAL_RUNBOOK.md).
 
 ## Trilha paralela — túnel Railway ativo para prévia (29/09/2026)
