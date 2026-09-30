@@ -18,8 +18,9 @@
   mídia agora usam a origem atual e transporte S3 interno no servidor.
   Build offline do Vite concluído e imagem com ajuste dos helpers ativa em
   web/worker. Após reinício do WSL, serviços recuperados e sessão `WORKING`
-  sem novo QR. Reprodução visual do áudio ainda não reconferida: política
-  do navegador bloqueou a automação na última tentativa; acesso HTTP validado.
+  sem novo QR. O usuário confirmou manualmente envio, recebimento e reprodução
+  de áudio funcionando; encerrada a pendência funcional do player. Texto,
+  foto e áudio validados nos dois sentidos, com essa evidência manual para áudio.
   Procedimento em [`WAHA_LOCAL_RUNBOOK.md`](WAHA_LOCAL_RUNBOOK.md).
 
 ## Trilha paralela — túnel Railway ativo para prévia (29/09/2026)

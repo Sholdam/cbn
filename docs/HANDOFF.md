@@ -24,9 +24,10 @@
 - Web e worker usam a imagem local `cbn/chatwoot:4.16.2-cbn-waha-media`.
   O build offline do Vite concluiu; os helpers de áudio e imagem resolvem
   caminhos relativos com a origem da página. Fontes e novo manifest foram
-  conferidos no container ativo. A última conferência visual do player de
-  áudio ficou pendente: a política do navegador bloqueou a seleção da página
-  pela automação. HTTP 206 comprova acesso ao arquivo, não reprodução no player.
+  conferidos no container ativo. A política do navegador impediu a última
+  conferência automatizada do player. Em seguida, o usuário testou manualmente
+  e confirmou envio, recebimento e reprodução de áudio funcionando. A pendência
+  funcional de áudio está encerrada por confirmação do usuário.
 - Após um reinício inesperado do WSL, o início público reabriu o cofre e
   recuperou CRM, site, túnel e WAHA. A sessão voltou a `WORKING`, com identidade,
   sem novo QR; texto `2208` e foto `2222` continuaram `read`. A causa desse

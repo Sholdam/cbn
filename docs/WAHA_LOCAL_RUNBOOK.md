@@ -20,9 +20,11 @@ O build offline do Vite concluiu, e web/worker usam
 `cbn/chatwoot:4.16.2-cbn-waha-media` (imagem
 `sha256:2a4161519d3deeb925c8e5c265c5b8c69b6562b7e0c80a066d805cd567f69220`).
 Fontes corrigidas e manifest dos assets foram conferidos nos containers.
-Fotos renderizaram na interface após a correção do proxy. A última conferência
-visual do player de áudio após o novo build ficou pendente: a política do
-navegador bloqueou a automação. A resposta HTTP 206 não comprova reprodução.
+Fotos renderizaram na interface após a correção do proxy. A política do
+navegador bloqueou a última conferência automatizada do player; depois disso,
+o usuário testou manualmente envio, recebimento e reprodução de áudio e
+confirmou todos funcionando. A pendência funcional de áudio está encerrada
+por essa confirmação; não houve novo envio de teste pelo agente.
 
 Houve reinício inesperado do WSL após o build, com causa ainda desconhecida.
 `start-cbn-public.ps1` recuperou cofre, CRM, site, túnel e WAHA; a sessão
