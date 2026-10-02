@@ -1,5 +1,16 @@
 # Backlog — checkpoint oficial de 17/07/2026
 
+## Recuperação do HD — 02/10/2026
+
+- Reparo do Ubuntu e do cofre autorizado sem backup completo; journals
+  recuperados e sistemas de arquivos novamente graváveis.
+- CRM/site local e público 200, API privada 401, dez containers ativos,
+  WAHA `WORKING`, keepalive e recuperação automática reativados.
+- Corrigida montagem para namespaces systemd/Docker e desmontagem segura
+  correspondente; início do Rails aguarda até cinco minutos.
+- Backup independente e auditoria completa dos dados continuam pendentes.
+  Distro `CBN-Recovery` parada, disponível para manutenção futura.
+
 ## Acesso adicional — 30/09/2026
 
 - Agente humano `8` criado e confirmado por autorização explícita, somente

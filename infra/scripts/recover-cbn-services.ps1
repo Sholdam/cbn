@@ -31,6 +31,7 @@ try {
     $raw = & wsl.exe -d Ubuntu-CBN -u root -- python3 $healthScript
     $health = if ($LASTEXITCODE -eq 0) { $raw | ConvertFrom-Json } else { $null }
     if (-not $health) { throw 'Health inspection unavailable' }
+    if (-not $health.vault_writable) { throw 'Encrypted vault is read-only; refusing container recovery' }
     if (Test-Path -LiteralPath (Join-Path $stateDirectory 'maintenance.flag')) { exit 0 }
 
     # Restart only an unhealthy running component after the safe mount/start.

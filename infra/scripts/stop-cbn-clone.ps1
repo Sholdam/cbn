@@ -21,7 +21,8 @@ if ($LASTEXITCODE -ne 0) { throw 'Falha ao parar um ou mais servicos CBN.' }
 
 & wsl.exe -d Ubuntu-CBN -u root -- sync
 if ($LASTEXITCODE -ne 0) { throw 'Falha ao sincronizar o HD.' }
-& wsl.exe -d Ubuntu-CBN -u root -- umount /srv/cbn-production
+$unmountScript = '/mnt/c/Users/GUILHERME/OneDrive/Documentos/ChatGPT/CBN/cbn-infrastructure-migration/infra/scripts/cbn-unmount-vault.sh'
+& wsl.exe -d Ubuntu-CBN -u root -- bash $unmountScript
 if ($LASTEXITCODE -ne 0) { throw 'Cofre em uso; nao e seguro remover o HD.' }
 & wsl.exe -d Ubuntu-CBN -u root -- cryptsetup close cbn_production
 if ($LASTEXITCODE -ne 0) { throw 'Falha ao fechar o cofre.' }

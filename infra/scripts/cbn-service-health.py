@@ -21,8 +21,13 @@ try:
     mounted = subprocess.run(['findmnt', '-n', '-o', 'SOURCE', '--target', str(vault)],
                              capture_output=True, text=True, timeout=4, check=True)
     result['vault_mounted'] = mounted.stdout.strip() == '/dev/mapper/cbn_production'
+    options = subprocess.run(['findmnt', '-n', '-o', 'OPTIONS', '--target', str(vault)],
+                             capture_output=True, text=True, timeout=4, check=True)
+    result['vault_writable'] = (result['vault_mounted'] and
+                              not {'ro', 'emergency_ro'}.intersection(options.stdout.strip().split(',')))
 except (OSError, subprocess.SubprocessError):
     result['vault_mounted'] = False
+    result['vault_writable'] = False
 containers = ['cbn-railway-clone-' + name + '-1' for name in
               ['postgres-physical', 'redis', 'garage', 'chatwoot-web', 'cbn-site',
                'waha-redis', 'waha', 'chatwoot-waha-worker']]
@@ -47,7 +52,7 @@ try:
         result['whatsapp'] = json.load(response).get('status', 'UNKNOWN')
 except (OSError, ValueError, KeyError, TimeoutError):
     result['whatsapp'] = 'UNAVAILABLE'
-result['healthy'] = (result['vault_mounted'] and result['containers_running'] and result.get('local_crm') == 200 and result.get('local_site') == 200 and
+result['healthy'] = (result['vault_mounted'] and result['vault_writable'] and result['containers_running'] and result.get('local_crm') == 200 and result.get('local_site') == 200 and
                      result.get('public_crm') == 200 and result.get('private_api') == 401 and
                      result.get('whatsapp') == 'WORKING')
 print(json.dumps(result))

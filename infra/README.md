@@ -37,6 +37,13 @@ Não habilitar restart Docker indiscriminado: containers precisam do cofre
 montado antes de iniciar, para não criar dados fora do volume criptografado.
 Sem energia, internet, HD ou logon após reboot, a recuperação não garante acesso.
 
+Após a recuperação de 02/10/2026, o helper do cofre confirma a montagem no
+namespace da sessão WSL, do systemd e do Docker antes de iniciar containers.
+A parada segura desmonta todas essas vistas antes de fechar o cofre.
+O início manual aguarda até cinco minutos para o boot frio do Rails.
+O registro do incidente está em
+[`../docs/CRM_DISK_RECOVERY_2026-10-02.md`](../docs/CRM_DISK_RECOVERY_2026-10-02.md).
+
 ## Clone local com dados Railway — estado em 29/09/2026
 
 O clone real usa [`railway-clone-compose.yml`](railway-clone-compose.yml). No

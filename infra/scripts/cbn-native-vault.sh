@@ -6,6 +6,35 @@ mode="${1:-}"
 image=/var/lib/cbn-vault/cbn-production.img
 mount_path=/srv/cbn-production
 mapper=cbn_production
+
+# WSL command sessions, systemd and Docker can have separate mount namespaces.
+# Confirm the encrypted volume in each namespace before a service binds files.
+ensure_service_mounts() {
+  local service_pid source options
+  options=",$(findmnt -n -o OPTIONS --target "$mount_path"),"
+  if [[ "$options" == *,ro,* || "$options" == *,emergency_ro,* ]]; then
+    printf 'Cofre CBN somente leitura; reparar antes de iniciar servicos.\n' >&2
+    return 2
+  fi
+  for service_pid in 1 "$(systemctl show docker.service -p MainPID --value 2>/dev/null || true)"; do
+    [[ "$service_pid" =~ ^[1-9][0-9]*$ && -d "/proc/$service_pid" ]] || continue
+    if nsenter -t "$service_pid" -m -- mountpoint -q "$mount_path"; then
+      source="$(nsenter -t "$service_pid" -m -- findmnt -n -o SOURCE --target "$mount_path")"
+      if [[ "$source" != "/dev/mapper/$mapper" ]]; then
+        printf 'Montagem CBN inesperada no namespace do servico.\n' >&2
+        return 2
+      fi
+      options=",$(nsenter -t "$service_pid" -m -- findmnt -n -o OPTIONS --target "$mount_path"),"
+      if [[ "$options" == *,ro,* || "$options" == *,emergency_ro,* ]]; then
+        printf 'Cofre CBN somente leitura no namespace do servico.\n' >&2
+        return 2
+      fi
+    else
+      nsenter -t "$service_pid" -m -- mount "/dev/mapper/$mapper" "$mount_path"
+    fi
+  done
+}
+
 key_file="$(mktemp /run/cbn-native-vault-key.XXXXXX)"
 trap 'rm -f -- "$key_file"' EXIT
 cat > "$key_file"
@@ -15,6 +44,11 @@ if [[ "$(wc -c < "$key_file")" -ne 64 ]]; then
   exit 2
 fi
 if mountpoint -q "$mount_path"; then
+  if [[ "$(findmnt -n -o SOURCE --target "$mount_path")" != "/dev/mapper/$mapper" ]]; then
+    printf 'Cofre CBN montado em dispositivo inesperado.\n' >&2
+    exit 2
+  fi
+  ensure_service_mounts
   printf 'vault_mounted=%s\n' "$mount_path"
   exit 0
 fi
@@ -48,6 +82,7 @@ if [[ "$mode" == init ]]; then
 fi
 mkdir -p -- "$mount_path"
 mount "/dev/mapper/$mapper" "$mount_path"
+ensure_service_mounts
 chmod 0700 "$mount_path"
 mkdir -p -- "$mount_path"/{backups,postgres,redis,chatwoot_storage,n8n,telegram,media}
 printf 'vault_mounted=%s\n' "$mount_path"

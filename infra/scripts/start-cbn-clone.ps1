@@ -31,7 +31,8 @@ if ($AutomaticRecovery -and (Test-Path -LiteralPath $maintenanceFlag)) { throw '
 if ($LASTEXITCODE -ne 0) { throw 'Falha ao iniciar o clone local.' }
 
 $webReady = $false
-for ($attempt = 0; $attempt -lt 30; $attempt++) {
+# Match the recovery supervisor's five-minute allowance for Rails cold boots.
+for ($attempt = 0; $attempt -lt 150; $attempt++) {
     try {
         $response = Invoke-WebRequest -Uri 'http://127.0.0.1:3000/' -SkipHttpErrorCheck -TimeoutSec 2 -ErrorAction Stop
         if ([int]$response.StatusCode -eq 200) { $webReady = $true; break }

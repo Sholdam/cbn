@@ -1,5 +1,23 @@
 # Handoff — CBN Crédito
 
+## Recuperação após desconexão do HD — 02/10/2026
+
+- Usuário autorizou reparar o original sem backup completo. `e2fsck -f -p`
+  recuperou os journals do disco Ubuntu e do cofre LUKS; ambos retornaram 1
+  (corrigidos), e a conferência posterior retornou `clean`.
+- Ubuntu e cofre voltaram graváveis; gravação pequena com `fsync` e `sync`
+  concluíram. Dez containers ativos, CRM/site local e público HTTP 200,
+  API privada sem login 401 e sessão WAHA `WORKING`. Sem novo envio de mensagem.
+- Keepalive e recuperação por minuto reativados. Montagem do cofre agora é
+  confirmada também nos namespaces do systemd/Docker; parada segura desmonta
+  essas vistas antes de fechar LUKS. Tolerância inicial do Rails passou a 5 min.
+- Distro auxiliar `CBN-Recovery` instalada no Toshiba e parada após o reparo.
+  Cópia parcial temporária descartada; backup independente continua pendente.
+  Integridade completa de todo o histórico não foi auditada neste reparo.
+- Links atuais: <https://crmcbn.up.railway.app/> e
+  <https://crmcbn.up.railway.app/site/>. O endereço longo antigo foi renomeado.
+  Evidências e limites em [`CRM_DISK_RECOVERY_2026-10-02.md`](CRM_DISK_RECOVERY_2026-10-02.md).
+
 ## Usuário adicional autorizado — 30/09/2026
 
 - Criado agente humano `8`, confirmado, com acesso somente à caixa WAHA `5`,
