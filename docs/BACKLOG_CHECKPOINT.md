@@ -1,5 +1,19 @@
 # Backlog — checkpoint oficial de 17/07/2026
 
+## Integração Codex ↔ CRM — 16/10/2026
+
+- **Implementação e instalação local concluídas:** plugin privado `CBN CRM`,
+  CLI/MCP em `tools/cbn-crm`, com consulta de conversas, texto/mídia, áudio offline,
+  agendamentos, estado da conversa e regras nativas. 13 ferramentas; 15 testes
+  sintéticos aprovados e validação autenticada somente leitura pelo MCP instalado.
+- **Homologação produtiva pendente:** testar envio/entrega/mídia com destinatário
+  explicitamente autorizado e avaliar convivência com humanos/Rebeca. Nenhum
+  cliente contatado, automação criada/ativada ou serviço remoto modificado.
+- Receber mensagens funciona por consulta paginada com cursor. Agente 24h/push e
+  plugin para ChatGPT web/mobile não fazem parte do stdio local instalado.
+- As tarefas de domínio/BKL-020 e gates históricos abaixo não foram concluídos
+  nem liberados por esta entrega. Ver [CRM_CODEX_PLUGIN.md](CRM_CODEX_PLUGIN.md).
+
 ## Retomada oficial
 
 - Fonte: `https://github.com/Sholdam/cbn`, branch `main`.
