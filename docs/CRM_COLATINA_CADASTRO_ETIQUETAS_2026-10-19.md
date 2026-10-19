@@ -119,3 +119,7 @@ O anúncio “Colatina - Servidores efetivos - V2” (`120248595202310710`, cont
 ### Retomada do editor da Meta
 
 A conexão foi restabelecida após Guilherme deixar a aba visível. A saudação da V2 foi salva como “Olá! Bem-vindo à CBN Crédito.”, sem perguntas de vínculo/valor duplicadas. A mensagem pronta original foi preservada. A tela final de revisão foi aberta e não apresentou erro impeditivo; publicação continua pendente da confirmação de aceitação dos Termos e Condições vinculada ao botão Publicar.
+
+### Publicação confirmada — 19/10/2026
+
+Após a autorização expressa “Sim, publicar e aceitar os termos”, a V2 foi publicada pela interface da Meta. Confirmação visível: “Anúncio publicado — 1 anúncio foi publicado.” Estado inicial: “Em processamento”, com chave ativada. O anúncio original “Vendas 1” permanece ativo; ambos estão na mesma campanha/conjunto com orçamento existente de R$ 85,44/dia. Sem aumento de orçamento. Saudação final simples e mensagem pronta original preservadas; regra 11 do CRM segue ativa. Evidência local: `outputs/consig-colatina-v2-publicado.png` no workspace CBN. Publicação não comprova aprovação ou entrega final pela Meta.
