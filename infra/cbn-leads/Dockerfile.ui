@@ -1,0 +1,20 @@
+FROM cbn/chatwoot:4.16.2-cbn-document-viewer-20261009 AS baseline
+FROM node:24-alpine AS assets
+WORKDIR /app
+COPY --from=baseline /app /app
+RUN apk add --no-cache python3 git && corepack enable && corepack prepare pnpm@10.2.0 --activate
+COPY patch-ui.py /tmp/patch-ui.py
+COPY CbnConversationLabels.vue /app/app/javascript/dashboard/components-next/cbn-leads/CbnConversationLabels.vue
+RUN python3 /tmp/patch-ui.py && pnpm install --frozen-lockfile --ignore-scripts
+ENV NODE_OPTIONS=--max-old-space-size=2560 RAILS_ENV=production SECRET_KEY_BASE_DUMMY=1
+RUN pnpm exec vite build --mode production
+FROM baseline
+COPY --from=assets /app/public/vite /app/public/vite
+COPY --from=assets /app/app/javascript/dashboard/components/widgets/conversation/ConversationHeader.vue /app/app/javascript/dashboard/components/widgets/conversation/ConversationHeader.vue
+COPY --from=assets /app/app/javascript/dashboard/components/ChatListHeader.vue /app/app/javascript/dashboard/components/ChatListHeader.vue
+COPY --from=assets /app/app/javascript/dashboard/components-next/cbn-leads /app/app/javascript/dashboard/components-next/cbn-leads
+COPY --from=assets /app/app/javascript/dashboard/routes/dashboard/conversation/ContactPanel.vue /app/app/javascript/dashboard/routes/dashboard/conversation/ContactPanel.vue
+COPY --from=assets /app/app/javascript/dashboard/routes/dashboard/conversation/customAttributes/CustomAttributes.vue /app/app/javascript/dashboard/routes/dashboard/conversation/customAttributes/CustomAttributes.vue
+# Retain every existing visual fix, not only the source stylesheet.
+COPY --from=baseline /app/public/vite /tmp/cbn-old-vite
+RUN ruby -rjson -e 'm=JSON.parse(File.read("/tmp/cbn-old-vite/.vite/manifest.json")); old=m.values.find{|e|e["isEntry"] && e["file"].start_with?("assets/dashboard-")}; n=JSON.parse(File.read("/app/public/vite/.vite/manifest.json")); cur=n.values.find{|e|e["isEntry"] && e["file"].start_with?("assets/dashboard-")}; File.open("/app/public/vite/"+cur["css"].first,"a"){|f| f.write("\n"+File.read("/tmp/cbn-old-vite/"+old["css"].first))}'

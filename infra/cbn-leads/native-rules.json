@@ -1,0 +1,130 @@
+[
+  {
+    "deployed_id": 8,
+    "name": "CBN — Colatina: solicitar CPF",
+    "description": "Anúncio Colatina. Etiquetas servidor-publico e colatina; complemento CBN captura CPF, matrícula e origem sem substituir valores existentes. Novos eventos após ativação; sem reenvio histórico.",
+    "event_name": "message_created",
+    "active": false,
+    "conditions": [
+      {
+        "values": [
+          5
+        ],
+        "attribute_key": "inbox_id",
+        "query_operator": "AND",
+        "filter_operator": "equal_to",
+        "custom_attribute_type": ""
+      },
+      {
+        "values": [
+          "incoming"
+        ],
+        "attribute_key": "message_type",
+        "query_operator": "AND",
+        "filter_operator": "equal_to",
+        "custom_attribute_type": ""
+      },
+      {
+        "values": [
+          false
+        ],
+        "attribute_key": "private_note",
+        "query_operator": "AND",
+        "filter_operator": "equal_to",
+        "custom_attribute_type": ""
+      },
+      {
+        "values": [
+          "120248430438870710",
+          "Servidor da Prefeitura de Colatina?"
+        ],
+        "attribute_key": "content",
+        "filter_operator": "contains",
+        "custom_attribute_type": ""
+      }
+    ],
+    "actions": [
+      {
+        "action_name": "add_label",
+        "action_params": [
+          "servidor-publico",
+          "colatina"
+        ]
+      },
+      {
+        "action_name": "send_message",
+        "action_params": [
+          "Olá! 👋 Sou a assistente virtual da CBN Crédito.\n\nPara iniciar seu atendimento, envie seu CPF com os 11 números, por favor."
+        ]
+      }
+    ]
+  },
+  {
+    "deployed_id": 9,
+    "name": "CBN — Colatina: solicitar matrícula após CPF",
+    "description": "Após o complemento CBN validar e salvar o CPF, pede a matrícula e captura a resposta em Matrícula / benefício. Uma pergunta por etapa; não responde automaticamente depois de uma intervenção humana.",
+    "event_name": "conversation_updated",
+    "active": false,
+    "conditions": [
+      {
+        "values": [
+          5
+        ],
+        "attribute_key": "inbox_id",
+        "query_operator": "AND",
+        "filter_operator": "equal_to",
+        "custom_attribute_type": ""
+      },
+      {
+        "values": [
+          "cpf_recebido"
+        ],
+        "attribute_key": "cbn_coleta_etapa",
+        "filter_operator": "equal_to",
+        "custom_attribute_type": "conversation_attribute"
+      }
+    ],
+    "actions": [
+      {
+        "action_name": "send_message",
+        "action_params": [
+          "Obrigado! Agora, pode me informar sua matrícula para verificarmos as opções disponíveis para você?"
+        ]
+      }
+    ]
+  },
+  {
+    "deployed_id": 10,
+    "name": "CBN — Colatina: confirmar dados e chamar atendente",
+    "description": "Após salvar CPF e matrícula, preserva o atendente atual ou encaminha para Guilherme. Confirma o recebimento uma única vez, sem mensagem repetida depois de resposta humana.",
+    "event_name": "conversation_updated",
+    "active": false,
+    "conditions": [
+      {
+        "values": [
+          5
+        ],
+        "attribute_key": "inbox_id",
+        "query_operator": "AND",
+        "filter_operator": "equal_to",
+        "custom_attribute_type": ""
+      },
+      {
+        "values": [
+          "dados_recebidos"
+        ],
+        "attribute_key": "cbn_coleta_etapa",
+        "filter_operator": "equal_to",
+        "custom_attribute_type": "conversation_attribute"
+      }
+    ],
+    "actions": [
+      {
+        "action_name": "send_message",
+        "action_params": [
+          "Obrigado pelos dados! Já encaminhei seu atendimento para um atendente. Ele dará continuidade por aqui assim que estiver disponível."
+        ]
+      }
+    ]
+  }
+]
