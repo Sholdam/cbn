@@ -1,5 +1,11 @@
 # Handoff — CBN Crédito
 
+## CRM Colatina — vínculo numerado — 19/10/2026
+
+- Etapa 11 ativa após matrícula: 1 Comissionado / 2 Efetivo / 3 Temporário. Registra autodeclaração e segue para atendente; sem decisão automática ou pedido de contracheque.
+- Gatilho 8 reconhece anúncio original e V2. Código/configuração implantados com backup. 10 testes sintéticos/30 asserções aprovados, sem disparo para clientes.
+- [Detalhes e rollback](CRM_COLATINA_CADASTRO_ETIQUETAS_2026-10-19.md).
+
 ## Recuperação após desconexão do HD — 02/10/2026
 
 - Usuário autorizou reparar o original sem backup completo. `e2fsck -f -p`

@@ -97,3 +97,21 @@ entrega e coleta completa devem ser acompanhadas no primeiro lead orgânico.
 Backup inicial de regras/cadastros de definição em diretório privado
 `/app/storage/cbn-lead-capture-backups/`. Compose e rollback estático preservados
 em `/opt/cbn/builds/crm-leads-20261019/before-runtime-*` e `/var/lib/cbn-assets/`.
+
+## Acréscimo de vínculo — 19/10/2026
+
+- Pedido expresso neste chat: acrescentar opções numeradas, mantendo CPF, matrícula e encaminhamento humano. Guilherme confirmou que não deseja incluir pedido de contracheque.
+- Regra nativa 11 ativa: **CBN — Colatina: perguntar vínculo após matrícula**. Mensagem: “Obrigado! Qual é o seu vínculo com a Prefeitura de Colatina? 1. Comissionado 2. Efetivo 3. Temporário. Responda com o número da opção.”
+- Sequência: CPF → matrícula → `matricula_recebida` → pergunta 11 → `aguardando_vinculo` → resposta válida → `dados_recebidos` → regra 10/atendente.
+- Campo de contato `cbn_vinculo_servidor` / “Vínculo com a Prefeitura” guarda autodeclaração. Número da opção nunca é capturado como matrícula. Nenhuma decisão de crédito ou recusa automática.
+- Configuração conserva `enabled_at` e regras anteriores; acrescenta `rules[11]=vinculo` e `employment_rule_id=11`. Conversas concluídas não são reprocessadas. Fluxos CLT/INSS mantidos.
+- Regra 8 reconhece também ID da V2 `120248595202310710` e mensagem original “Trabalho na prefeitura. Quais são os requisitos para ter um consignado?”.
+- Regra 10 mantém mensagem de espera, sem pedido de documento extra.
+- Testes: 10 casos/30 asserções sintéticas, zero falhas; sintaxe Ruby aprovada no runtime instalado. Cobrem escolhas/texto, opção inválida, duplicação, expiração, preservação de matrícula/valor anterior e supressão após intervenção humana. Sem envio de teste para clientes.
+- Implantação: backup do código/configuração na pasta `infra/cbn-leads/employment-backup-*` do servidor; manifesto privado em `/opt/cbn/builds/crm-leads-20261019/employment-deploy-manifest.json`. Apenas worker de automação recarregado, definição de campo criada e configuração/regras atualizadas.
+- Rollback: pausar 11, remover `employment_rule_id` e mapeamento 11 do arquivo de configuração; restaurar código do backup e recarregar worker. Preservar campo/respostas já registradas e gatilho 8 ampliado, salvo reversão especificamente desejada.
+- Limite: configuração ativa e testes sintéticos não comprovam entrega pelo WhatsApp. Conferir o primeiro lead orgânico, sem replay de histórico.
+
+## Anúncio V2 — pendência separada
+
+O anúncio “Colatina - Servidores efetivos - V2” (`120248595202310710`, conta final 1969) permanece em rascunho. O CRM já reconhece seu ID e a mensagem original. A saudação do rascunho ainda contém a pergunta de vínculo antiga; deve ser simplificada para evitar duplicar a nova regra 11. O navegador deixou de responder antes dessa edição. A publicação e a aceitação dos termos da Meta ainda não foram confirmadas na etapa final; não declarar o anúncio publicado.

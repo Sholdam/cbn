@@ -36,7 +36,9 @@
       {
         "values": [
           "120248430438870710",
-          "Servidor da Prefeitura de Colatina?"
+          "Servidor da Prefeitura de Colatina?",
+          "120248595202310710",
+          "Trabalho na prefeitura. Quais são os requisitos para ter um consignado?"
         ],
         "attribute_key": "content",
         "filter_operator": "contains",
@@ -123,6 +125,40 @@
         "action_name": "send_message",
         "action_params": [
           "Obrigado pelos dados! Já encaminhei seu atendimento para um atendente. Ele dará continuidade por aqui assim que estiver disponível."
+        ]
+      }
+    ]
+  },
+  {
+    "deployed_id": 11,
+    "name": "CBN — Colatina: perguntar vínculo após matrícula",
+    "description": "Registra vínculo autodeclarado com opções numeradas, sem decisão de elegibilidade. Todas as opções seguem para atendente.",
+    "event_name": "conversation_updated",
+    "active": false,
+    "conditions": [
+      {
+        "values": [
+          5
+        ],
+        "custom_attribute_type": "",
+        "query_operator": "AND",
+        "attribute_key": "inbox_id",
+        "filter_operator": "equal_to"
+      },
+      {
+        "values": [
+          "matricula_recebida"
+        ],
+        "custom_attribute_type": "conversation_attribute",
+        "attribute_key": "cbn_coleta_etapa",
+        "filter_operator": "equal_to"
+      }
+    ],
+    "actions": [
+      {
+        "action_name": "send_message",
+        "action_params": [
+          "Obrigado! Qual é o seu vínculo com a Prefeitura de Colatina?\n\n1. Comissionado\n2. Efetivo\n3. Temporário\n\nResponda com o número da opção."
         ]
       }
     ]

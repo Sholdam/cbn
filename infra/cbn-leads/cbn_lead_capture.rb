@@ -47,6 +47,13 @@ module CbnLeadCapture
     value
   end
 
+  def self.extract_employment(text)
+    value = text.to_s.strip.downcase.unicode_normalize(:nfd).gsub(/\p{Mn}/, '')
+    return 'comissionado' if value.match?(/\A(?:1|(?:sou\s+)?comissionad[oa])[.!]?\z/)
+    return 'efetivo' if value.match?(/\A(?:2|(?:sou\s+)?efetiv[oa])[.!]?\z/)
+    return 'temporario' if value.match?(/\A(?:3|(?:sou\s+)?temporari[oa])[.!]?\z/)
+  end
+
   def self.human_replied?(conversation, after_id)
     conversation.messages.outgoing.where(sender_type: 'User', private: false).where('id > ?', after_id).exists?
   end
@@ -91,7 +98,7 @@ module CbnLeadCapture
           stage!(conversation, state, 'aguardando_cpf')
         end
       end
-      next unless state && %w[aguardando_cpf aguardando_matricula].include?(conversation.custom_attributes[STAGE])
+      next unless state && %w[aguardando_cpf aguardando_matricula aguardando_vinculo].include?(conversation.custom_attributes[STAGE])
       next unless message.id > state.fetch('prompt_id', message.id) && message.id > state.fetch('last_processed_id', 0)
       if message.created_at > Time.iso8601(state.fetch('started_at')) + 7.days
         stage!(conversation, state, 'expirado')
@@ -113,13 +120,28 @@ module CbnLeadCapture
           next_stage = state['kind'] == 'colatina' && !human_replied?(conversation, state['prompt_id']) ? 'cpf_recebido' : 'concluido'
           stage!(conversation, state.merge('last_processed_id' => message.id), next_stage)
         end
-      else
+      elsif stage == 'aguardando_matricula'
         registration = extract_registration(message.content, contact.custom_attributes['cbn_cpf'].to_s.gsub(/\D/, ''))
         next unless registration
         contact.with_lock do
           existing = contact.custom_attributes['cbn_matricula_beneficio'].to_s.strip
-          next_stage = existing.present? && existing.gsub(/\D/, '') != registration ? 'revisao_matricula' : 'dados_recebidos'
+          next_stage = if existing.present? && existing.gsub(/\D/, '') != registration
+                         'revisao_matricula'
+                       elsif settings['employment_rule_id']
+                         'matricula_recebida'
+                       else
+                         'dados_recebidos'
+                       end
           contact.update!(custom_attributes: contact.custom_attributes.merge('cbn_matricula_beneficio' => registration)) if existing.blank?
+          stage!(conversation, state.merge('last_processed_id' => message.id), next_stage)
+        end
+      else
+        employment = extract_employment(message.content)
+        next unless employment
+        contact.with_lock do
+          existing = contact.custom_attributes['cbn_vinculo_servidor'].to_s
+          next_stage = existing.present? && existing != employment ? 'revisao_vinculo' : 'dados_recebidos'
+          contact.update!(custom_attributes: contact.custom_attributes.merge('cbn_vinculo_servidor' => employment)) if existing.blank?
           stage!(conversation, state.merge('last_processed_id' => message.id), next_stage)
         end
       end
@@ -164,9 +186,10 @@ module CbnLeadCapture
           end
           super unless CbnLeadCapture.human_replied?(@conversation, state['prompt_id'])
           CbnLeadCapture.stage!(@conversation, state, 'concluido')
-        elsif role == 'matricula'
+        elsif %w[matricula vinculo].include?(role)
           state = @conversation.additional_attributes[CbnLeadCapture::KEY]
-          next unless state && @conversation.custom_attributes[CbnLeadCapture::STAGE] == 'cpf_recebido'
+          required_stage = role == 'vinculo' ? 'matricula_recebida' : 'cpf_recebido'
+          next unless state && state['kind'] == 'colatina' && @conversation.custom_attributes[CbnLeadCapture::STAGE] == required_stage
           if CbnLeadCapture.human_replied?(@conversation, state['prompt_id'])
             CbnLeadCapture.stage!(@conversation, state, 'concluido')
             next
@@ -174,7 +197,8 @@ module CbnLeadCapture
           super
           prompt = @conversation.messages.outgoing.where("content_attributes->>'automation_rule_id' = ?", @rule.id.to_s).order(:id).last
           raise 'Missing native automation message' unless prompt
-          CbnLeadCapture.stage!(@conversation, state.merge('prompt_id' => prompt.id), 'aguardando_matricula')
+          waiting_stage = role == 'vinculo' ? 'aguardando_vinculo' : 'aguardando_matricula'
+          CbnLeadCapture.stage!(@conversation, state.merge('prompt_id' => prompt.id), waiting_stage)
         else
           # Rule 5 also handles INSS: leave that existing flow unchanged.
           if role == 'clt' && !incoming&.content.to_s.match?(/CLT/i) && !@conversation.label_list.include?('clt')
