@@ -115,3 +115,7 @@ em `/opt/cbn/builds/crm-leads-20261019/before-runtime-*` e `/var/lib/cbn-assets/
 ## Anúncio V2 — pendência separada
 
 O anúncio “Colatina - Servidores efetivos - V2” (`120248595202310710`, conta final 1969) permanece em rascunho. O CRM já reconhece seu ID e a mensagem original. A saudação do rascunho ainda contém a pergunta de vínculo antiga; deve ser simplificada para evitar duplicar a nova regra 11. O navegador deixou de responder antes dessa edição. A publicação e a aceitação dos termos da Meta ainda não foram confirmadas na etapa final; não declarar o anúncio publicado.
+
+### Retomada do editor da Meta
+
+A conexão foi restabelecida após Guilherme deixar a aba visível. A saudação da V2 foi salva como “Olá! Bem-vindo à CBN Crédito.”, sem perguntas de vínculo/valor duplicadas. A mensagem pronta original foi preservada. A tela final de revisão foi aberta e não apresentou erro impeditivo; publicação continua pendente da confirmação de aceitação dos Termos e Condições vinculada ao botão Publicar.
