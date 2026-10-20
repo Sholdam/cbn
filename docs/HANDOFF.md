@@ -1,5 +1,10 @@
 # Handoff — CBN Crédito
 
+## Fila Secretária — 20/10/2026
+
+- Por pedido do proprietário, 27 conversas pendentes encerradas via plugin CBN CRM, com ações idempotentes; consulta final retornou zero pendentes. Todas as caixas acessíveis incluídas, inclusive legada.
+- Renomeação visual do estado `pending` para Secretária publicada somente no web, imagem `cbn/chatwoot:4.16.2-cbn-secretaria-label-20261020`, em filtros, ações e relatório de conversas. Não ativa agente ou webhook. [Detalhes](CRM_SECRETARIA_STATUS_2026-10-20.md).
+
 ## Cópia da data e eventos da Secretaria — 20/10/2026
 
 - Correção em `infra/cbn-contact-date/`: nascimento exibido/copiado como `DD/MM/AAAA`, sem mudar armazenamento ou converter fuso. Publicada imagem `cbn/chatwoot:4.16.2-cbn-date-copy-20261020` somente no web; build concluído, sem teste automatizado. Build/publicação e rollback no [runbook](CRM_CONTACT_DATE_COPY_2026-10-20.md).

@@ -1,5 +1,10 @@
 # Backlog — checkpoint oficial de 17/07/2026
 
+## Conversas pendentes e nome da fila — 20/10/2026
+
+- 27 conversas de todas as caixas passaram de `pending` para `resolved` por autorização explícita; zero pendentes na conferência final pelo plugin.
+- Nome Secretária publicado somente no web, preservando enum/API e comportamento existente. [Runbook](CRM_SECRETARIA_STATUS_2026-10-20.md).
+
 ## Data de nascimento e Secretaria — 20/10/2026
 
 - Data de nascimento: cópia/visualização brasileira publicada somente no serviço web, imagem `cbn/chatwoot:4.16.2-cbn-date-copy-20261020`. Sem mudança de cadastro/WhatsApp ou envio de mensagens. [Publicação e rollback](CRM_CONTACT_DATE_COPY_2026-10-20.md).
