@@ -1,5 +1,13 @@
 # Handoff — CBN Crédito
 
+## Correção do envio automático Colatina — 19/10/2026
+
+- Cinco novos leads reconhecidos e etiquetados não receberam saudação. A consulta SQL do complemento tratava `messages.content_attributes` como objeto, mas Chatwoot serializa esse campo JSON como string. A procura não encontrava a mensagem recém-criada e levantava erro dentro da transação, desfazendo o envio.
+- Corrigido uso do retorno de `Messages::MessageBuilder` nas perguntas iniciais, matrícula e vínculo. Busca de perguntas CLT anteriores aceita os dois formatos e ordena pela mensagem mais recente.
+- Worker atualizado com backup, sem alterar anúncios, regras, configuração, web, WAHA ou banco. Fluxo do chat ADS preservado: CPF → matrícula → vínculo numerado → humano.
+- Conferência do fluxo nativo em transação revertida: quatro mensagens/etapas corretas, nenhuma persistida ou enviada nessa conferência. Recuperação pontual das cinco saudações omitidas após confirmar ausência de resposta e fluxo anterior: uma por conversa, todas com status `delivered`, aguardando CPF. Sem replay geral de eventos.
+- [Procedimento e limites](CRM_COLATINA_CADASTRO_ETIQUETAS_2026-10-19.md#correção-de-envio-e-recuperação-dos-cinco-leads).
+
 ## CRM Colatina — vínculo numerado — 19/10/2026
 
 - Etapa 11 ativa após matrícula: 1 Comissionado / 2 Efetivo / 3 Temporário. Registra autodeclaração e segue para atendente; sem decisão automática ou pedido de contracheque.

@@ -1,5 +1,11 @@
 # Backlog — checkpoint oficial de 17/07/2026
 
+## Correção operacional Colatina — 19/10/2026
+
+- Resolvida falha de serialização na identificação de perguntas automáticas. Complemento usa a mensagem retornada pelo serviço nativo, conservando idempotência e roteiro ADS.
+- Cinco saudações faltantes recuperadas individualmente, com status `delivered`; sem duplicações. Fluxo completo conferido com rollback, sem envio de teste a clientes. Acompanhar as próximas respostas orgânicas para confirmar a coleta em operação.
+- Detalhes no runbook [Colatina](CRM_COLATINA_CADASTRO_ETIQUETAS_2026-10-19.md#correção-de-envio-e-recuperação-dos-cinco-leads).
+
 ## CRM Colatina — vínculo numerado — 19/10/2026
 
 - Etapa 11 ativa após matrícula: 1 Comissionado / 2 Efetivo / 3 Temporário. Registra autodeclaração e segue para atendente; sem decisão automática ou pedido de contracheque.

@@ -58,6 +58,15 @@ module CbnLeadCapture
     conversation.messages.outgoing.where(sender_type: 'User', private: false).where('id > ?', after_id).exists?
   end
 
+  def self.native_prompt!(prompt, conversation, rule)
+    unless prompt.is_a?(Message) && prompt.persisted? && prompt.outgoing? &&
+           prompt.conversation_id == conversation.id && !prompt.private? &&
+           prompt.content_attributes['automation_rule_id'].to_i == rule.id
+      raise 'Missing native automation message'
+    end
+    prompt
+  end
+
   def self.mirror_labels!(conversation)
     titles = conversation.label_list & %w[clt servidor-publico colatina]
     return if titles.empty?
@@ -92,7 +101,10 @@ module CbnLeadCapture
       # A new CPF reply can answer a still-valid native CLT prompt sent before
       # installation. Only this new reply is processed; never replay old input.
       if state.nil? && valid_cpf?(extract_cpf(message.content))
-        prompt = conversation.messages.outgoing.where(private: false).where("content_attributes->>'automation_rule_id' IN (?)", %w[5 6]).where('id < ? AND created_at >= ?', message.id, 7.days.ago).order(:id).last
+        # Chatwoot serializes this JSON column as a JSON string. Read both its
+        # native encoding and object rows without changing stored messages.
+        rule_id_sql = "(CASE WHEN json_typeof(content_attributes) = 'string' THEN (content_attributes #>> '{}')::json ELSE content_attributes END)->>'automation_rule_id'"
+        prompt = conversation.messages.outgoing.where(private: false).where("#{rule_id_sql} IN (?)", %w[5 6]).where('id < ? AND created_at >= ?', message.id, 7.days.ago).reorder(id: :desc).first
         if prompt && (prompt.content_attributes['automation_rule_id'].to_i == 6 || conversation.label_list.include?('clt')) && prompt.status != 'failed'
           state = { 'kind' => 'clt', 'started_at' => prompt.created_at.iso8601, 'prompt_id' => prompt.id, 'trigger_id' => message.id }
           stage!(conversation, state, 'aguardando_cpf')
@@ -194,9 +206,7 @@ module CbnLeadCapture
             CbnLeadCapture.stage!(@conversation, state, 'concluido')
             next
           end
-          super
-          prompt = @conversation.messages.outgoing.where("content_attributes->>'automation_rule_id' = ?", @rule.id.to_s).order(:id).last
-          raise 'Missing native automation message' unless prompt
+          prompt = CbnLeadCapture.native_prompt!(super, @conversation, @rule)
           waiting_stage = role == 'vinculo' ? 'aguardando_vinculo' : 'aguardando_matricula'
           CbnLeadCapture.stage!(@conversation, state.merge('prompt_id' => prompt.id), waiting_stage)
         else
@@ -210,9 +220,7 @@ module CbnLeadCapture
           CbnLeadCapture.origin!(@conversation, incoming)
           next if @conversation.additional_attributes[CbnLeadCapture::KEY].present?
           next if CbnLeadCapture.human_replied?(@conversation, incoming.id)
-          super
-          prompt = @conversation.messages.outgoing.where("content_attributes->>'automation_rule_id' = ?", @rule.id.to_s).order(:id).last
-          raise 'Missing native automation message' unless prompt
+          prompt = CbnLeadCapture.native_prompt!(super, @conversation, @rule)
           state = { 'kind' => role, 'started_at' => Time.current.iso8601, 'prompt_id' => prompt.id, 'trigger_id' => incoming.id }
           CbnLeadCapture.stage!(@conversation, state, 'aguardando_cpf')
         end

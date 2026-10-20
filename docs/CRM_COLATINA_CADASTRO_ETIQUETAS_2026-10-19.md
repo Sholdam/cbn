@@ -123,3 +123,55 @@ A conexão foi restabelecida após Guilherme deixar a aba visível. A saudação
 ### Publicação confirmada — 19/10/2026
 
 Após a autorização expressa “Sim, publicar e aceitar os termos”, a V2 foi publicada pela interface da Meta. Confirmação visível: “Anúncio publicado — 1 anúncio foi publicado.” Estado inicial: “Em processamento”, com chave ativada. O anúncio original “Vendas 1” permanece ativo; ambos estão na mesma campanha/conjunto com orçamento existente de R$ 85,44/dia. Sem aumento de orçamento. Saudação final simples e mensagem pronta original preservadas; regra 11 do CRM segue ativa. Evidência local: `outputs/consig-colatina-v2-publicado.png` no workspace CBN. Publicação não comprova aprovação ou entrega final pela Meta.
+
+## Correção de envio e recuperação dos cinco leads
+
+Em 19/10/2026 (Brasília), o proprietário relatou cinco leads sem resposta. A
+conversa ADS foi consultada para confirmar o roteiro vigente. As condições da
+regra 8 reconheciam todos os casos e as duas etiquetas já estavam presentes.
+O worker registrava `Missing native automation message`.
+
+Diagnóstico na versão instalada: a coluna `messages.content_attributes` é
+`json`, com tipo Rails `ActiveRecord::Type::Serialized`; os metadados persistem
+como string JSON. O objeto Ruby retornado pelo builder possui corretamente
+`automation_rule_id`, mas `content_attributes->>'automation_rule_id'` no SQL
+retornava nulo. A exceção do complemento dentro da trava transacional revertia
+a mensagem. A coluna de atributos de contato é JSONB com objetos e não apresenta
+esse problema; sua consulta de conflito de CPF foi preservada.
+
+Correção em `infra/cbn-leads/cbn_lead_capture.rb`:
+
+- Perguntas iniciais, matrícula e vínculo usam diretamente a mensagem persistida
+  retornada pelo serviço nativo, validando conversa, tipo, privacidade e regra.
+- Busca de pergunta CLT anterior normaliza string/objeto JSON apenas na leitura
+  e usa `reorder(id: :desc).first`, substituindo a ordem padrão do modelo.
+- Preservados `enabled_at`, mapeamentos 5/6/8/9/10/11, textos, etiquetas, vínculo,
+  responsável existente e controles de duplicidade/intervenção humana.
+
+Implantação limitada ao initializer e recriação do worker. Fonte anterior e
+configuração preservadas em
+`/opt/cbn/infra/cbn-leads/send-fix-backup-20261020T011935Z/`.
+SHA-256 implantado:
+`4066f0441f4398d1836fed8c425b586dca871b0a66c17a8c271453f82bae2361`.
+Web, WAHA, anúncios, banco e configuração não foram reiniciados nem alterados.
+
+Conferência: sintaxe Ruby e `git diff --check`; execução dos serviços nativos
+das quatro etapas em transação explicitamente revertida, sem callbacks de
+commit ou envio de teste. Sequência observada: `aguardando_cpf`,
+`aguardando_matricula`, `aguardando_vinculo`, `concluido`, com captura sintética
+e responsável ao final. Nenhum registro dessa conferência foi persistido.
+Não foi executada suíte automatizada adicional.
+
+Após a correção, cinco saudações reais omitidas foram recuperadas uma única vez
+por conversa, verificando regra ativa, anúncio elegível, conversa aberta,
+ausência de resposta e ausência de coleta iniciada sob trava. Não foi publicado
+novamente o evento recebido nem reexecutado o histórico geral. Todos os cinco
+envios passaram a `delivered`, com uma mensagem de saída por conversa e etapa
+`aguardando_cpf`. Sem novos erros do complemento nos logs consultados.
+Essa entrega não comprova respostas futuras: acompanhar a jornada orgânica.
+
+Rollback de código: restaurar somente `cbn_lead_capture.rb` do backup e recriar
+o serviço `chatwoot-waha-worker` com os perfis `physical`, `web`, `waha` do
+compose VPS. Isso reintroduz a falha conhecida; pausar as regras afetadas se
+for necessário reverter. Não restaurar banco, remover dados ou reenviar as
+cinco saudações já entregues. Preservar configuração, incluindo regra 11.
