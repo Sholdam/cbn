@@ -1,5 +1,11 @@
 # Handoff — CBN Crédito
 
+## Agendamento com anexos — 20/10/2026
+
+- Publicado suporte a arquivo sem texto ou com legenda no Agendar: seleção, lista e remoção de anexos, edição e persistência Active Storage sem migration. Dispatcher nativo envia os arquivos no horário.
+- API/worker de operações e web usam imagens `cbn-scheduled-media-operations`/`cbn-scheduled-media-ui` de 20/10. WAHA preservado. Builds/sintaxe, CRM 200, associação `files`, API de consulta e heartbeat conferidos; nenhuma agenda ou mensagem de teste criada.
+- Plugin instalado aceita `upload_ids`, texto opcional e remoção de anexos na edição. Processos MCP abertos precisam reconectar. Guardas de autorização/UUID/estado incerto preservadas. [Detalhes e rollback](CRM_SCHEDULE_ATTACHMENTS_2026-10-20.md).
+
 ## Fila Secretária — 20/10/2026
 
 - Por pedido do proprietário, 27 conversas pendentes encerradas via plugin CBN CRM, com ações idempotentes; consulta final retornou zero pendentes. Todas as caixas acessíveis incluídas, inclusive legada.

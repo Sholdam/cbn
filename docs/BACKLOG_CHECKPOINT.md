@@ -1,5 +1,9 @@
 # Backlog — checkpoint oficial de 17/07/2026
 
+## Anexos no agendamento — 20/10/2026
+
+- Tela, API, dispatcher e plugin atualizados para arquivos com ou sem texto; sem migração ou mudança de credenciais. Builds/sintaxe e disponibilidade conferidos, sem disparo de teste. [Runbook](CRM_SCHEDULE_ATTACHMENTS_2026-10-20.md).
+
 ## Conversas pendentes e nome da fila — 20/10/2026
 
 - 27 conversas de todas as caixas passaram de `pending` para `resolved` por autorização explícita; zero pendentes na conferência final pelo plugin.

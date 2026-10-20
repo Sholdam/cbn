@@ -1,0 +1,9 @@
+FROM cbn/chatwoot:4.16.2-cbn-operations-r2-20261007 AS baseline
+FROM node:24-alpine AS patch
+RUN apk add --no-cache python3
+COPY --from=baseline /app/cbn-operations/operations.rb /app/cbn-operations/operations.rb
+COPY patch-operations.py scheduled_message.rb schedules_controller.rb /patch/
+RUN python3 /patch/patch-operations.py
+FROM baseline
+COPY --from=patch /app/cbn-operations/operations.rb /app/cbn-operations/operations.rb
+RUN ruby -c /app/cbn-operations/operations.rb

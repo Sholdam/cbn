@@ -131,7 +131,7 @@ export class Crm {
       let existing;
       try { existing = await this.store.read(operation_id); } catch (e) { if (e.message !== 'Ação não encontrada.') throw e; }
       if (existing) {
-        if (digest(existing.action) !== digest(action) || existing.accountId !== this.config.accountId || existing.baseUrl !== this.config.baseUrl) throw new Error('operation_id já pertence a outra ação/conta.');
+        if (digest(actionSchema.parse(existing.action)) !== digest(action) || existing.accountId !== this.config.accountId || existing.baseUrl !== this.config.baseUrl) throw new Error('operation_id já pertence a outra ação/conta.');
         return this.preview(existing);
       }
       const status = await this.status();
@@ -142,6 +142,20 @@ export class Crm {
         row.previous_schedule = list(await this.schedules(action)).find(s => s.id === action.schedule_id);
         if (!row.previous_schedule || row.previous_schedule.status !== 'pending') throw new Error('Agendamento pendente não encontrado nos últimos 30 itens desta conversa. Confira o CRM.');
       }
+      if (['schedule_create', 'schedule_update'].includes(action.kind)) {
+        row.uploads = [];
+        for (const upload_id of action.upload_ids) {
+          const { bytes, ...meta } = await this.readUpload(upload_id);
+          row.uploads.push(meta);
+        }
+        const existing = row.previous_schedule?.attachments || [];
+        const removed = action.remove_attachment_ids || [];
+        if (removed.some(id => !existing.some(file => file.id === id))) throw new Error('Anexo não pertence a este agendamento.');
+        const retained = existing.filter(file => !removed.includes(file.id));
+        if (!action.content && !row.uploads.length && !retained.length) throw new Error('Escreva uma mensagem ou adicione um anexo.');
+        if (retained.length + row.uploads.length > 10) throw new Error('Adicione no máximo 10 anexos.');
+        if (retained.reduce((sum, file) => sum + file.byte_size, 0) + row.uploads.reduce((sum, file) => sum + file.size, 0) > 50 * 1024 * 1024) throw new Error('Os anexos juntos devem ter até 50 MB.');
+      }
       if (action.kind === 'send_media') { const { bytes, ...meta } = await this.readUpload(action.upload_id); row.upload = meta; }
       if (action.kind === 'automation_set_active') row.previous_rule = await this.http.request(this.account(`/automation_rules/${action.rule_id}`));
       await this.store.save(row); await this.store.audit(row, 'prepared');
@@ -151,7 +165,7 @@ export class Crm {
   preview(row) {
     if (row.accountId !== this.config.accountId || row.baseUrl !== this.config.baseUrl) throw new Error('Ação pertence a outro CRM/conta.');
     return { action_id: row.id, state: row.state, account_id: row.accountId, actor_id: row.actor_id, crm: row.baseUrl, action: row.action, recipient: row.snapshot?.recipient, inbox_id: row.snapshot?.inbox_id,
-      media: row.upload, previous_rule: row.previous_rule, previous_schedule: row.previous_schedule, expires_at: new Date(Date.parse(row.created_at) + 30 * 60_000).toISOString(),
+      media: row.upload, attachments: row.uploads, previous_rule: row.previous_rule, previous_schedule: row.previous_schedule, expires_at: new Date(Date.parse(row.created_at) + 30 * 60_000).toISOString(),
       requires_user_authorization: true, result: row.result,
       notice: row.action.kind.startsWith('automation_') ? 'Ativar uma regra pode disparar mensagens futuras. Confira evento, condições e ações.' : row.state === 'prepared' ? 'Preparação local; nenhuma alteração enviada ao CRM.' : 'Confira state e result para determinar se houve alteração no CRM.' };
   }
@@ -207,8 +221,26 @@ export class Crm {
         form.append('attachments[]', new Blob([media.bytes], { type: media.mimeType }), media.filename);
         return { route: messagesRoute, options: { method: 'POST', body: form } };
       }
-      case 'schedule_create': return { route: schedulesRoute, options: { method: 'POST', body: { content: a.content, scheduled_local: a.scheduled_local, request_id: row.id } } };
-      case 'schedule_update': return { route: `${schedulesRoute}/${a.schedule_id}`, options: { method: 'PATCH', body: { content: a.content, scheduled_local: a.scheduled_local } } };
+      case 'schedule_create':
+      case 'schedule_update': {
+        const create = a.kind === 'schedule_create';
+        const route = create ? schedulesRoute : `${schedulesRoute}/${a.schedule_id}`;
+        const method = create ? 'POST' : 'PATCH';
+        const removed = a.remove_attachment_ids || [];
+        if (!a.upload_ids.length && !removed.length) return { route, options: { method, body: { content: a.content, scheduled_local: a.scheduled_local, ...(create ? { request_id: row.id } : {}) } } };
+        const form = new FormData();
+        form.set('content', a.content);
+        form.set('scheduled_local', a.scheduled_local);
+        if (create) form.set('request_id', row.id);
+        for (const upload_id of a.upload_ids) {
+          const media = await this.readUpload(upload_id);
+          const expected = row.uploads?.find(file => file.upload_id === upload_id);
+          if (!expected || media.sha256 !== expected.sha256) throw new Error('Anexo alterado após a prévia.');
+          form.append('attachments[]', new Blob([media.bytes], { type: media.mimeType }), media.filename);
+        }
+        for (const id of removed) form.append('remove_attachment_ids[]', String(id));
+        return { route, options: { method, body: form } };
+      }
       case 'schedule_cancel': return { route: `${schedulesRoute}/${a.schedule_id}`, options: { method: 'DELETE' } };
       case 'conversation_status': return { route: this.account(`/conversations/${c}/toggle_status`), options: { method: 'POST', body: { status: a.status } } };
       case 'automation_create': return { route: this.account('/automation_rules'), options: { method: 'POST', body: a.rule } };

@@ -63,6 +63,14 @@ O endereço antigo `/cbn/v1/...` retorna 404 na VPS atual. Se uma tentativa anti
 ficou `unknown`/`dispatching`, confira a lista antes de preparar nova operação;
 a atualização não repete nem desbloqueia ações antigas automaticamente.
 
+Para agendar anexos, prepare cada arquivo com `crm_stage_upload` e informe os
+UUIDs em `upload_ids` na ação `schedule_create` ou `schedule_update`. Com pelo
+menos um anexo, `content` pode ser vazio/omitido. A prévia mostra os arquivos e
+confere seus hashes antes da execução. Limites: 10 arquivos de até 20 MiB cada,
+50 MiB no total. Na edição, anexos existentes são mantidos; remova somente IDs
+de `previous_schedule.attachments` usando `remove_attachment_ids`. Não envie
+URLs ou IDs de blobs. O envio agendado executa na VPS mesmo com o plugin fechado.
+
 ## Áudio offline
 
 Áudio inline é um bloco MCP válido, mas sua reprodução/compreensão depende do
