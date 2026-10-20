@@ -161,6 +161,24 @@
 - Dumps, anexos e sessões reais permanecem proibidos até aprovação dos gates
   externos BKL-016.
 - Acompanhar [`CRM_INFRA_MIGRATION_STATUS.md`](CRM_INFRA_MIGRATION_STATUS.md).
+## Correção de agendamento pelo plugin — 20/10/2026
+
+- Endereço do agendador alinhado à API pública `/site/cbn-api/...`, compartilhado por todas as operações. Rota atual respondeu 200 autenticado na conversa técnica; antiga retornou 404.
+- Sem criação de agendamento, envio ou mudança na fila dos 20 leads. Guardas de autoria/UUID/estado incerto preservadas. [Runbook](CRM_PLUGIN_SCHEDULE_FIX_2026-10-20.md).
+
+## Integração Codex ↔ CRM — 16/10/2026
+
+- **Implementação e instalação local concluídas:** plugin privado `CBN CRM`,
+  CLI/MCP em `tools/cbn-crm`, com consulta de conversas, texto/mídia, áudio offline,
+  agendamentos, estado da conversa e regras nativas. 13 ferramentas; 15 testes
+  sintéticos aprovados e validação autenticada somente leitura pelo MCP instalado.
+- **Homologação produtiva pendente:** testar envio/entrega/mídia com destinatário
+  explicitamente autorizado e avaliar convivência com humanos/Rebeca. Nenhum
+  cliente contatado, automação criada/ativada ou serviço remoto modificado.
+- Receber mensagens funciona por consulta paginada com cursor. Agente 24h/push e
+  plugin para ChatGPT web/mobile não fazem parte do stdio local instalado.
+- As tarefas de domínio/BKL-020 e gates históricos abaixo não foram concluídos
+  nem liberados por esta entrega. Ver [CRM_CODEX_PLUGIN.md](CRM_CODEX_PLUGIN.md).
 
 ## Retomada oficial
 

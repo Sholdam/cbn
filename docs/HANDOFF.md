@@ -303,6 +303,34 @@
   privilégios administrativos e reinicialização.
 - A migração de dados reais continua bloqueada pelos gates externos da BKL-016.
 - Plano e estado da trilha: [`CRM_INFRA_MIGRATION_STATUS.md`](CRM_INFRA_MIGRATION_STATUS.md).
+## Agendamento do plugin — 20/10/2026
+
+- Falha 404 identificada como rota antiga `/cbn/v1/...`. Frontend/proxy/API atuais usam `/site/cbn-api/...`.
+- Consulta, criação, alteração e cancelamento usam `Crm.schedulesRoute`, com autenticação/UUID e guardas existentes preservados. Consulta autenticada à conversa técnica confirmou 200 na rota atual contra 404 na antiga.
+- Correção local do plugin; nenhum agendamento de teste, envio, alteração da fila da campanha ou deploy na VPS. Não foram executados testes automatizados. [Detalhes e instalação](CRM_PLUGIN_SCHEDULE_FIX_2026-10-20.md).
+
+## Plugin CBN CRM — 16/10/2026
+
+- Criado `tools/cbn-crm`, CLI/MCP stdio com SDK MCP oficial v2, 13 ferramentas
+  tipadas para atendimento via HTTPS, mídia, transcrição offline, agendamento e
+  automação nativa. Branch isolada `codex/cbn-crm-plugin`, baseada em origin/main;
+  alterações da frente Rebeca no checkout anterior permanecem preservadas.
+- Plugin `cbn-crm@cbn-local` v0.1.0 instalado localmente no Codex. Conexão
+  autenticada a `crm.cbncredito.tech`, conta 1, com a credencial já existente do
+  proprietário. Token/configuração/cache ficam na pasta privada LOCALAPPDATA,
+  fora do repositório/OneDrive. Nenhum usuário/token novo criado no servidor.
+- Escritas disponíveis com preparação persistida, referência à autorização
+  humana e validação de contexto. Repetição da mesma ação não reenvia; resultado
+  incerto requer conferência. Não é autorização permanente para envios/campanhas.
+- 15 testes sintéticos aprovados, handshake/call MCP real aprovado, identidade,
+  quatro caixas e API de regras conferidas sem mutação. Rotas privadas de
+  mensagens/agendamento responderam 404 autenticado para conversa inexistente.
+  Áudio sintético transcrito via ferramenta com Whisper local já disponível.
+- Não houve envio a clientes, ativação/alteração de regras, deploy ou mudança
+  na VPS. Homologação de envio/entrega/mídia real continua pendente. StdIO atende
+  Codex local; ChatGPT web/mobile requer uma implantação MCP HTTPS separada.
+- Após instalação, abrir nova conversa/recarregar o Codex para carregar ferramentas.
+  Detalhes e limites: [CRM_CODEX_PLUGIN.md](CRM_CODEX_PLUGIN.md).
 
 ## CHECKPOINT OFICIAL PARA RETOMADA — 17/07/2026
 

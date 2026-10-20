@@ -1,0 +1,12 @@
+{
+  "name": "@cbn/crm-plugin",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "CLI and MCP for the CBN Chatwoot CRM",
+  "engines": { "node": ">=22" },
+  "bin": { "cbn-crm": "./src/cli.mjs" },
+  "scripts": { "test": "node --test", "start": "node src/server.mjs" },
+  "dependencies": { "@modelcontextprotocol/server": "2.3.1", "zod": "^4.0.0" },
+  "devDependencies": { "@modelcontextprotocol/client": "2.3.1" }
+}

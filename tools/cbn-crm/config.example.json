@@ -1,0 +1,8 @@
+{
+  "baseUrl": "https://crm.cbncredito.tech",
+  "accountId": 1,
+  "tokenFile": "crm.token",
+  "writesEnabled": false,
+  "mediaOrigins": [],
+  "transcription": null
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "cbn-crm",
+  "version": "0.1.0",
+  "description": "Atenda clientes no CRM CBN: conversas, respostas, mídia, áudio, agendamentos e automações por API.",
+  "author": { "name": "CBN Crédito" },
+  "keywords": ["crm", "chatwoot", "whatsapp", "cbn", "atendimento"],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "CBN CRM",
+        "shortDescription": "Atendimento, mídia e áudio no CRM da CBN",
+        "category": "Productivity",
+        "capabilities": ["Read", "Write"],
+        "defaultPrompt": ["Mostre os clientes aguardando resposta no CRM CBN.", "Leia o histórico e os áudios desta conversa antes de preparar a resposta."]
+      }
+    }
+  }
+}
