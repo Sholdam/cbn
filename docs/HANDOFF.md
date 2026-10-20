@@ -1,5 +1,11 @@
 # Handoff — CBN Crédito
 
+## Cópia da data e eventos da Secretaria — 20/10/2026
+
+- Correção em `infra/cbn-contact-date/`: nascimento exibido/copiado como `DD/MM/AAAA`, sem mudar armazenamento ou converter fuso. Publicada imagem `cbn/chatwoot:4.16.2-cbn-date-copy-20261020` somente no web; build concluído, sem teste automatizado. Build/publicação e rollback no [runbook](CRM_CONTACT_DATE_COPY_2026-10-20.md).
+- Lida a conversa `Secretaria`: pedido de atendimento reativo aos 20 leads CLT, substituindo espera por consulta de 20 minutos. Plugin existente confirmado como stdio/ferramentas; não recebe eventos.
+- [Desenho e dependência do destino do agente](CRM_SECRETARIA_EVENTS_2026-10-20.md). MCP Events documentado para Work/Cloud/dots; o chat Codex local atual não tem recepção comprovada. Integração ainda não ativada; nenhum envio à carteira nesta tarefa.
+
 ## Atalho Retomar bot — 20/10/2026
 
 - Botão no cabeçalho das conversas CBN/WAHA, junto a Resolver, para retomada explícita de coleta Colatina/CLT. Aproveita dados cadastrados e respostas válidas pendentes; pergunta só a etapa necessária. Revisões de cadastro, bloqueio de contato, conversa fechada e regra desativada impedem envio.
