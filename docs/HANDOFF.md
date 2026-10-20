@@ -2,6 +2,8 @@
 
 ## Formatação WhatsApp — 20/10/2026
 
+- Retorno “não vi diferença”: barra padrão estava oculta até selecionar texto. Camada `Dockerfile.toolbar`/`toolbar.css` agora mantém controles visíveis acima do campo. Nome CSS com hash novo evita cache; web foi recriado, WAHA/worker preservados. Prévia aplicada na aba aberta sem recarregar rascunho, barra 34 px/botões 28 px conferidos por DOM e captura. Compose web usa `cbn/chatwoot:4.16.2-cbn-whatsapp-toolbar-20261020`.
+
 - Investigação pelo plugin CBN CRM encontrou mistura de sintaxes e marcadores com espaços/quebras. Editor da caixa WAHA 5 usa capacidades WhatsApp, com regras de digitação/colagem para negrito, itálico e tachado; rascunhos permanecem CommonMark.
 - Conversor de saída WAHA passa a usar árvore `markdown-it`, protegendo código/links e tratando listas, citação, linhas e estilos combinados. Imagens web e WAHA atualizadas no compose, preservando worker e automações.
 - Build concluído, CRM/JS 200 e sessão `WORKING`. Sem envio de teste a clientes ou suíte automatizada; confirmar aparência no próximo envio orgânico. Recarregar navegador para novo compositor.

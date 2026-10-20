@@ -2,6 +2,8 @@
 
 ## Compatibilidade de formatação WhatsApp — 20/10/2026
 
+- Refinamento visual após retorno do proprietário: barra de formatação sempre visível no compositor, com contraste e botões maiores. Imagem persistente `cbn/chatwoot:4.16.2-cbn-whatsapp-toolbar-20261020`, CSS com hash novo e conferência visual na aba aberta. Sem envio de mensagem.
+
 - Ajuste do editor da caixa WAHA e conversor de saída implantado. Suporte à sintaxe WhatsApp na digitação/colagem e conversão CommonMark para envio com espaços/linhas tratados.
 - Build e disponibilidade conferidos; nenhum envio de teste. Acompanhar próximo envio orgânico para confirmar aparência no cliente WhatsApp. [Runbook](CRM_WHATSAPP_FORMATTING_2026-10-20.md).
 

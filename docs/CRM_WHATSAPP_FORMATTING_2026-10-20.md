@@ -82,3 +82,37 @@ se houve outra alteração legítima no compose e preservá-la. Executar o compo
 VPS com perfis `physical`, `web`, `waha`, `up -d --no-deps chatwoot-web waha`.
 Não restaurar banco nem volume de sessão, não reenviar mensagens. Se desfizer
 apenas o editor, o conversor novo continua compatível com o CommonMark anterior.
+
+## Barra sempre visível — retorno do proprietário
+
+O proprietário informou que não via diferença e mostrou o compositor sem
+controles. Inspeção da aba Chrome confirmou `.ProseMirror-menubar` com
+`display:none`: o menu padrão depende de seleção de texto. A correção de envio
+anterior não tornava a barra descoberta no estado vazio.
+
+- `toolbar.css` mantém a barra acima do campo, em fluxo normal, com rótulo
+  “Formato”, botões de 28 px, estado ativo e contraste. Escopo limitado ao
+  compositor da conversa; mantém o mesmo comando ProseMirror e a seleção.
+- A altura é repartida entre barra e campo, com rolagem do texto. Menu não
+  flutua sobre o conteúdo e não altera o modo Responder/Nota privada.
+- Prévia CSS aplicada por DevTools à aba já aberta, sem navegação, recarga ou
+  alteração programática do texto. O usuário continuou usando a conversa.
+- `Dockerfile.toolbar` deriva da imagem de formatação publicada; gera nome CSS
+  com hash do conteúdo e atualiza o manifesto. Isso evita o cache imutável do
+  arquivo anterior. Futuras recompilações devem conservar esta camada final.
+- Imagem persistente no compose:
+  `cbn/chatwoot:4.16.2-cbn-whatsapp-toolbar-20261020`.
+  Publicação inicial de CSS sem restart; publicação final recriou somente web
+  para carregar o manifesto novo. Worker e WAHA não reiniciados nesta etapa.
+- Manifesto operacional: `toolbar-final-deployment.json` na pasta do build.
+  Compose inicial anterior à barra em `toolbar-backup-20261020T112929Z/`;
+  checkpoint final em `toolbar-final-20261020T113231Z/`.
+- Conferência visual/DOM: barra `display:flex`, altura 34 px, botões 28 px.
+  Captura recortada, sem dados do contato:
+  `outputs/crm-barra-formatacao-2026-10-20.png` no workspace local.
+  Nenhum envio de mensagem ou teste automatizado nesta etapa.
+
+Para desfazer somente a barra, voltar web à imagem
+`cbn/chatwoot:4.16.2-cbn-whatsapp-formatting-20261020` e recriar somente esse
+serviço, preservando eventuais alterações posteriores do compose. O conversor
+WAHA e o fluxo de atendimento não dependem da visibilidade desta barra.

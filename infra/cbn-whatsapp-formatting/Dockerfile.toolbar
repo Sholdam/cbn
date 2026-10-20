@@ -1,0 +1,3 @@
+FROM cbn/chatwoot:4.16.2-cbn-whatsapp-formatting-20261020
+COPY toolbar.css /app/cbn-whatsapp-toolbar.css
+RUN ruby -rjson -rdigest -e 'path="/app/public/vite/"; manifest=path+".vite/manifest.json"; m=JSON.parse(File.read(manifest)); e=m.values.find{|v|v["isEntry"] && v["file"].start_with?("assets/dashboard-")}; abort "Unexpected dashboard CSS" unless e && e["css"].length==1; old=e["css"].first; css=File.read(path+old)+"\n"+File.read("/app/cbn-whatsapp-toolbar.css"); name="assets/dashboard-toolbar-"+Digest::SHA256.hexdigest(css)[0,12]+".css"; File.write(path+name,css); m.each_value{|v|v["css"]=v["css"].map{|f|f==old ? name : f} if v["css"]; v["file"]=name if v["file"]==old}; File.write(manifest,JSON.generate(m))'

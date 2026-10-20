@@ -1,0 +1,89 @@
+/* Keep conversation formatting discoverable without selecting text first. */
+.resizable-editor-wrapper .popover-prosemirror-menu .ProseMirror-menubar-wrapper {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch;
+  height: 100%;
+}
+.resizable-editor-wrapper .popover-prosemirror-menu .ProseMirror-menubar {
+  display: flex !important;
+  position: relative !important;
+  inset: auto !important;
+  transform: none !important;
+  flex: 0 0 auto;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2px;
+  box-sizing: border-box;
+  width: 100% !important;
+  max-width: none !important;
+  min-height: 34px !important;
+  margin: 0 !important;
+  padding: 3px 6px !important;
+  border: 0 !important;
+  border-bottom: 1px solid #cfdeeb !important;
+  border-radius: 0 !important;
+  background: #f5f9fd !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  z-index: 1;
+}
+.resizable-editor-wrapper .popover-prosemirror-menu .ProseMirror-menubar::before {
+  content: 'Formato';
+  margin-right: 6px;
+  color: #405b72;
+  font-size: 11px;
+  font-weight: 600;
+}
+.resizable-editor-wrapper .popover-prosemirror-menu .ProseMirror-menuitem {
+  margin: 0 !important;
+}
+.resizable-editor-wrapper .popover-prosemirror-menu .ProseMirror-icon {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 28px !important;
+  min-width: 28px !important;
+  height: 28px !important;
+  padding: 5px !important;
+  border-radius: 5px;
+  color: #25455f;
+  font-size: 16px;
+  cursor: pointer;
+}
+.resizable-editor-wrapper .popover-prosemirror-menu .ProseMirror-icon svg {
+  width: 16px !important;
+  height: 16px !important;
+  fill: currentColor;
+}
+.resizable-editor-wrapper .popover-prosemirror-menu .ProseMirror-icon:hover {
+  background: #e5f0fa;
+}
+.resizable-editor-wrapper .popover-prosemirror-menu .ProseMirror-menu-active {
+  background: #cfe8ff !important;
+  color: #07558a !important;
+}
+.resizable-editor-wrapper .popover-prosemirror-menu .ProseMirror-menu-disabled {
+  opacity: .4;
+  cursor: default;
+}
+.resizable-editor-wrapper .popover-prosemirror-menu .ProseMirror[contenteditable='true'] {
+  flex: 1 1 auto;
+  min-height: 48px !important;
+  height: auto !important;
+  overflow-y: auto !important;
+  padding: 8px 10px !important;
+}
+.dark .resizable-editor-wrapper .popover-prosemirror-menu .ProseMirror-menubar {
+  background: #192b3c !important;
+  border-bottom-color: #3c5267 !important;
+}
+.dark .resizable-editor-wrapper .popover-prosemirror-menu .ProseMirror-menubar::before,
+.dark .resizable-editor-wrapper .popover-prosemirror-menu .ProseMirror-icon {
+  color: #dbe9f6;
+}
+.dark .resizable-editor-wrapper .popover-prosemirror-menu .ProseMirror-icon:hover {
+  background: #2a445d;
+}
