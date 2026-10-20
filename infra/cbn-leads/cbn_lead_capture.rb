@@ -39,6 +39,16 @@ module CbnLeadCapture
     match && match[1].gsub(/\D/, '')
   end
 
+  def self.customer_text(content)
+    text = content.to_s.strip
+    return text unless text.match?(/\A[^\r\n]*AN[ÚU]NCIO DO FACEBOOK/i)
+
+    # WAHA can include the ad context again on a customer's next reply. Read
+    # only its explicit customer section, never numbers from the ad metadata.
+    section = text.match(/^[^\p{L}\p{N}\r\n]*MENSAGEM DO CLIENTE:\*{0,2}[ \t]*\r?\n(?<reply>[\s\S]*)\z/i)
+    section ? section[:reply].strip : ''
+  end
+
   def self.extract_registration(text, cpf)
     match = text.to_s.strip.match(/\A(?:(?:minha?\s+)?(?:matr[ií]cula|benef[ií]cio|nb)\s*(?:é|e)?\s*[:\-]?\s*)?([0-9][0-9.\-\/ ]{0,23}[0-9])\z/i)
     return unless match
@@ -96,11 +106,12 @@ module CbnLeadCapture
   def self.capture_reply(message, settings)
     return unless eligible?(message, settings)
     conversation = message.conversation
+    reply_text = customer_text(message.content)
     conversation.with_lock do
       state = conversation.additional_attributes[KEY]
       # A new CPF reply can answer a still-valid native CLT prompt sent before
       # installation. Only this new reply is processed; never replay old input.
-      if state.nil? && valid_cpf?(extract_cpf(message.content))
+      if state.nil? && valid_cpf?(extract_cpf(reply_text))
         # Chatwoot serializes this JSON column as a JSON string. Read both its
         # native encoding and object rows without changing stored messages.
         rule_id_sql = "(CASE WHEN json_typeof(content_attributes) = 'string' THEN (content_attributes #>> '{}')::json ELSE content_attributes END)->>'automation_rule_id'"
@@ -119,7 +130,7 @@ module CbnLeadCapture
       contact = conversation.contact
       stage = conversation.custom_attributes[STAGE]
       if stage == 'aguardando_cpf'
-        cpf = extract_cpf(message.content)
+        cpf = extract_cpf(reply_text)
         next unless valid_cpf?(cpf)
         contact.with_lock do
           saved = contact.custom_attributes['cbn_cpf'].to_s.gsub(/\D/, '')
@@ -133,7 +144,7 @@ module CbnLeadCapture
           stage!(conversation, state.merge('last_processed_id' => message.id), next_stage)
         end
       elsif stage == 'aguardando_matricula'
-        registration = extract_registration(message.content, contact.custom_attributes['cbn_cpf'].to_s.gsub(/\D/, ''))
+        registration = extract_registration(reply_text, contact.custom_attributes['cbn_cpf'].to_s.gsub(/\D/, ''))
         next unless registration
         contact.with_lock do
           existing = contact.custom_attributes['cbn_matricula_beneficio'].to_s.strip
@@ -148,7 +159,7 @@ module CbnLeadCapture
           stage!(conversation, state.merge('last_processed_id' => message.id), next_stage)
         end
       else
-        employment = extract_employment(message.content)
+        employment = extract_employment(reply_text)
         next unless employment
         contact.with_lock do
           existing = contact.custom_attributes['cbn_vinculo_servidor'].to_s

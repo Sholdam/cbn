@@ -175,3 +175,36 @@ o serviço `chatwoot-waha-worker` com os perfis `physical`, `web`, `waha` do
 compose VPS. Isso reintroduz a falha conhecida; pausar as regras afetadas se
 for necessário reverter. Não restaurar banco, remover dados ou reenviar as
 cinco saudações já entregues. Preservar configuração, incluindo regra 11.
+
+## Respostas dentro do envelope do anúncio
+
+Em 20/10/2026, o proprietário apontou coleta parada após um CPF válido. O
+WhatsApp/WAHA incluiu novamente o anúncio completo antes da resposta. O campo
+de contato estava vazio e a etapa continuava `aguardando_cpf`; não havia conflito
+de cadastro nem intervenção humana. O extrator de CPF aceita uma resposta
+isolada, e por isso rejeitava corretamente os metadados adicionais.
+
+`customer_text` agora conserva mensagens comuns e, quando há o cabeçalho conhecido
+de anúncio na primeira linha, retorna exclusivamente o corpo após o marcador
+explícito “MENSAGEM DO CLIENTE”. Envelope sem marcador retorna vazio. A rotina
+não procura números no ID, título, descrição ou link do anúncio. CPF, matrícula,
+vínculo e recuperação de solicitação CLT antiga usam esse corpo. Validações e
+controles anteriores permanecem.
+
+Fonte implantada SHA-256:
+`fca0e8ad0fcb99ea37aad1aa1b1665856b8e230c66ac078946ca7d220111d7c4`.
+Backup código/configuração:
+`/opt/cbn/infra/cbn-leads/ad-reply-backup-20261020T114845Z/`.
+Somente worker recriado; configuração, regras, frontend e WAHA preservados.
+
+Conferências: sintaxe Ruby; leitura isolada da seção real, sem imprimir CPF;
+validação do documento e ausência de conflito; `git diff --check`. Sem suíte
+automatizada ou envio de teste. Recuperação pontual autorizada pelo pedido de
+correção: CPF recebido foi capturado e salvo, e a pergunta nativa 9 foi retomada
+sob trava/guarda de etapa e intervenção humana. Uma única pergunta de matrícula,
+com remetente automático, confirmada como `delivered`; etapa `aguardando_matricula`.
+Sem reemitir o evento de entrada ou varrer/reprocessar outras conversas.
+
+Rollback: restaurar somente o initializer desse backup e recriar worker com os
+perfis usuais. Não restaurar banco/configuração, remover o CPF capturado ou
+reenviar a pergunta já entregue. Isso reintroduz a limitação de leitura do envelope.

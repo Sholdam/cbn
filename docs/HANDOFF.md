@@ -1,5 +1,12 @@
 # Handoff — CBN Crédito
 
+## Resposta de cadastro dentro do anúncio — 20/10/2026
+
+- Cliente respondeu CPF válido dentro do envelope WAHA “ANÚNCIO DO FACEBOOK / MENSAGEM DO CLIENTE”. Extrator ancorado no documento inteiro não reconhecia a resposta; fluxo permanecia `aguardando_cpf`.
+- `CbnLeadCapture.customer_text` agora isola somente a seção explícita do cliente quando o texto começa pelo cabeçalho conhecido. CPF, matrícula e vínculo usam esse corpo; metadados do anúncio não são tratados como dados cadastrais. Mensagens simples conservadas.
+- Initializer atualizado com backup e recriação somente do worker. Configuração, regras, frontend e WhatsApp preservados. Caso indicado recuperado individualmente, com CPF salvo e pergunta nativa de matrícula confirmada como `delivered`, aguardando matrícula.
+- [Detalhes e rollback](CRM_COLATINA_CADASTRO_ETIQUETAS_2026-10-19.md#respostas-dentro-do-envelope-do-anúncio).
+
 ## Formatação WhatsApp — 20/10/2026
 
 - Retorno “não vi diferença”: barra padrão estava oculta até selecionar texto. Camada `Dockerfile.toolbar`/`toolbar.css` agora mantém controles visíveis acima do campo. Nome CSS com hash novo evita cache; web foi recriado, WAHA/worker preservados. Prévia aplicada na aba aberta sem recarregar rascunho, barra 34 px/botões 28 px conferidos por DOM e captura. Compose web usa `cbn/chatwoot:4.16.2-cbn-whatsapp-toolbar-20261020`.

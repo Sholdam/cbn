@@ -1,5 +1,10 @@
 # Backlog — checkpoint oficial de 17/07/2026
 
+## Coleta em respostas com anúncio — 20/10/2026
+
+- Corrigida leitura da seção “MENSAGEM DO CLIENTE” nos envelopes WAHA para CPF, matrícula e vínculo. Mantém validação, proteção contra conflitos, expiração e idempotência.
+- Recuperação limitada à conversa apontada pelo proprietário; sem replay geral de eventos ou histórico. [Runbook](CRM_COLATINA_CADASTRO_ETIQUETAS_2026-10-19.md#respostas-dentro-do-envelope-do-anúncio).
+
 ## Compatibilidade de formatação WhatsApp — 20/10/2026
 
 - Refinamento visual após retorno do proprietário: barra de formatação sempre visível no compositor, com contraste e botões maiores. Imagem persistente `cbn/chatwoot:4.16.2-cbn-whatsapp-toolbar-20261020`, CSS com hash novo e conferência visual na aba aberta. Sem envio de mensagem.
