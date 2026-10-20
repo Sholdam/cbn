@@ -1,5 +1,12 @@
 # Handoff — CBN Crédito
 
+## Formatação WhatsApp — 20/10/2026
+
+- Investigação pelo plugin CBN CRM encontrou mistura de sintaxes e marcadores com espaços/quebras. Editor da caixa WAHA 5 usa capacidades WhatsApp, com regras de digitação/colagem para negrito, itálico e tachado; rascunhos permanecem CommonMark.
+- Conversor de saída WAHA passa a usar árvore `markdown-it`, protegendo código/links e tratando listas, citação, linhas e estilos combinados. Imagens web e WAHA atualizadas no compose, preservando worker e automações.
+- Build concluído, CRM/JS 200 e sessão `WORKING`. Sem envio de teste a clientes ou suíte automatizada; confirmar aparência no próximo envio orgânico. Recarregar navegador para novo compositor.
+- [Fontes, implantação e rollback](CRM_WHATSAPP_FORMATTING_2026-10-20.md).
+
 ## Correção do envio automático Colatina — 19/10/2026
 
 - Cinco novos leads reconhecidos e etiquetados não receberam saudação. A consulta SQL do complemento tratava `messages.content_attributes` como objeto, mas Chatwoot serializa esse campo JSON como string. A procura não encontrava a mensagem recém-criada e levantava erro dentro da transação, desfazendo o envio.

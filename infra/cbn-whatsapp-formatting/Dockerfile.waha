@@ -1,0 +1,4 @@
+ARG CBN_WEB=cbn/chatwoot:4.16.2-cbn-whatsapp-formatting-20261020
+FROM ${CBN_WEB} AS formatter
+FROM devlikeapro/waha@sha256:41283bd89922ec3f722e5a772b844c451634d4aa72e9c34043c3480184f970fe
+COPY --from=formatter /app/cbn-whatsapp-formatting.cjs /app/dist/apps/chatwoot/messages/to/whatsapp/markdown.js

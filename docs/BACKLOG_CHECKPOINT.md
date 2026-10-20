@@ -1,5 +1,10 @@
 # Backlog — checkpoint oficial de 17/07/2026
 
+## Compatibilidade de formatação WhatsApp — 20/10/2026
+
+- Ajuste do editor da caixa WAHA e conversor de saída implantado. Suporte à sintaxe WhatsApp na digitação/colagem e conversão CommonMark para envio com espaços/linhas tratados.
+- Build e disponibilidade conferidos; nenhum envio de teste. Acompanhar próximo envio orgânico para confirmar aparência no cliente WhatsApp. [Runbook](CRM_WHATSAPP_FORMATTING_2026-10-20.md).
+
 ## Correção operacional Colatina — 19/10/2026
 
 - Resolvida falha de serialização na identificação de perguntas automáticas. Complemento usa a mensagem retornada pelo serviço nativo, conservando idempotência e roteiro ADS.
