@@ -61,8 +61,11 @@ export class Crm {
       labels: c.labels, last_messages: (c.messages || []).map(safeMessage) };
   }
   async getConversation(args) { return this.summary(await this.conversation(args.conversation_id)); }
+  schedulesRoute(conversation_id) {
+    return `/site/cbn-api/accounts/${this.config.accountId}/conversations/${conversation_id}/scheduled_messages`;
+  }
   async schedules({ conversation_id }) {
-    return this.http.request(`/cbn/v1/accounts/${this.config.accountId}/conversations/${conversation_id}/scheduled_messages`);
+    return this.http.request(this.schedulesRoute(conversation_id));
   }
   async automations() { return this.http.request(this.account('/automation_rules')); }
   async upload({ file_path }) {
@@ -193,7 +196,7 @@ export class Crm {
   async buildRequest(row) {
     const a = row.action, c = a.conversation_id;
     const messagesRoute = this.account(`/conversations/${c}/messages`);
-    const schedulesRoute = `/cbn/v1/accounts/${this.config.accountId}/conversations/${c}/scheduled_messages`;
+    const schedulesRoute = this.schedulesRoute(c);
     switch (a.kind) {
       case 'send_message': return { route: messagesRoute, options: { method: 'POST', body: { content: a.content, message_type: 'outgoing', private: a.private,
         ...(a.reply_to ? { content_attributes: { in_reply_to: a.reply_to } } : {}) } } };

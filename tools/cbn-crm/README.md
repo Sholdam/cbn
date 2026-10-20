@@ -57,6 +57,12 @@ usam `YYYY-MM-DDTHH:mm` em **America/Sao_Paulo**. Limites/restrições e autoria
 do agendador nativo permanecem os do CRM. Regras novas ficam inativas por padrão;
 ativá-las pode disparar envios futuros e exige autorização correspondente.
 
+Agendamento usa a mesma API da tela do CRM:
+`/site/cbn-api/accounts/{conta}/conversations/{conversa}/scheduled_messages`.
+O endereço antigo `/cbn/v1/...` retorna 404 na VPS atual. Se uma tentativa antiga
+ficou `unknown`/`dispatching`, confira a lista antes de preparar nova operação;
+a atualização não repete nem desbloqueia ações antigas automaticamente.
+
 ## Áudio offline
 
 Áudio inline é um bloco MCP válido, mas sua reprodução/compreensão depende do

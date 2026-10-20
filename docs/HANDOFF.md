@@ -1,5 +1,11 @@
 # Handoff — CBN Crédito
 
+## Agendamento do plugin — 20/10/2026
+
+- Falha 404 identificada como rota antiga `/cbn/v1/...`. Frontend/proxy/API atuais usam `/site/cbn-api/...`.
+- Consulta, criação, alteração e cancelamento usam `Crm.schedulesRoute`, com autenticação/UUID e guardas existentes preservados. Consulta autenticada à conversa técnica confirmou 200 na rota atual contra 404 na antiga.
+- Correção local do plugin; nenhum agendamento de teste, envio, alteração da fila da campanha ou deploy na VPS. Não foram executados testes automatizados. [Detalhes e instalação](CRM_PLUGIN_SCHEDULE_FIX_2026-10-20.md).
+
 ## Plugin CBN CRM — 16/10/2026
 
 - Criado `tools/cbn-crm`, CLI/MCP stdio com SDK MCP oficial v2, 13 ferramentas

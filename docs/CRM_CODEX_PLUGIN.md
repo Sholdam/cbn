@@ -28,7 +28,7 @@ não autorizam contatos ou campanhas não solicitados.
 
 - Chatwoot Application API: perfil, caixas, contatos, conversas, mensagens,
   multipart `attachments[]`, status e regras nativas de automação.
-- Agendamentos usam `/cbn/v1/accounts/{account}/conversations/{conversation}/scheduled_messages`
+- Agendamentos usam `/site/cbn-api/accounts/{account}/conversations/{conversation}/scheduled_messages`
   da implementação CBN existente, com UUID estável e horário de Brasília.
 - A VPS filtra cabeçalhos com underscore. Usar `api-access-token`, que Rack
   normaliza para `HTTP_API_ACCESS_TOKEN`; autenticação validada no domínio público.

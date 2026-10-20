@@ -109,7 +109,7 @@ test('schedules use CBN native API and stable UUID; automation defaults to inact
   const f = await fixture(t), op = randomUUID();
   const p = await f.crm.prepare({ operation_id: op, action: { kind: 'schedule_create', conversation_id: 10, content: 'Olá sintético', scheduled_local: '2026-10-20T14:00' } });
   await execute(f.crm, p.action_id);
-  assert.equal(f.posts[0].url.pathname, '/cbn/v1/accounts/1/conversations/10/scheduled_messages');
+  assert.equal(f.posts[0].url.pathname, '/site/cbn-api/accounts/1/conversations/10/scheduled_messages');
   assert.equal(JSON.parse(f.posts[0].req.body).request_id, op);
   const parsed = prepareSchema.parse({ operation_id: randomUUID(), action: { kind: 'automation_create', rule: { name: 'Regra teste', event_name: 'message_created', conditions: [{ attribute_key: 'inbox_id', filter_operator: 'equal_to', values: [5] }], actions: [{ action_name: 'send_message', action_params: ['Sintético'] }] } } });
   assert.equal(parsed.action.rule.active, false);

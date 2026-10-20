@@ -1,5 +1,10 @@
 # Backlog — checkpoint oficial de 17/07/2026
 
+## Correção de agendamento pelo plugin — 20/10/2026
+
+- Endereço do agendador alinhado à API pública `/site/cbn-api/...`, compartilhado por todas as operações. Rota atual respondeu 200 autenticado na conversa técnica; antiga retornou 404.
+- Sem criação de agendamento, envio ou mudança na fila dos 20 leads. Guardas de autoria/UUID/estado incerto preservadas. [Runbook](CRM_PLUGIN_SCHEDULE_FIX_2026-10-20.md).
+
 ## Integração Codex ↔ CRM — 16/10/2026
 
 - **Implementação e instalação local concluídas:** plugin privado `CBN CRM`,
