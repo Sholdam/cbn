@@ -1,5 +1,10 @@
 # Backlog — checkpoint oficial de 17/07/2026
 
+## Retomada manual do bot — 20/10/2026
+
+- Atalho “Retomar bot” publicado no cabeçalho. Retoma a coleta conhecida, aproveita dados já salvos e pode repetir a pergunta pendente, mantendo validações e proteção contra duplicação.
+- Rota/auth/backend carregados e botão conferido no navegador. Primeiro uso de envio pelo botão depende do clique explícito do operador; nenhum disparo de teste realizado. [Runbook](CRM_BOT_RESUME_2026-10-20.md).
+
 ## Coleta em respostas com anúncio — 20/10/2026
 
 - Corrigida leitura da seção “MENSAGEM DO CLIENTE” nos envelopes WAHA para CPF, matrícula e vínculo. Mantém validação, proteção contra conflitos, expiração e idempotência.

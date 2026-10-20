@@ -65,6 +65,8 @@ module CbnLeadCapture
   end
 
   def self.human_replied?(conversation, after_id)
+    return false if Thread.current[:cbn_manual_resume_conversation_id] == conversation.id
+
     conversation.messages.outgoing.where(sender_type: 'User', private: false).where('id > ?', after_id).exists?
   end
 
@@ -222,14 +224,16 @@ module CbnLeadCapture
           CbnLeadCapture.stage!(@conversation, state.merge('prompt_id' => prompt.id), waiting_stage)
         else
           # Rule 5 also handles INSS: leave that existing flow unchanged.
-          if role == 'clt' && !incoming&.content.to_s.match?(/CLT/i) && !@conversation.label_list.include?('clt')
+          if role == 'clt' && !incoming&.content.to_s.match?(/CLT/i) && !@conversation.label_list.include?('clt') &&
+             Thread.current[:cbn_manual_resume_conversation_id] != @conversation.id
             super
             next
           end
           next unless CbnLeadCapture.eligible?(incoming, settings)
           CbnLeadCapture.mirror_labels!(@conversation)
           CbnLeadCapture.origin!(@conversation, incoming)
-          next if @conversation.additional_attributes[CbnLeadCapture::KEY].present?
+          next if @conversation.additional_attributes[CbnLeadCapture::KEY].present? &&
+                  Thread.current[:cbn_manual_resume_conversation_id] != @conversation.id
           next if CbnLeadCapture.human_replied?(@conversation, incoming.id)
           prompt = CbnLeadCapture.native_prompt!(super, @conversation, @rule)
           state = { 'kind' => role, 'started_at' => Time.current.iso8601, 'prompt_id' => prompt.id, 'trigger_id' => incoming.id }

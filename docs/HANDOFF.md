@@ -1,5 +1,12 @@
 # Handoff — CBN Crédito
 
+## Atalho Retomar bot — 20/10/2026
+
+- Botão no cabeçalho das conversas CBN/WAHA, junto a Resolver, para retomada explícita de coleta Colatina/CLT. Aproveita dados cadastrados e respostas válidas pendentes; pergunta só a etapa necessária. Revisões de cadastro, bloqueio de contato, conversa fechada e regra desativada impedem envio.
+- Endpoint autenticado nativo e política da conversa, trava/UUID/cooldown e registro mínimo de ator/horário/etapa. Exceção à intervenção humana limitada à chamada manual, sem relaxar o fluxo automático normal. Remetente continua automático.
+- Imagem `cbn/chatwoot:4.16.2-cbn-bot-resume-20261020` implantada; web/worker recarregados, WAHA/configuração preservados. Build, sintaxe, rota e botão visível conferidos; sem suíte automatizada ou envio de teste pelo botão.
+- [Detalhes, limites e rollback](CRM_BOT_RESUME_2026-10-20.md).
+
 ## Resposta de cadastro dentro do anúncio — 20/10/2026
 
 - Cliente respondeu CPF válido dentro do envelope WAHA “ANÚNCIO DO FACEBOOK / MENSAGEM DO CLIENTE”. Extrator ancorado no documento inteiro não reconhecia a resposta; fluxo permanecia `aguardando_cpf`.

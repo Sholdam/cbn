@@ -1,0 +1,21 @@
+FROM cbn/chatwoot:4.16.2-cbn-whatsapp-toolbar-20261020 AS baseline
+FROM node:24-alpine AS assets
+WORKDIR /app
+COPY --from=baseline /app /app
+RUN apk add --no-cache python3 git && corepack enable && corepack prepare pnpm@10.2.0 --activate
+COPY patch-resume-ui.py /tmp/patch-resume-ui.py
+COPY CbnBotResume.vue /app/app/javascript/dashboard/components-next/cbn-leads/CbnBotResume.vue
+RUN python3 /tmp/patch-resume-ui.py && pnpm install --frozen-lockfile --ignore-scripts
+ENV NODE_OPTIONS=--max-old-space-size=2560 RAILS_ENV=production SECRET_KEY_BASE_DUMMY=1
+RUN pnpm exec vite build --mode production
+FROM baseline
+COPY --from=assets /app/public/vite /app/public/vite
+COPY --from=assets /app/app/javascript/dashboard/components/widgets/conversation/ConversationHeader.vue /app/app/javascript/dashboard/components/widgets/conversation/ConversationHeader.vue
+COPY --from=assets /app/app/javascript/dashboard/components-next/cbn-leads/CbnBotResume.vue /app/app/javascript/dashboard/components-next/cbn-leads/CbnBotResume.vue
+COPY --from=assets /app/config/routes.rb /app/config/routes.rb
+COPY cbn_lead_capture.rb /app/config/initializers/cbn_lead_capture.rb
+COPY lead_bot_resume_service.rb /app/app/services/cbn/lead_bot_resume_service.rb
+COPY bot_resumes_controller.rb /app/app/controllers/api/v1/accounts/conversations/bot_resumes_controller.rb
+COPY --from=baseline /app/public/vite /tmp/cbn-old-vite
+RUN ruby -rjson -e 'm=JSON.parse(File.read("/tmp/cbn-old-vite/.vite/manifest.json")); old=m.values.find{|e|e["isEntry"] && e["file"].start_with?("assets/dashboard-")}; n=JSON.parse(File.read("/app/public/vite/.vite/manifest.json")); cur=n.values.find{|e|e["isEntry"] && e["file"].start_with?("assets/dashboard-")}; File.open("/app/public/vite/"+cur["css"].first,"a"){|f|f.write("\n"+File.read("/tmp/cbn-old-vite/"+old["css"].first))}'
+RUN ruby -c /app/config/initializers/cbn_lead_capture.rb && ruby -c /app/app/services/cbn/lead_bot_resume_service.rb && ruby -c /app/app/controllers/api/v1/accounts/conversations/bot_resumes_controller.rb
