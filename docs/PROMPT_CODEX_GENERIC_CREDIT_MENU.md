@@ -23,3 +23,10 @@ Não disparar para a conversa de exemplo nem reprocessar histórico. Não criar
 envios de teste ou executar suítes não solicitadas. Conferir sintaxe, fontes
 publicadas, regras, carregamento e disponibilidade. Registrar limites, backup,
 retorno e estado final em documentação sem PII. Commit/push em branch própria.
+
+Retorno posterior do proprietário: não conseguiu ativar o bot nessa conversa.
+Corrigir o atalho Retomar bot para escolher coleta existente ou menu genérico,
+iniciar manualmente o menu anterior à ativação e retomar somente as opções se
+já iniciado. Preservar autenticação/trava/UUID/cooldown/auditoria. Está autorizado
+o envio real da saudação e menu à conversa indicada como solução do pedido;
+isso não autoriza replay geral ou mensagens de teste.

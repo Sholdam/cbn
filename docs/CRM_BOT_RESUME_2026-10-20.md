@@ -1,5 +1,11 @@
 # Retomar bot no CRM
 
+## Ampliação para o menu inicial — 22/10/2026
+
+O botão agora também inicia/retoma o menu de crédito em conversas sem coleta/campanha. Primeiro clique envia saudação e menu; cliques posteriores reenviam apenas o menu, preservando trava, UUID e cooldown. Conversa anterior à ativação pode iniciar mediante clique explícito. Atendimento indicado pelo proprietário acionado pela rota autenticada; duas mensagens entregues. [Publicação atual e rollback](CRM_GENERIC_CREDIT_MENU_2026-10-22.md).
+
+As seções abaixo descrevem a coleta original; o limite de uma mensagem por clique aplica-se à coleta e à retomada de menu já iniciado. A primeira iniciação do menu envia duas mensagens.
+
 ## Pedido
 
 O proprietário pediu um atalho para continuar o atendimento automático quando

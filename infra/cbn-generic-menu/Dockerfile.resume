@@ -1,0 +1,4 @@
+FROM cbn/chatwoot:4.16.2-cbn-scheduled-media-ui-20261020
+COPY lead_bot_resume_service.rb /app/app/services/cbn/lead_bot_resume_service.rb
+COPY cbn_generic_menu.rb /app/config/initializers/cbn_generic_menu.rb
+RUN ruby -c /app/app/services/cbn/lead_bot_resume_service.rb && ruby -c /app/config/initializers/cbn_generic_menu.rb

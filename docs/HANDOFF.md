@@ -2,9 +2,10 @@
 
 ## Menu inicial de crédito — 22/10/2026
 
+- Retorno do proprietário: atalho não iniciava menu na chegada anterior à ativação. Corrigido roteamento do serviço para coleta ou menu. Primeiro clique envia duas mensagens, retomada repete só opções; guardas de autenticação/UUID/trava/cooldown preservadas. Imagem web atual `cbn-generic-menu-resume-20261022`. Conversa indicada ativada via rota autenticada, duas mensagens `delivered`, aguardando opção. [Publicação e limites](CRM_GENERIC_CREDIT_MENU_2026-10-22.md).
 - Ativas regras nativas 12/13/14: saudação separada, menu 1–6 (INSS, SIAPE, servidor estadual/municipal, CLT, carro em garantia, outros), confirmação e uma orientação para escolha inválida. Escolha etiqueta contato/conversa e encaminha a Guilherme, preservando agente existente.
 - Complemento isolado no worker, estado/trava por conversa, sem repetição histórica ou interferência nas coletas de anúncios. Intervenção humana interrompe o menu. Textos editáveis em Automações; sem IA/API adicional.
-- Ativação 12:50:58 de Brasília. Sintaxe/carregamento/configuração/regras conferidos, CRM 200 e WAHA WORKING. Sem teste ou envio à conversa de exemplo; primeiro fluxo orgânico ainda não observado. [Detalhes e rollback](CRM_GENERIC_CREDIT_MENU_2026-10-22.md).
+- Ativação automática 12:50:58 de Brasília. Sintaxe/carregamento/configuração/regras conferidos, CRM 200 e WAHA WORKING. Envio real posterior via retomada, conforme acima; seleção pelo cliente ainda não observada. [Detalhes e rollback](CRM_GENERIC_CREDIT_MENU_2026-10-22.md).
 
 ## Agendamento com anexos — 20/10/2026
 

@@ -1,5 +1,20 @@
 # Menu de crédito para chegada direta — 22/10/2026
 
+## Correção do atalho Retomar bot — 22/10/2026
+
+O atalho anterior só procurava coletas de CPF/matrícula e não encontrava fluxo na chegada direta anterior à ativação. O serviço autenticado agora direciona conversas sem coleta/campanha para o menu. Conversas de campanhas continuam no serviço de coleta existente.
+
+- Primeiro clique: saudação e opções em duas mensagens, inclusive para chegada anterior à ativação. Clique posterior com menu iniciado: somente as opções. Menu concluído apenas informa conclusão.
+- Preservados autenticação/política da conversa, usuário humano, escopo conta 1/caixa 5, bloqueio de contato, conversa aberta/Secretária, UUID, trava, cooldown de 30 segundos e auditoria de ator/etapa/mensagem. Configuração e regra pausadas continuam impedindo envio.
+- Clique explícito pode retomar após intervenção humana e renova a janela do menu; as respostas antigas não são reprocessadas. A próxima resposta é comparada à nova pergunta. Não remove etiquetas nem altera os dados cadastrais.
+- Imagem web atual: `cbn/chatwoot:4.16.2-cbn-generic-menu-resume-20261022`, derivada da imagem de anexos agendados existente. Somente backend/initializer adicionados; frontend e anexos preservados. Worker carrega o mesmo initializer por volume. WAHA não reiniciado; configurações próprias e de coleta preservadas.
+- Fonte atual do menu SHA256 `5f6a85d1b1b83d0b50b9c3f2ad6064bc8d2281774779b63fd60800dd9965e8fa`. Build/sintaxe e carregamento conferidos. Backup/manifesto: `/opt/cbn/builds/generic-menu-resume-20261022/`, backup `before-20261022T160853Z/`.
+- Atendimento real solicitado pelo proprietário na conversa 445, via rota autenticada `bot_resume`: mensagens 4980 e 4981, regra 12, remetente automático sem assinatura humana, ambas `delivered`. Etapa `aguardando_opcao`, auditoria registrada às `2026-10-22T16:09:39Z`. Nenhuma mensagem de teste ou replay geral. A seleção do cliente ainda não foi observada.
+
+Build reproduzível: usar `infra/cbn-generic-menu/Dockerfile.resume` em contexto contendo `lead_bot_resume_service.rb` atualizado de `infra/cbn-leads/` e `cbn_generic_menu.rb` desta pasta.
+
+Retorno desta correção: restaurar somente a imagem web anterior `cbn/chatwoot:4.16.2-cbn-scheduled-media-ui-20261020` e o initializer do backup dessa correção, recriando web/worker com `--no-deps`. Preservar as mensagens já entregues e o estado; não reenviá-las. O retorno completo do menu está ao final do documento.
+
 ## Escopo e comportamento
 
 Pedido do proprietário: saudação seguida de outra mensagem com opções para quem chega sem produto definido. Implementação isolada em `infra/cbn-generic-menu/`, com textos em regras nativas e remetente automático, sem assinatura de atendente.
@@ -60,7 +75,7 @@ Manter o marcador `[CBN_GENERIC_MENU_V1]` na descrição das três regras. Ele b
 
 Pausar a regra 12 impede novos menus. Pausar a regra 13 impede concluir/confirmar escolhas; regra 14 pausada impede orientação. Para pausar todo o fluxo, definir `active: false` na configuração própria (gravação atômica). Não mexer na configuração `cbn-lead-capture-config.json`.
 
-O botão **Retomar bot** existente continua específico das coletas CPF/matrícula; esta tarefa não alterou seu escopo. Mensagem não reconhecida após a única orientação e menu expirado ficam para atendimento humano.
+O botão **Retomar bot** também inicia ou retoma o menu desde a correção descrita no início deste documento. Mensagem não reconhecida após a única orientação e menu expirado ficam para atendimento humano ou retomada explícita.
 
 ## Implantação e conferências
 

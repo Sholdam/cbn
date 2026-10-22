@@ -40,15 +40,21 @@ class Cbn::LeadBotResumeService
   private
 
   def validate_scope!
-    raise Unavailable, 'A automação de coleta está desativada.' unless @settings && @settings['active']
     unless @conversation.account_id == 1 && @conversation.inbox_id == 5 && @actor.is_a?(User) && @actor.id != 7 &&
            @conversation.account.users.exists?(id: @actor.id)
       raise Unavailable, 'Este atendimento não possui um fluxo de coleta disponível.'
     end
+    generic_active = generic_menu? && CbnGenericMenu.config&.fetch('active', false)
+    raise Unavailable, 'A automação de atendimento está desativada.' unless (@settings && @settings['active']) || generic_active
   end
 
   def stage
+    return @conversation.custom_attributes[CbnGenericMenu::STAGE] if generic_menu?
     @conversation.custom_attributes[CbnLeadCapture::STAGE]
+  end
+
+  def generic_menu?
+    defined?(CbnGenericMenu) && CbnGenericMenu.manual_candidate?(@conversation)
   end
 
   def state
@@ -110,6 +116,7 @@ class Cbn::LeadBotResumeService
   end
 
   def resume!
+    return CbnGenericMenu.resume!(@conversation) if generic_menu?
     unless state
       rule = initial_rule
       labels = rule.actions.select { |item| item['action_name'] == 'add_label' }.flat_map { |item| item['action_params'] }

@@ -2,6 +2,7 @@
 
 ## Menu de atendimento inicial — 22/10/2026
 
+- Corrigido botão Retomar bot para iniciar menu em conversa anterior à ativação e retomar somente as opções. Rota autenticada usada no atendimento real solicitado: saudação e menu entregues, aguardando resposta. Sem envio de teste. [Detalhes](CRM_GENERIC_CREDIT_MENU_2026-10-22.md).
 - Criadas e ativadas regras 12/13/14 e complemento isolado: saudação, menu de seis produtos, etiqueta e encaminhamento humano após seleção. Guardas contra repetição, histórico, intervenção humana e cruzamento com anúncios.
 - Conferidos sintaxe, carregamento e disponibilidade; sem suíte ou disparo de teste. Confirmar entrega/resposta no primeiro atendimento orgânico. [Runbook](CRM_GENERIC_CREDIT_MENU_2026-10-22.md).
 

@@ -39,6 +39,55 @@ module CbnGenericMenu
       !conversation.messages.outgoing.where(private: false).exists?
   end
 
+  # Manual initiation is an explicit operator action, including pre-activation
+  # arrivals. Never replay their replies or take over a campaign collection.
+  def self.manual_candidate?(conversation)
+    return false if conversation.additional_attributes[CbnLeadCapture::KEY].present?
+    return true if conversation.additional_attributes[KEY].present?
+    return false if (conversation.label_list & PRODUCT_LABELS).any?
+    !conversation.messages.incoming.where(private: false).reorder(id: :desc).limit(100).any? do |message|
+      message.content.to_s.match?(/AN[ÚU]NCIO DO FACEBOOK|Vim pelo an[úu]ncio|Receber oferta!/i)
+    end
+  end
+
+  def self.resume!(conversation)
+    unavailable = Cbn::LeadBotResumeService::Unavailable
+    settings = config
+    raise unavailable, 'O menu inicial está desativado.' unless settings && settings['active']
+    rule = conversation.account.automation_rules.find_by(id: settings.fetch('rules').fetch('menu'), active: true)
+    raise unavailable, 'A regra do menu está desativada. Confira Configurações → Automação.' unless rule
+    chat_id = conversation.contact.custom_attributes['waha_whatsapp_chat_id'].to_s
+    if chat_id == 'whatsapp.integration' || chat_id.end_with?('@g.us', '@broadcast', '@newsletter') || !conversation.account.active?
+      raise unavailable, 'O menu está disponível apenas para atendimento direto a clientes.'
+    end
+    incoming = conversation.messages.incoming.where(private: false, sender_type: 'Contact').reorder(id: :desc).first
+    raise unavailable, 'Não há mensagem de cliente para iniciar o menu.' unless incoming
+    state = conversation.additional_attributes[KEY]
+    if state && conversation.custom_attributes[STAGE] == 'concluido'
+      return { message: 'A opção já foi registrada. O atendimento está com a equipe.' }
+    end
+    actions = rule.actions
+    unless actions.length == 2 && actions.all? { |action| action['action_name'] == 'send_message' }
+      raise unavailable, 'O menu precisa de duas mensagens: saudação e opções. Revise a automação.'
+    end
+    selected_actions = state ? actions.last(1) : actions
+    messages = selected_actions.map do |action|
+      service = AutomationRules::ActionService.new(rule, conversation.account, conversation)
+      prompt = service.send(:send_message, action.fetch('action_params'))
+      unless prompt.is_a?(Message) && prompt.persisted? && prompt.conversation_id == conversation.id &&
+             prompt.outgoing? && !prompt.private? && prompt.sender_type.nil? && prompt.content_attributes['automation_rule_id'].to_i == rule.id
+        raise unavailable, 'Não foi possível criar o menu. Confira a conversa antes de tentar novamente.'
+      end
+      prompt
+    end
+    fresh = (state || {}).except('reminder_id', 'last_processed_id').merge(
+      'started_at' => Time.current.iso8601, 'trigger_id' => incoming.id, 'prompt_id' => messages.last.id)
+    fresh['greeting_id'] = messages.first.id unless state
+    state!(conversation, fresh, 'aguardando_opcao')
+    { message: state ? 'Menu retomado. As opções foram encaminhadas para envio.' : 'Bot iniciado. A saudação e as opções foram encaminhadas para envio.',
+      message_id: messages.last.id, message_ids: messages.map(&:id) }
+  end
+
   def self.state!(conversation, state, stage)
     conversation.update!(additional_attributes: conversation.additional_attributes.merge(KEY => state),
                          custom_attributes: conversation.custom_attributes.merge(STAGE => stage))
