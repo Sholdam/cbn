@@ -1,5 +1,10 @@
 # Backlog — checkpoint oficial de 17/07/2026
 
+## Menu de atendimento inicial — 22/10/2026
+
+- Criadas e ativadas regras 12/13/14 e complemento isolado: saudação, menu de seis produtos, etiqueta e encaminhamento humano após seleção. Guardas contra repetição, histórico, intervenção humana e cruzamento com anúncios.
+- Conferidos sintaxe, carregamento e disponibilidade; sem suíte ou disparo de teste. Confirmar entrega/resposta no primeiro atendimento orgânico. [Runbook](CRM_GENERIC_CREDIT_MENU_2026-10-22.md).
+
 ## Anexos no agendamento — 20/10/2026
 
 - Tela, API, dispatcher e plugin atualizados para arquivos com ou sem texto; sem migração ou mudança de credenciais. Builds/sintaxe e disponibilidade conferidos, sem disparo de teste. [Runbook](CRM_SCHEDULE_ATTACHMENTS_2026-10-20.md).

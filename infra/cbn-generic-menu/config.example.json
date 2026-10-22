@@ -1,0 +1,14 @@
+{
+  "active": false,
+  "enabled_at": "2026-10-22T00:00:00Z",
+  "fallback_agent_id": 1,
+  "rules": { "menu": 12, "confirmation": 13, "reminder": 14 },
+  "choices": [
+    { "number": 1, "key": "inss", "label": "inss", "aliases": ["inss", "beneficio inss", "recebo beneficio do inss"] },
+    { "number": 2, "key": "siape", "label": "siape", "aliases": ["siape", "servidor federal", "servidor publico federal"] },
+    { "number": 3, "key": "servidor_publico", "label": "servidor-publico", "aliases": ["prefeitura", "servidor municipal", "servidor estadual", "servidor publico", "governo"] },
+    { "number": 4, "key": "clt", "label": "clt", "aliases": ["clt", "carteira assinada", "trabalho com carteira assinada"] },
+    { "number": 5, "key": "garantia_veiculo", "label": "garantia-veiculo", "aliases": ["carro", "carro em garantia", "emprestimo com carro em garantia"] },
+    { "number": 6, "key": "outros", "label": "outros-assuntos", "aliases": ["outros", "outros assuntos", "atendente", "falar com atendente"] }
+  ]
+}
