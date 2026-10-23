@@ -1,5 +1,9 @@
 # Backlog — checkpoint oficial de 17/07/2026
 
+## Indisponibilidade simultânea — 23/10/2026
+
+- CRM/site retornaram espontaneamente; HTTP 200 e WhatsApp WORKING confirmados. Reinício do VPS registrado às 15h47 de Brasília, causa não comprovada. Sem intervenção remota ou mudança de configuração. [Registro](CRM_SITE_INCIDENT_2026-10-23.md).
+
 ## Menu de atendimento inicial — 22/10/2026
 
 - Corrigido botão Retomar bot para iniciar menu em conversa anterior à ativação e retomar somente as opções. Rota autenticada usada no atendimento real solicitado: saudação e menu entregues, aguardando resposta. Sem envio de teste. [Detalhes](CRM_GENERIC_CREDIT_MENU_2026-10-22.md).

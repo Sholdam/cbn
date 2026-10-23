@@ -1,5 +1,10 @@
 # Handoff — CBN Crédito
 
+## Queda simultânea CRM/site — 23/10/2026
+
+- Retorno espontâneo informado pelo proprietário e confirmado: ambos HTTP 200, WhatsApp WORKING, serviços ativos. Investigação apenas de leitura; nenhuma reinicialização ou alteração aplicada.
+- VPS iniciou novo boot às 15h47 de Brasília. Sem desligamento normal, OOM ou kernel panic nos registros consultados; causa exata não confirmada. Recursos atuais com folga. [Evidências e limites](CRM_SITE_INCIDENT_2026-10-23.md).
+
 ## Menu inicial de crédito — 22/10/2026
 
 - Retorno do proprietário: atalho não iniciava menu na chegada anterior à ativação. Corrigido roteamento do serviço para coleta ou menu. Primeiro clique envia duas mensagens, retomada repete só opções; guardas de autenticação/UUID/trava/cooldown preservadas. Imagem web atual `cbn-generic-menu-resume-20261022`. Conversa indicada ativada via rota autenticada, duas mensagens `delivered`, aguardando opção. [Publicação e limites](CRM_GENERIC_CREDIT_MENU_2026-10-22.md).
