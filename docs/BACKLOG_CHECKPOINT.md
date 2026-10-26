@@ -1,5 +1,9 @@
 # Backlog — checkpoint oficial de 17/07/2026
 
+## Reabertura de conversas resolvidas — 26/10/2026
+
+- Regra nativa 15 ativa para mensagens públicas recebidas/enviadas, inclusive anexos, na conta CBN inteira. Garantia de mensagens de outras automações depende de complemento backend, ainda não publicado por indisponibilidade do SSH. [Estado e próxima etapa](CRM_REOPEN_ON_INTERACTION_2026-10-26.md).
+
 ## Indisponibilidade simultânea — 23/10/2026
 
 - CRM/site retornaram espontaneamente; HTTP 200 e WhatsApp WORKING confirmados. Reinício do VPS registrado às 15h47 de Brasília, causa não comprovada. Sem intervenção remota ou mudança de configuração. [Registro](CRM_SITE_INCIDENT_2026-10-23.md).

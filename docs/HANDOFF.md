@@ -1,5 +1,10 @@
 # Handoff — CBN Crédito
 
+## Reabertura por interação — 26/10/2026
+
+- Regra nativa 15 criada e ativa: nova mensagem pública incoming/outgoing em conversa resolvida → aberta, em todas as caixas da conta CBN. Abrange anexos e eventos da UI/API/agendador; sem alterar atribuição ou enviar mensagens. [Configuração e limites](CRM_REOPEN_ON_INTERACTION_2026-10-26.md).
+- Garantia para mensagens geradas por outras automações ainda pendente do complemento no servidor. SSH expirou em duas tentativas, enquanto site/CRM HTTP 200; perguntado ao proprietário sobre alteração do acesso. Não declarar garantia absoluta implantada. Sem teste ou replay histórico.
+
 ## Queda simultânea CRM/site — 23/10/2026
 
 - Retorno espontâneo informado pelo proprietário e confirmado: ambos HTTP 200, WhatsApp WORKING, serviços ativos. Investigação apenas de leitura; nenhuma reinicialização ou alteração aplicada.

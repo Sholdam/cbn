@@ -1,0 +1,44 @@
+{
+  "id": 15,
+  "account_id": 1,
+  "name": "CBN — Reabrir resolvida ao enviar ou receber mensagem",
+  "description": "Reabre uma conversa resolvida quando uma nova mensagem pública é criada, recebida ou enviada, em qualquer caixa da conta CBN. Inclui anexos e envios via interface, API/plugin e agendamento que gerem message_created. Não atua em nota privada ou atividade de sistema. Não reprocessa histórico. Regras nativas não encadeiam mensagens de outras automações.",
+  "event_name": "message_created",
+  "conditions": [
+    {
+      "values": [
+        "resolved"
+      ],
+      "attribute_key": "status",
+      "query_operator": "AND",
+      "filter_operator": "equal_to",
+      "custom_attribute_type": ""
+    },
+    {
+      "values": [
+        "incoming",
+        "outgoing"
+      ],
+      "attribute_key": "message_type",
+      "query_operator": "AND",
+      "filter_operator": "equal_to",
+      "custom_attribute_type": ""
+    },
+    {
+      "values": [
+        false
+      ],
+      "attribute_key": "private_note",
+      "filter_operator": "equal_to",
+      "custom_attribute_type": ""
+    }
+  ],
+  "actions": [
+    {
+      "action_name": "open_conversation",
+      "action_params": []
+    }
+  ],
+  "created_on": 1793048717,
+  "active": true
+}
