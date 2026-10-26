@@ -10,6 +10,8 @@ O proprietário identificou que enviar mensagem a cliente em conversa resolvida 
 
 Retomada após resposta do proprietário (não sabe de alteração): SSH e conexão TCP à porta 22 continuaram expirando. Painel aberto no navegador interno redirecionou para autenticação da Hostinger, com verificação de segurança. Aba mantida para o proprietário entrar; solicitado avisar após login para consultar o VPS. Não houve mudança de firewall, senha, chave, servidor ou conexão MCP. A política nativa permanece ativa; o complemento continua pendente desse acesso.
 
+Após o proprietário confirmar login: painel autenticado mostra VPS ativo e firewall 378542 `CBN-web-ssh-20261015`, com SSH restrito a uma única origem IPv4 /32 e bloqueio geral de entrada; HTTP/HTTPS permitidos. A origem liberada difere do IP público atual desta conexão, explicando o bloqueio de acesso. Preparada no formulário a substituição somente da origem SSH pelo IP atual /32, sem salvar. Solicitada confirmação específica porque a política do navegador exige aprovação no momento de alterar acesso administrativo. Console web alternativo abriu, mas exige login próprio do servidor. Nenhuma credencial, firewall ou serviço alterado; aguardar confirmação antes de salvar. Captura para revisão em `outputs/ssh-current-ip-review-20261026.png`, fora do Git.
+
 ## Regra 15
 
 - Nome: **CBN — Reabrir resolvida ao enviar ou receber mensagem**.

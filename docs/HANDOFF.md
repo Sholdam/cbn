@@ -5,6 +5,7 @@
 - Regra nativa 15 criada e ativa: nova mensagem pública incoming/outgoing em conversa resolvida → aberta, em todas as caixas da conta CBN. Abrange anexos e eventos da UI/API/agendador; sem alterar atribuição ou enviar mensagens. [Configuração e limites](CRM_REOPEN_ON_INTERACTION_2026-10-26.md).
 - Garantia para mensagens geradas por outras automações ainda pendente do complemento no servidor. SSH expirou em duas tentativas, enquanto site/CRM HTTP 200; perguntado ao proprietário sobre alteração do acesso. Não declarar garantia absoluta implantada. Sem teste ou replay histórico.
 - Proprietário não sabe de alteração no SSH; nova tentativa e TCP 22 continuaram expirando. Hostinger aberta no navegador interno e mantida para login/verificação de segurança do proprietário. Aguardar confirmação de login para consultar o VPS; nenhuma alteração de credenciais/firewall aplicada.
+- Login Hostinger confirmado: firewall 378542 permite SSH somente de origem /32 antiga, diferente do IP público atual. Formulário preparado para trocar só essa origem; **não salvo**, aguardando confirmação específica de alteração de acesso administrativo. Console web exige login próprio do servidor. Abas mantidas no navegador interno; evidência local fora do Git.
 
 ## Queda simultânea CRM/site — 23/10/2026
 
