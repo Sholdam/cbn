@@ -2,7 +2,7 @@
   "id": 15,
   "account_id": 1,
   "name": "CBN — Reabrir resolvida ao enviar ou receber mensagem",
-  "description": "Reabre uma conversa resolvida quando uma nova mensagem pública é criada, recebida ou enviada, em qualquer caixa da conta CBN. Inclui anexos e envios via interface, API/plugin e agendamento que gerem message_created. Não atua em nota privada ou atividade de sistema. Não reprocessa histórico. Regras nativas não encadeiam mensagens de outras automações.",
+  "description": "SUBSTITUÍDA EM 26/10/2026 por política obrigatória no servidor (CbnReopenOnInteraction), carregada no web, worker WhatsApp, API e worker de operações. Toda nova mensagem pública incoming/outgoing abre a conversa resolvida, inclusive de outras automações. Esta regra fica desativada para evitar reabertura tardia por eventos em fila. Não altere para pausar a política do servidor; consulte o runbook.",
   "event_name": "message_created",
   "conditions": [
     {
@@ -40,5 +40,5 @@
     }
   ],
   "created_on": 1793048717,
-  "active": true
+  "active": false
 }

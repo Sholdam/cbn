@@ -2,7 +2,7 @@
 
 ## Reabertura de conversas resolvidas — 26/10/2026
 
-- Regra nativa 15 ativa para mensagens públicas recebidas/enviadas, inclusive anexos, na conta CBN inteira. Garantia de mensagens de outras automações depende de complemento backend, ainda não publicado por indisponibilidade do SSH. [Estado e próxima etapa](CRM_REOPEN_ON_INTERACTION_2026-10-26.md).
+- Publicada política de reabertura no modelo de mensagens dos quatro serviços Rails; inclui mensagens de bots/plugin/agendador e anexos. Regra 15 provisória desativada para evitar eventos tardios. SSH recuperado com troca apenas do IP /32 explicitamente autorizada. Carregamento/hashes e disponibilidade conferidos, sem suíte ou envio de teste. [Operação e rollback](CRM_REOPEN_ON_INTERACTION_2026-10-26.md).
 
 ## Indisponibilidade simultânea — 23/10/2026
 

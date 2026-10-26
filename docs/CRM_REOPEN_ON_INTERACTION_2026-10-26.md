@@ -1,42 +1,77 @@
 # Reabrir conversa resolvida ao enviar/receber — 26/10/2026
 
-## Pedido e estado
+## Estado final: publicado no servidor
 
-O proprietário identificou que enviar mensagem a cliente em conversa resolvida não reabria o atendimento. Pediu reabertura para qualquer interação com o cliente. Consideradas mensagens públicas recebidas/enviadas, inclusive anexos; notas internas e atividades administrativas não são interação com o cliente.
+O proprietário pediu reabertura em qualquer interação com o cliente após observar que um envio seu mantinha a conversa resolvida.
 
-**Aplicado:** regra nativa 15 ativa, na conta CBN 1, em todas as caixas, editável em Configurações → Automações. Registro exato da regra em `infra/cbn-reopen/rule.json`.
+Política `CbnReopenOnInteraction` publicada nos quatro serviços Rails criadores de mensagens: **web, worker WhatsApp, API de operações e worker de operações**. Atua em todas as caixas da conta CBN 1, diretamente no ciclo nativo de criação de `Message`. Inclui interface, plugin/API, agendador e bots/automações, sem depender de encadeamento de regras.
 
-**Pendente para a garantia absoluta:** complemento no servidor para mensagens públicas criadas por outra automação. A infraestrutura nativa ignora eventos encadeados de automações. O acesso SSH existente ao VPS expirou em duas tentativas nesta sessão; site e CRM responderam HTTP 200. Solicitado ao proprietário informar alteração/restrição do acesso. Não atribuir a indisponibilidade do SSH a queda do CRM.
+### Comportamento
 
-Retomada após resposta do proprietário (não sabe de alteração): SSH e conexão TCP à porta 22 continuaram expirando. Painel aberto no navegador interno redirecionou para autenticação da Hostinger, com verificação de segurança. Aba mantida para o proprietário entrar; solicitado avisar após login para consultar o VPS. Não houve mudança de firewall, senha, chave, servidor ou conexão MCP. A política nativa permanece ativa; o complemento continua pendente desse acesso.
+- Nova mensagem pública `incoming` ou `outgoing` em conversa resolvida: transição para `open`, com trava de linha e método nativo `open!`, antes dos eventos de mensagem e despacho de entrega.
+- Não depende de texto: inclui áudio, imagem, documento e anexo sem legenda. Reabre na criação da mensagem, sem aguardar confirmação de entrega do WhatsApp.
+- Origem humana, AgentBot ou AutomationRule não impede a reabertura. Nenhuma outra conta recebe a política.
+- Preserva a atribuição nativa do ator na entrada por caixa API e os callbacks de mudança de status. Não altera agente/time/etiquetas/cadastro diretamente.
+- Atua somente na criação. Recibos de entrega/leitura e edição de mensagem antiga não reabrem a conversa.
+- Notas privadas, atividades administrativas e mensagens internas `template` (por exemplo CSAT) não são novas interações públicas incoming/outgoing e não disparam a política.
+- Para outros estados/contas, continua o método nativo. Resolvida e silenciada ou com bot ativo abre na entrada/saída pública, conforme o pedido; o silenciamento em si não é alterado.
+- Sem replay, reabertura em massa ou nova mensagem criada pela implantação. Escritas SQL/importações que deliberadamente ignorem callbacks ficam fora desse caminho de execução.
 
-Após o proprietário confirmar login: painel autenticado mostra VPS ativo e firewall 378542 `CBN-web-ssh-20261015`, com SSH restrito a uma única origem IPv4 /32 e bloqueio geral de entrada; HTTP/HTTPS permitidos. A origem liberada difere do IP público atual desta conexão, explicando o bloqueio de acesso. Preparada no formulário a substituição somente da origem SSH pelo IP atual /32, sem salvar. Solicitada confirmação específica porque a política do navegador exige aprovação no momento de alterar acesso administrativo. Console web alternativo abriu, mas exige login próprio do servidor. Nenhuma credencial, firewall ou serviço alterado; aguardar confirmação antes de salvar. Captura para revisão em `outputs/ssh-current-ip-review-20261026.png`, fora do Git.
+## Implementação e implantação
 
-## Regra 15
+Fonte versionada: `infra/cbn-reopen/cbn_reopen_on_interaction.rb`.
 
-- Nome: **CBN — Reabrir resolvida ao enviar ou receber mensagem**.
-- Evento: `message_created`.
-- Condições em AND: `status = resolved`, `message_type IN [incoming, outgoing]`, `private_note = false`.
-- Ação: `open_conversation`, parâmetros vazios.
-- Abrange a interface, API/plugin e dispatcher de agendamento quando o evento segue o listener nativo de automações. Não depende do conteúdo de texto, portanto admite arquivo/áudio/imagem sem legenda.
-- Não muda agente/time/etiquetas/cadastro nem cria mensagens públicas; a mudança de status segue o serviço nativo, com eventos e atividade interna usuais.
-- Somente novos eventos. Não reabre em massa conversas históricas e não usa `conversation_updated`, evitando reabertura em resposta à simples alteração de dados ou à ação Resolver.
+Fonte no VPS: `/opt/cbn/infra/cbn-reopen/cbn_reopen_on_interaction.rb`, SHA256 `a49e413c4d9f0db3cf192cb7f5f436e8c12a13033750a1d2a6f76cd3fdd70508`.
 
-## Limites conhecidos
+Volume adicional nos quatro serviços do compose atual:
 
-A regra não deve ser apresentada como garantia universal para robôs. O listener nativo evita ciclos ao ignorar eventos cujo `performed_by` é `AutomationRule`; também ignora certos tipos de resposta automática de e-mail. Dependências do worker/fila continuam presentes. Sem acesso ao backend, não foi possível inspecionar a implementação instalada atual nem acrescentar uma política síncrona em todos os criadores de mensagens.
+```yaml
+- ./cbn-reopen/cbn_reopen_on_interaction.rb:/app/config/initializers/cbn_reopen_on_interaction.rb:ro
+```
 
-O complemento deverá preservar os demais estados e a autorização nativa, atuar somente em novas mensagens públicas de entrada/saída da conta CBN, fazer a transição de resolvida para aberta pelo modelo nativo e cobrir web, worker WhatsApp, API e worker de operações. Antes de publicar, inspecionar callbacks e imagens efetivas; não trocar imagens com base em versões antigas dos runbooks. Não reprocessar histórico, reenviar mensagens ou recriar dados.
+O initializer faz `Message.prepend` uma vez no boot. Inspeção instalada confirmou `after_create_commit :execute_after_create_commit_callbacks`, que chama `reopen_conversation` antes dos eventos e envio. O comportamento padrão atendia incoming, com exceções para silêncio/bot; não cobria envios públicos comuns.
 
-## Conferências e retorno
+Imagens preservadas:
 
-- Consulta nativa anterior: sem regra equivalente; regras existentes preservadas.
-- Criação inativa e ativação pelo plugin CBN CRM, com UUIDs idempotentes e referência ao pedido real do proprietário. Leitura final confirmou ID 15, condições/ação corretas e `active: true`; API aceitou `open_conversation` na versão instalada.
-- Nenhum teste ou mensagem ao cliente, alteração remota por SSH ou reabertura manual de conversa nesta tarefa. Funcionamento completo ainda não observado em nova interação real.
-- Desativar a regra 15 desfaz a política para novos eventos; conversas eventualmente reabertas por ela não devem ser fechadas em massa automaticamente.
+- Web: `cbn/chatwoot:4.16.2-cbn-generic-menu-resume-20261022`.
+- Worker WhatsApp: `cbn/chatwoot:4.16.2-cbn-contact-schedule-r5-20261006`.
+- API/worker de operações: `cbn/chatwoot:4.16.2-cbn-scheduled-media-operations-20261020`.
 
-Referências técnicas primárias consultadas, como orientação (não substituem inspeção da versão instalada):
+Recriados apenas esses quatro serviços. Banco, Redis e WAHA não reiniciados. Sem migration ou mudança de credenciais/configurações dos bots.
+
+Publicado às `2026-10-26T21:40:18Z` (18h40 de Brasília). Backup do compose e manifesto em `/opt/cbn/builds/reopen-on-interaction-20261026/`, backup `before-20261026T213853Z/`. Manifesto contém imagens e hashes das fontes/configurações preservadas.
+
+## Regra provisória 15
+
+**CBN — Reabrir resolvida ao enviar ou receber mensagem** foi criada/ativada inicialmente enquanto o SSH estava indisponível. Condições: status resolved, message_type incoming/outgoing e private_note false; ação open_conversation.
+
+Após confirmar o complemento nos quatro serviços, a regra foi **desativada** e sua descrição atualizada. Isso evita reaberturas tardias por eventos em fila depois que um atendente já voltou a encerrar a conversa. A política obrigatória está no servidor e não depende desse toggle. Registro final em `infra/cbn-reopen/rule.json`.
+
+## Recuperação do SSH
+
+Site/CRM respondiam HTTP 200 enquanto SSH/TCP 22 expiravam. Após login do proprietário no painel, o firewall 378542 `CBN-web-ssh-20261015` mostrou uma origem /32 antiga, diferente do IP público atual.
+
+O proprietário autorizou explicitamente **trocar somente esse IP**. A origem TCP 22 foi substituída pela atual /32 e sincronizada; HTTP/HTTPS e bloqueio geral preservados. Nenhuma senha/chave mudou. SSH com a chave existente voltou e permitiu implantar.
+
+O console web alternativo exigia login próprio e não foi usado para comandos. Capturas de revisão/aplicação em `outputs/ssh-current-ip-review-20261026.png` e `outputs/ssh-current-ip-applied-20261026.png`, fora do Git.
+
+## Conferências e limites
+
+- Ruby -c aprovado antes da implantação; git diff --check conferido.
+- Nos quatro serviços, inspeção Rails confirmou método pertencendo ao novo módulo, original disponível via super e callback nativo preservado. Hash do initializer igual ao publicado em cada container; todos em execução.
+- Fontes/configurações dos bots de coleta/menu preservadas por hashes. Regra 15 consultada e confirmada inativa após substituição.
+- Site e CRM HTTP 200; WhatsApp WORKING após implantação.
+- Nenhuma suíte, simulação de atendimento ou mensagem de teste. Efeito funcional completo ainda não observado em uma nova interação real. Conferências de carregamento/sintaxe não são teste de atendimento ou garantia de disponibilidade do canal.
+
+## Retorno
+
+1. Remover somente o volume do novo initializer nos quatro serviços e recriá-los com --no-deps. Não restaurar compose inteiro se outras tarefas o modificaram depois.
+2. Para voltar à cobertura parcial por automação, reativar regra 15. Não cobre mensagens de outras automações e pode sofrer atraso da fila.
+3. Preservar estados já alterados; não encerrar conversas em massa para desfazer reaberturas.
+4. A troca do IP SSH é independente do recurso. Não restaurar automaticamente a origem antiga, que não corresponde à conexão atual.
+
+Referências primárias usadas como orientação, complementadas pela inspeção instalada:
 
 - [Guia de automações](https://www.chatwoot.com/hc/user-guide/articles/1677238266-lesson-4-complete-your-customer-engagement-suite).
 - [Ação nativa open_conversation](https://github.com/chatwoot/chatwoot/blob/develop/app/services/action_service.rb).
-- [Ciclo nativo de criação e reabertura de mensagens](https://github.com/chatwoot/chatwoot/blob/develop/app/models/message.rb).
+- [Ciclo de criação e reabertura](https://github.com/chatwoot/chatwoot/blob/develop/app/models/message.rb).
