@@ -8,6 +8,8 @@ O proprietário identificou que enviar mensagem a cliente em conversa resolvida 
 
 **Pendente para a garantia absoluta:** complemento no servidor para mensagens públicas criadas por outra automação. A infraestrutura nativa ignora eventos encadeados de automações. O acesso SSH existente ao VPS expirou em duas tentativas nesta sessão; site e CRM responderam HTTP 200. Solicitado ao proprietário informar alteração/restrição do acesso. Não atribuir a indisponibilidade do SSH a queda do CRM.
 
+Retomada após resposta do proprietário (não sabe de alteração): SSH e conexão TCP à porta 22 continuaram expirando. Painel aberto no navegador interno redirecionou para autenticação da Hostinger, com verificação de segurança. Aba mantida para o proprietário entrar; solicitado avisar após login para consultar o VPS. Não houve mudança de firewall, senha, chave, servidor ou conexão MCP. A política nativa permanece ativa; o complemento continua pendente desse acesso.
+
 ## Regra 15
 
 - Nome: **CBN — Reabrir resolvida ao enviar ou receber mensagem**.
