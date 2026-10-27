@@ -1,5 +1,9 @@
 # Backlog — checkpoint oficial de 17/07/2026
 
+## Saudação personalizada nas respostas prontas — 27/10/2026
+
+- Concluído ajuste nativo do atalho `tele`: primeiro nome do contato com inicial maiúscula por `{{contact.first_name}}`. Corpo preservado e releitura confirmada; sem alteração de código ou envio a clientes. [Detalhes](CRM_CANNED_FIRST_NAME_2026-10-27.md).
+
 ## Reabertura de conversas resolvidas — 26/10/2026
 
 - Publicada política de reabertura no modelo de mensagens dos quatro serviços Rails; inclui mensagens de bots/plugin/agendador e anexos. Regra 15 provisória desativada para evitar eventos tardios. SSH recuperado com troca apenas do IP /32 explicitamente autorizada. Carregamento/hashes e disponibilidade conferidos, sem suíte ou envio de teste. [Operação e rollback](CRM_REOPEN_ON_INTERACTION_2026-10-26.md).

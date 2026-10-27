@@ -1,5 +1,9 @@
 # Handoff — CBN Crédito
 
+## Primeiro nome nas respostas prontas — 27/10/2026
+
+- Atalho `tele` atualizado para `Oi, {{contact.first_name}}, tudo bem?`, usando nome do contato com somente inicial maiúscula. Recurso nativo confirmado no backend/editor; apenas saudação alterada, restante preservado e releitura da API conferida. Sem código, deploy, testes ou envio de mensagens. [Configuração e limites](CRM_CANNED_FIRST_NAME_2026-10-27.md).
+
 ## Reabertura por interação — 26/10/2026
 
 - Política síncrona `CbnReopenOnInteraction` publicada nos quatro serviços criadores de mensagens: nova mensagem pública incoming/outgoing abre resolvida em toda a conta CBN, incluindo bots, plugin, agendador e anexos. Usa modelo/callbacks nativos e trava; notas privadas/atividades/recibos não reabrem. [Configuração e limites](CRM_REOPEN_ON_INTERACTION_2026-10-26.md).
