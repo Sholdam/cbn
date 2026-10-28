@@ -1,5 +1,9 @@
 # Handoff — CBN Crédito
 
+## Chamadas WhatsApp no CRM — 28/10/2026
+
+- Diagnóstico de leitura confirmou WAHA 2026.9.1 CORE/GOWS conectado. API documentada registra/rejeita chamadas, sem atendimento de áudio no navegador; não há opção compatível a habilitar na caixa atual. Via oficial Chatwoot requer Cloud API, plano pago e elegibilidade Meta. Nenhuma configuração, envio ou cobrança alterada. [Evidências e próxima decisão](CRM_WHATSAPP_CALLING_2026-10-28.md).
+
 ## Primeiro nome nas respostas prontas — 27/10/2026
 
 - Atalho `tele` atualizado para `Oi, {{contact.first_name}}, tudo bem?`, usando nome do contato com somente inicial maiúscula. Recurso nativo confirmado no backend/editor; apenas saudação alterada, restante preservado e releitura da API conferida. Sem código, deploy, testes ou envio de mensagens. [Configuração e limites](CRM_CANNED_FIRST_NAME_2026-10-27.md).

@@ -1,5 +1,9 @@
 # Backlog — checkpoint oficial de 17/07/2026
 
+## Atendimento de chamadas WhatsApp — 28/10/2026
+
+- Pedido registrado, não habilitado: conexão operacional WAHA/GOWS não documenta transporte de áudio para atender pelo CRM. Caminho oficial depende de Cloud API, licença paga e elegibilidade do número, ainda não avaliadas para migração. Diagnóstico somente leitura. [Detalhes](CRM_WHATSAPP_CALLING_2026-10-28.md).
+
 ## Saudação personalizada nas respostas prontas — 27/10/2026
 
 - Concluído ajuste nativo do atalho `tele`: primeiro nome do contato com inicial maiúscula por `{{contact.first_name}}`. Corpo preservado e releitura confirmada; sem alteração de código ou envio a clientes. [Detalhes](CRM_CANNED_FIRST_NAME_2026-10-27.md).
