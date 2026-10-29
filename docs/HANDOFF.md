@@ -1,5 +1,24 @@
 # Handoff — CBN Crédito
 
+## Rastreamento autorizado de anúncios — 29/10/2026
+
+- Implementação independente do backlog antigo, autorizada pelo usuário para o
+  CRM ativo: captura automática de origem por anúncio, nove campos nativos de
+  conversa e painel nativo no site, em `/area/crm/anuncios/`.
+- Fonte: `scripts/ads-tracking/`; operação, limites, validações e reversão em
+  [RUNBOOK_ADS_TRACKING.md](RUNBOOK_ADS_TRACKING.md).
+- Captura de metadados da caixa WAHA a cada cinco minutos. Nenhum envio,
+  alteração de anúncios, orçamento ou regras de triagem.
+- Métricas Windsor usam importação idempotente e credencial separada salva
+  pelo proprietário no painel; a primeira consulta diária foi validada. O painel informa o
+  estado real da conexão; não confundir OAuth do plugin com credencial do job.
+- Catálogo de produção, métricas e credenciais não são versionados. Os gates
+  gerais abaixo não são declarados concluídos por esta autorização específica.
+- Por orientação do usuário, páginas internas devem ser apresentadas antes de
+  criação e integradas à área do colaborador. Menu CRM: Super Admin,
+  Atendimento e Anúncios. A interface usa autenticação do portal; o serviço
+  agregado só aceita o socket Unix privado, sem porta TCP ou sessão Chatwoot.
+
 ## CHECKPOINT OFICIAL PARA RETOMADA — 17/07/2026
 
 Este repositório, na branch `main`, é a **fonte oficial** do projeto:

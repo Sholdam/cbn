@@ -1,0 +1,12 @@
+[
+  {
+    "account_id": "123456789012345",
+    "campaign_id": "123456789012345001",
+    "campaign": "Campanha sintética",
+    "adset_id": "123456789012345002",
+    "adset_name": "Conjunto sintético",
+    "ad_id": "123456789012345003",
+    "ad_name": "Post sintético",
+    "modality": "Modalidade de exemplo"
+  }
+]

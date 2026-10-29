@@ -2,3 +2,7 @@
 supabase/.branches/
 supabase/.temp/
 /scripts/node_modules/
+# Private production attribution catalog, seed metrics and Python caches.
+/scripts/ads-tracking/catalog.json
+/scripts/ads-tracking/initial-metrics.json
+/scripts/ads-tracking/__pycache__/

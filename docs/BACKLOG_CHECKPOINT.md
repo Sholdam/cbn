@@ -1,5 +1,16 @@
 # Backlog — checkpoint oficial de 17/07/2026
 
+## Entrega específica autorizada — Ads tracking, 29/10/2026
+
+- Captura de IDs de origem no CRM, preenchimento aditivo de campos de conversa,
+  painel privado de métricas e cadastro de comissão/crédito implementados.
+- Testes sintéticos e integração com o CRM/VPS verificados. Timer de captura e
+  isolamento do relatório ativos; chave Windsor cadastrada pelo proprietário
+  e primeira atualização diária validada. Dashboard transferido ao menu CRM
+  expansível na área do colaborador, conforme orientação do usuário.
+- Não altera a situação das BKL antigas nem autoriza outros gates. Ver
+  [runbook](RUNBOOK_ADS_TRACKING.md) antes de operar a integração.
+
 ## Retomada oficial
 
 - Fonte: `https://github.com/Sholdam/cbn`, branch `main`.
