@@ -1,5 +1,9 @@
 # Backlog — checkpoint oficial de 17/07/2026
 
+## CPF dos anúncios INSS — 30/10/2026
+
+- Publicada correção da coleta e espelhamento de etiqueta. Recuperadas somente as três conversas indicadas, sem novos envios. Confirmação automática em novo atendimento ainda não observada. [Registro](CRM_INSS_CAPTURE_2026-10-30.md).
+
 ## Atendimento de chamadas WhatsApp — 28/10/2026
 
 - Pedido registrado, não habilitado: conexão operacional WAHA/GOWS não documenta transporte de áudio para atender pelo CRM. Caminho oficial depende de Cloud API, licença paga e elegibilidade do número, ainda não avaliadas para migração. Diagnóstico somente leitura. [Detalhes](CRM_WHATSAPP_CALLING_2026-10-28.md).

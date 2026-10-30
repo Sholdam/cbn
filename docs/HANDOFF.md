@@ -1,5 +1,9 @@
 # Handoff — CBN Crédito
 
+## Coleta INSS — 30/10/2026
+
+- Corrigido fluxo que só perguntava CPF e não iniciava coleta INSS. Três atendimentos apontados recuperados com CPF/etiqueta, sem mensagens atrasadas porque já assumidos pelo operador. [Causa, publicação e limites](CRM_INSS_CAPTURE_2026-10-30.md).
+
 ## Chamadas WhatsApp no CRM — 28/10/2026
 
 - Diagnóstico de leitura confirmou WAHA 2026.9.1 CORE/GOWS conectado. API documentada registra/rejeita chamadas, sem atendimento de áudio no navegador; não há opção compatível a habilitar na caixa atual. Via oficial Chatwoot requer Cloud API, plano pago e elegibilidade Meta. Nenhuma configuração, envio ou cobrança alterada. [Evidências e próxima decisão](CRM_WHATSAPP_CALLING_2026-10-28.md).
