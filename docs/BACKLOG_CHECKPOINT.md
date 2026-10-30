@@ -2,6 +2,8 @@
 
 ## CPF dos anúncios INSS — 30/10/2026
 
+- Fechada lacuna de anúncio sem etiqueta e botão sem suporte INSS: web/worker atualizados e atendimento indicado retomado; uma confirmação `sent`, cadastro/etiquetas/agente conferidos. Sete verificações sintéticas passaram. Acompanhar próximo fluxo orgânico; não confundir `sent` com entrega confirmada. [Registro](CRM_INSS_CAPTURE_2026-10-30.md).
+
 - Publicada correção da coleta e espelhamento de etiqueta. Recuperadas somente as três conversas indicadas, sem novos envios. Confirmação automática em novo atendimento ainda não observada. [Registro](CRM_INSS_CAPTURE_2026-10-30.md).
 
 ## Atendimento de chamadas WhatsApp — 28/10/2026

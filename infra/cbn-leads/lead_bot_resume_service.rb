@@ -80,6 +80,7 @@ class Cbn::LeadBotResumeService
 
   def initial_rule
     role = state && state['kind']
+    return rule_for('clt') if role == 'inss'
     return rule_for(role) if %w[colatina clt cpf].include?(role)
 
     %w[colatina clt cpf].each do |candidate|
@@ -89,7 +90,7 @@ class Cbn::LeadBotResumeService
         next
       end
       match = eligible_incoming.find do |message|
-        next false if candidate == 'clt' && !message.content.to_s.match?(/CLT/i) && !@conversation.label_list.include?('clt')
+        next false if candidate == 'clt' && !CbnLeadCapture.cpf_flow_kind(@conversation, message)
         AutomationRules::ConditionsFilterService.new(rule, @conversation, { message: message }).perform
       end
       if match
@@ -117,6 +118,15 @@ class Cbn::LeadBotResumeService
 
   def resume!
     return CbnGenericMenu.resume!(@conversation) if generic_menu?
+    # Repair a missing state from an existing native question before asking
+    # again. capture_reply only accepts a valid reply after that question.
+    unless state
+      eligible_incoming.reverse_each do |reply|
+        break if state
+        reply.conversation = @conversation
+        CbnLeadCapture.capture_reply(reply, @settings)
+      end
+    end
     unless state
       rule = initial_rule
       labels = rule.actions.select { |item| item['action_name'] == 'add_label' }.flat_map { |item| item['action_params'] }
@@ -129,7 +139,7 @@ class Cbn::LeadBotResumeService
     if stage.to_s.start_with?('revisao_')
       raise Unavailable, 'Há uma divergência nos dados. Revise o cadastro antes de retomar o bot.'
     end
-    unless %w[colatina clt cpf].include?(state['kind'])
+    unless %w[colatina clt cpf inss].include?(state['kind'])
       raise Unavailable, 'Este fluxo não permite retomada automática.'
     end
     if stage == 'concluido'
@@ -195,7 +205,7 @@ class Cbn::LeadBotResumeService
       return
     end
     unless state['kind'] == 'colatina'
-      set_stage('concluido')
+      set_stage(state['kind'] == 'inss' && stage != 'concluido' ? 'dados_recebidos' : 'concluido')
       return
     end
     unless CbnLeadCapture.extract_registration(attributes['cbn_matricula_beneficio'], cpf)

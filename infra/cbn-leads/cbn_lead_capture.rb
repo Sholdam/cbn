@@ -57,6 +57,27 @@ module CbnLeadCapture
     value
   end
 
+  # Rule 5 can ask for CPF before its label action runs. Classify from the
+  # customer's own words (or the explicit ad envelope), not label order alone.
+  def self.cpf_flow_kind(conversation, message = nil)
+    return 'clt' if conversation.label_list.include?('clt')
+    return 'inss' if conversation.label_list.include?('inss')
+    text = message&.content.to_s
+    return 'inss' if customer_text(text).match?(/\bINSS\b/i) ||
+                     (text.match?(/\A[^\r\n]*AN[ÚU]NCIO DO FACEBOOK/i) && text.match?(/\bINSS\b/i))
+    return 'clt' if customer_text(text).match?(/\bCLT\b/i)
+    nil
+  end
+
+  def self.label_cpf_flow!(conversation, kind)
+    return unless %w[clt inss].include?(kind)
+    unless conversation.label_list.include?(kind)
+      conversation.label_list.add(kind)
+      conversation.save!
+    end
+    mirror_labels!(conversation)
+  end
+
   def self.extract_employment(text)
     value = text.to_s.strip.downcase.unicode_normalize(:nfd).gsub(/\p{Mn}/, '')
     return 'comissionado' if value.match?(/\A(?:1|(?:sou\s+)?comissionad[oa])[.!]?\z/)
@@ -118,8 +139,12 @@ module CbnLeadCapture
         # native encoding and object rows without changing stored messages.
         rule_id_sql = "(CASE WHEN json_typeof(content_attributes) = 'string' THEN (content_attributes #>> '{}')::json ELSE content_attributes END)->>'automation_rule_id'"
         prompt = conversation.messages.outgoing.where(private: false).where("#{rule_id_sql} IN (?)", %w[5 6]).where('id < ? AND created_at >= ?', message.id, 7.days.ago).reorder(id: :desc).first
-        if prompt && (prompt.content_attributes['automation_rule_id'].to_i == 6 || (conversation.label_list & %w[clt inss]).any?) && prompt.status != 'failed'
-          state = { 'kind' => (conversation.label_list.include?('inss') && !conversation.label_list.include?('clt') ? 'inss' : 'clt'), 'started_at' => prompt.created_at.iso8601, 'prompt_id' => prompt.id, 'trigger_id' => message.id }
+        source = prompt && conversation.messages.incoming.where(private: false).where('id < ?', prompt.id).reorder(id: :desc).first
+        kind = cpf_flow_kind(conversation, source)
+        if prompt && (prompt.content_attributes['automation_rule_id'].to_i == 6 || kind) && prompt.status != 'failed'
+          kind ||= 'clt'
+          label_cpf_flow!(conversation, kind)
+          state = { 'kind' => kind, 'started_at' => prompt.created_at.iso8601, 'prompt_id' => prompt.id, 'trigger_id' => message.id }
           stage!(conversation, state, 'aguardando_cpf')
         end
       end
@@ -225,20 +250,21 @@ module CbnLeadCapture
           waiting_stage = role == 'vinculo' ? 'aguardando_vinculo' : 'aguardando_matricula'
           CbnLeadCapture.stage!(@conversation, state.merge('prompt_id' => prompt.id), waiting_stage)
         else
-          # Rule 5 also handles INSS: leave that existing flow unchanged.
-          if role == 'clt' && !incoming&.content.to_s.match?(/CLT/i) && !@conversation.label_list.include?('clt') && !@conversation.label_list.include?('inss') &&
+          kind = CbnLeadCapture.cpf_flow_kind(@conversation, incoming) if role == 'clt'
+          if role == 'clt' && !kind &&
              Thread.current[:cbn_manual_resume_conversation_id] != @conversation.id
             super
             next
           end
           next unless CbnLeadCapture.eligible?(incoming, settings)
+          CbnLeadCapture.label_cpf_flow!(@conversation, kind) if kind
           CbnLeadCapture.mirror_labels!(@conversation)
           CbnLeadCapture.origin!(@conversation, incoming)
           next if @conversation.additional_attributes[CbnLeadCapture::KEY].present? &&
                   Thread.current[:cbn_manual_resume_conversation_id] != @conversation.id
           next if CbnLeadCapture.human_replied?(@conversation, incoming.id)
           prompt = CbnLeadCapture.native_prompt!(super, @conversation, @rule)
-          state = { 'kind' => (role == 'clt' && @conversation.label_list.include?('inss') && !@conversation.label_list.include?('clt') ? 'inss' : role), 'started_at' => Time.current.iso8601, 'prompt_id' => prompt.id, 'trigger_id' => incoming.id }
+          state = { 'kind' => (kind || role), 'started_at' => Time.current.iso8601, 'prompt_id' => prompt.id, 'trigger_id' => incoming.id }
           CbnLeadCapture.stage!(@conversation, state, 'aguardando_cpf')
         end
       end

@@ -2,6 +2,8 @@
 
 ## Coleta INSS — 30/10/2026
 
+- Correção complementar publicada após novo caso sem etiqueta: classificação pelo anúncio/cliente, etiqueta contato/conversa e retomada INSS no web. Sete verificações sintéticas passaram. Atendimento indicado retomado com CPF salvo e uma confirmação `sent`, sem nova pergunta de CPF. Web atual `cbn/chatwoot:4.16.2-cbn-inss-resume-20261030`; ciclo orgânico posterior e entrega ao dispositivo ainda não observados. [Registro](CRM_INSS_CAPTURE_2026-10-30.md).
+
 - Corrigido fluxo que só perguntava CPF e não iniciava coleta INSS. Três atendimentos apontados recuperados com CPF/etiqueta, sem mensagens atrasadas porque já assumidos pelo operador. [Causa, publicação e limites](CRM_INSS_CAPTURE_2026-10-30.md).
 
 ## Chamadas WhatsApp no CRM — 28/10/2026
