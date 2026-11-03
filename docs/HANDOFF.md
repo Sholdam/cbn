@@ -1,5 +1,12 @@
 # Handoff — CBN Crédito
 
+## Conexão compartilhada SDR/Rebeca — 02/11/2026
+
+- Criado usuário técnico 9 **CBN IA — SDR e Rebeca**, display name Rebeca, role agent, somente caixa 5. Credencial exclusiva configurada para os dois consumidores, fora de Git/OneDrive; conta WAHA preservada.
+- Plugin local restaurado/registrado/habilitado. API e dois clientes MCP reais confirmaram usuário 9 e 13 ferramentas. Perfis `config-sdr.json`/`config-rebeca.json` na pasta privada padrão; classificação de origem e auditoria local implementadas. Mensagens desse usuário devem ser tratadas como automação pelo futuro Core.
+- Preservados os avanços de anexos agendados do commit 31512d2 ao conciliar o runtime mais recente. 18 testes aprovados e auditoria de dependências sem alertas. Nenhum cliente contatado, webhook/rotina autônoma ativado ou fila processada.
+- O acesso agora funciona; o executor de entrega SDR e o consumidor BKO/Rebeca permanecem em suas frentes de implementação. [Runbook e limites](CRM_SHARED_CONNECTION_2026-11-02.md).
+
 ## Agendamento do plugin — 20/10/2026
 
 - Falha 404 identificada como rota antiga `/cbn/v1/...`. Frontend/proxy/API atuais usam `/site/cbn-api/...`.

@@ -13,6 +13,12 @@ export async function loadConfig(env = process.env) {
   if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash || url.pathname !== '/') throw new Error('CRM exige origem HTTPS sem caminho ou credenciais.');
   const accountId = Number(env.CBN_CRM_ACCOUNT_ID || file.accountId || 1);
   if (!Number.isSafeInteger(accountId) || accountId < 1) throw new Error('Conta CRM inválida.');
+  const integrationSource = env.CBN_CRM_INTEGRATION_SOURCE || file.integrationSource || null;
+  if (integrationSource && !['shared', 'sdr', 'rebeca'].includes(integrationSource)) throw new Error('Origem da integração CRM inválida.');
+  const expectedActorId = file.expectedActorId ?? null;
+  if (expectedActorId !== null && (!Number.isSafeInteger(expectedActorId) || expectedActorId < 1)) throw new Error('Identidade CRM esperada inválida.');
+  const allowedInboxIds = file.allowedInboxIds ?? null;
+  if (allowedInboxIds !== null && (!Array.isArray(allowedInboxIds) || !allowedInboxIds.length || allowedInboxIds.some(x => !Number.isSafeInteger(x) || x < 1))) throw new Error('Caixas CRM permitidas inválidas.');
   let token = env.CBN_CRM_TOKEN || '';
   const tokenFile = env.CBN_CRM_TOKEN_FILE || file.tokenFile;
   if (!token && tokenFile) {
@@ -22,7 +28,7 @@ export async function loadConfig(env = process.env) {
   const stateDir = path.resolve(file.stateDir || path.join(defaultHome(), 'state'));
   await mkdir(stateDir, { recursive: true, mode: 0o700 });
   return {
-    baseUrl: url.origin, accountId, token, stateDir,
+    baseUrl: url.origin, accountId, token, stateDir, integrationSource, expectedActorId, allowedInboxIds,
     writesEnabled: file.writesEnabled === true,
     uploadRoot: path.resolve(file.uploadRoot || path.join(defaultHome(), 'uploads')),
     mediaOrigins: [url.origin, ...(file.mediaOrigins || [])].map(s => {

@@ -33,6 +33,44 @@ async function fixture(t, opts = {}) {
 const prepareMessage = (crm, operation_id = randomUUID()) => crm.prepare({ operation_id, action: { kind: 'send_message', conversation_id: 10, content: 'Resposta sintética' } });
 const execute = (crm, action_id) => crm.execute({ action_id, approval_reference: 'Usuário autorizou atendimento sintético.' });
 
+test('shared identity keeps SDR/Rebeca attribution separate and rejects cross-source execution', async t => {
+  const f = await fixture(t);
+  const sdr = new Crm({...f.config, integrationSource:'sdr', expectedActorId:1, allowedInboxIds:[5]}, f.fetchImpl);
+  const rebeca = new Crm({...f.config, integrationSource:'rebeca', expectedActorId:1, allowedInboxIds:[5]}, f.fetchImpl);
+  assert.equal((await sdr.status()).identity.id, (await rebeca.status()).identity.id);
+  const prepared = await prepareMessage(sdr);
+  assert.equal(prepared.integration_source,'sdr');
+  await assert.rejects(() => execute(rebeca, prepared.action_id), /outra origem/);
+  await assert.rejects(() => prepareMessage(rebeca, prepared.action_id), /outra origem/);
+  assert.equal(f.posts.length,0);
+  await execute(sdr,prepared.action_id);
+  assert.equal(JSON.parse(f.posts[0].req.body).content_attributes.cbn_integration_source,'sdr');
+  const next=await prepareMessage(rebeca);await execute(rebeca,next.action_id);
+  assert.equal(JSON.parse(f.posts[1].req.body).content_attributes.cbn_integration_source,'rebeca');
+  const audit=await readFile(path.join(f.root,'actions','audit.jsonl'),'utf8');
+  assert.ok(audit.includes('"integration_source":"sdr"')&&audit.includes('"integration_source":"rebeca"'));
+  assert.ok(!audit.includes('synthetic-secret'));
+});
+
+test('configured technical identity and inbox allowlist fail closed', async t => {
+  const f=await fixture(t);
+  const wrongActor=new Crm({...f.config,expectedActorId:9},f.fetchImpl);
+  await assert.rejects(()=>wrongActor.status(),/usuário técnico/);
+  const wrongInbox=new Crm({...f.config,allowedInboxIds:[2]},f.fetchImpl);
+  await assert.rejects(()=>prepareMessage(wrongInbox),/caixas autorizadas/);
+  assert.equal(f.posts.length,0);
+});
+
+test('shared integration configuration rejects arbitrary source and malformed identity', async t => {
+  const root=await mkdtemp(path.join(tmpdir(),'cbn-shared-config-'));t.after(()=>rm(root,{recursive:true,force:true}));
+  const file=path.join(root,'config.json');
+  for(const input of [{integrationSource:'attacker'},{expectedActorId:'9'},{allowedInboxIds:[]},{allowedInboxIds:[-1]}]){
+    await writeFile(file,JSON.stringify(input));await assert.rejects(()=>loadConfig({CBN_CRM_CONFIG:file}),/inválid/);
+  }
+  await writeFile(file,JSON.stringify({integrationSource:'rebeca',expectedActorId:9,allowedInboxIds:[5],stateDir:path.join(root,'state')}));
+  const config=await loadConfig({CBN_CRM_CONFIG:file});assert.equal(config.integrationSource,'rebeca');assert.equal(config.expectedActorId,9);assert.deepEqual(config.allowedInboxIds,[5]);
+});
+
 test('prepare has no remote mutation; stable operation_id deduplicates and rejects altered intent', async t => {
   const f = await fixture(t), op = randomUUID();
   const a = await prepareMessage(f.crm, op), b = await prepareMessage(f.crm, op);

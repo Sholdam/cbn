@@ -27,6 +27,6 @@ export class ActionStore {
     finally { await handle.close(); await unlink(lockPath); }
   }
   async audit(row, event) {
-    await appendFile(path.join(this.root, 'audit.jsonl'), JSON.stringify({ at: new Date().toISOString(), id: row.id, kind: row.action.kind, event, account_id: row.accountId, actor_id: row.actor_id, approval_ref_hash: row.approval_ref_hash, conversation_id: row.action.conversation_id, result_id: row.result?.id }) + '\n', { mode: 0o600 });
+    await appendFile(path.join(this.root, 'audit.jsonl'), JSON.stringify({ at: new Date().toISOString(), id: row.id, kind: row.action.kind, event, account_id: row.accountId, actor_id: row.actor_id, integration_source: row.integration_source || null, approval_ref_hash: row.approval_ref_hash, conversation_id: row.action.conversation_id, result_id: row.result?.id }) + '\n', { mode: 0o600 });
   }
 }

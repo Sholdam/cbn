@@ -1,5 +1,10 @@
 # Backlog — checkpoint oficial de 17/07/2026
 
+## Acesso comum SDR/Rebeca — 02/11/2026
+
+- **Concluído e verificado:** usuário técnico compartilhado ID 9, papel agent/caixa 5, credencial privada e perfis autenticados SDR/Rebeca. API e MCP real funcionando; 18 testes passaram. Plugin local restaurado e habilitado.
+- **Etapas separadas ainda pendentes:** entrega do diário SDR ao CRM, consumidor BKO/retorno e runtime autônomo da Rebeca. Sem mensagens a clientes nesta etapa; não confundir autenticação com entrega automática. [Runbook](CRM_SHARED_CONNECTION_2026-11-02.md).
+
 ## Correção de agendamento pelo plugin — 20/10/2026
 
 - Endereço do agendador alinhado à API pública `/site/cbn-api/...`, compartilhado por todas as operações. Rota atual respondeu 200 autenticado na conversa técnica; antiga retornou 404.

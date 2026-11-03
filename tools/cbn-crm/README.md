@@ -1,5 +1,13 @@
 # CBN CRM — plugin, MCP e CLI
 
+## Conta compartilhada SDR/Rebeca — 02/11/2026
+
+Na máquina CBN o acesso já está configurado pelo usuário técnico 9, role agent,
+caixa 5. Use os perfis privados `config-sdr.json` e `config-rebeca.json` via
+`CBN_CRM_CONFIG`. Ambos referenciam o mesmo segredo e conservam a origem das
+ações separada. Não executar o assistente antigo para inserir o token pessoal de
+Guilherme. [Conexão validada e limites](../../docs/CRM_SHARED_CONNECTION_2026-11-02.md).
+
 Conector privado para `https://crm.cbncredito.tech`, o Chatwoot CBN na VPS.
 Faz atendimento por HTTPS; não usa navegador, SSH, Rails console ou acesso ao
 banco durante a operação. Node.js 22+; SDK oficial MCP v2, travado pelo lockfile.
@@ -62,6 +70,14 @@ Agendamento usa a mesma API da tela do CRM:
 O endereço antigo `/cbn/v1/...` retorna 404 na VPS atual. Se uma tentativa antiga
 ficou `unknown`/`dispatching`, confira a lista antes de preparar nova operação;
 a atualização não repete nem desbloqueia ações antigas automaticamente.
+
+Para agendar anexos, prepare cada arquivo com `crm_stage_upload` e informe os
+UUIDs em `upload_ids` na ação `schedule_create` ou `schedule_update`. Com pelo
+menos um anexo, `content` pode ser vazio/omitido. A prévia mostra os arquivos e
+confere seus hashes antes da execução. Limites: 10 arquivos de até 20 MiB cada,
+50 MiB no total. Na edição, anexos existentes são mantidos; remova somente IDs
+de `previous_schedule.attachments` usando `remove_attachment_ids`. Não envie
+URLs ou IDs de blobs. O envio agendado executa na VPS mesmo com o plugin fechado.
 
 ## Áudio offline
 

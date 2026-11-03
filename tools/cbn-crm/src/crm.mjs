@@ -20,7 +20,11 @@ export class Crm {
     this.uploads = path.join(config.stateDir, 'uploads');
   }
   account(suffix) { return `/api/v1/accounts/${this.config.accountId}${suffix}`; }
-  conversation(id) { return this.http.request(this.account(`/conversations/${id}`)); }
+  async conversation(id) {
+    const data = await this.http.request(this.account(`/conversations/${id}`));
+    if (this.config.allowedInboxIds && !this.config.allowedInboxIds.includes(data.inbox_id)) throw new Error('Conversa fora das caixas autorizadas para esta integração.');
+    return data;
+  }
   async rawMessages(id, query = {}) { return list(await this.http.request(this.account(`/conversations/${id}/messages`), { query })); }
   async messages({ conversation_id, before, after }) {
     const rows = await this.rawMessages(conversation_id, { before, after });
@@ -32,28 +36,31 @@ export class Crm {
     let identity = null;
     if (this.config.token) {
       const p = await this.http.request('/api/v1/profile');
+      if (this.config.expectedActorId && p.id !== this.config.expectedActorId) throw new Error('Credencial não pertence ao usuário técnico CRM esperado.');
       const membership = p.accounts?.find(a => a.id === this.config.accountId);
       if (!membership) throw new Error('Credencial sem vínculo com a conta CBN configurada.');
       identity = { id: p.id, name: p.name, account_id: membership.id, role: membership.role };
     }
     return { server: 'cbn-crm', version: '0.1.0', crm: this.config.baseUrl, account_id: this.config.accountId,
-      authenticated: !!identity, identity, writes_enabled: this.config.writesEnabled,
+      authenticated: !!identity, identity, writes_enabled: this.config.writesEnabled, integration_source: this.config.integrationSource || null,
+      allowed_inbox_ids: this.config.allowedInboxIds || null,
       audio: { inline: true, transcription_configured: !!this.config.transcription },
       receive_mode: 'Consulta paginada por API, com cursor por conversa. Sem monitoramento em segundo plano.',
       warning: 'Mensagem criada no CRM não significa entrega no WhatsApp; consulte status.' };
   }
   async inboxes() {
     const result = await this.http.request(this.account('/inboxes'));
-    return { inboxes: list(result).map(i => ({ id: i.id, name: i.name, channel_type: i.channel_type })) };
+    return { inboxes: list(result).filter(i => !this.config.allowedInboxIds || this.config.allowedInboxIds.includes(i.id)).map(i => ({ id: i.id, name: i.name, channel_type: i.channel_type })) };
   }
   async contacts(args) {
     const result = await this.http.request(this.account('/contacts/search'), { query: { q: args.query, page: args.page } });
     return { meta: result.meta, contacts: list(result).map(c => ({ id: c.id, name: c.name, phone_number: c.phone_number, email: c.email, blocked: c.blocked })) };
   }
   async conversations(args) {
+    if (args.inbox_id && this.config.allowedInboxIds && !this.config.allowedInboxIds.includes(args.inbox_id)) throw new Error('Caixa fora do acesso autorizado.');
     const result = await this.http.request(this.account('/conversations'), { query: args });
     const rows = result.data?.payload || result.payload || [];
-    return { meta: result.data?.meta || result.meta, conversations: rows.map(c => this.summary(c)) };
+    return { meta: result.data?.meta || result.meta, conversations: rows.filter(c => !this.config.allowedInboxIds || this.config.allowedInboxIds.includes(c.inbox_id)).map(c => this.summary(c)) };
   }
   summary(c) {
     return { id: c.id, inbox_id: c.inbox_id, status: c.status, unread_count: c.unread_count,
@@ -131,16 +138,31 @@ export class Crm {
       let existing;
       try { existing = await this.store.read(operation_id); } catch (e) { if (e.message !== 'Ação não encontrada.') throw e; }
       if (existing) {
-        if (digest(existing.action) !== digest(action) || existing.accountId !== this.config.accountId || existing.baseUrl !== this.config.baseUrl) throw new Error('operation_id já pertence a outra ação/conta.');
+        if ((existing.integration_source || null) !== (this.config.integrationSource || null)) throw new Error('Ação pertence a outra origem de integração.');
+        if (digest(actionSchema.parse(existing.action)) !== digest(action) || existing.accountId !== this.config.accountId || existing.baseUrl !== this.config.baseUrl) throw new Error('operation_id já pertence a outra ação/conta.');
         return this.preview(existing);
       }
       const status = await this.status();
       if (!status.authenticated) throw new Error('Autentique o operador antes de preparar uma ação.');
-      const row = { id: operation_id, accountId: this.config.accountId, baseUrl: this.config.baseUrl, actor_id: status.identity.id, action, state: 'prepared', created_at: new Date().toISOString() };
+      const row = { id: operation_id, accountId: this.config.accountId, baseUrl: this.config.baseUrl, actor_id: status.identity.id, integration_source: this.config.integrationSource || null, action, state: 'prepared', created_at: new Date().toISOString() };
       if (action.conversation_id) row.snapshot = await this.snapshot(action.conversation_id);
       if (['schedule_update', 'schedule_cancel'].includes(action.kind)) {
         row.previous_schedule = list(await this.schedules(action)).find(s => s.id === action.schedule_id);
         if (!row.previous_schedule || row.previous_schedule.status !== 'pending') throw new Error('Agendamento pendente não encontrado nos últimos 30 itens desta conversa. Confira o CRM.');
+      }
+      if (['schedule_create', 'schedule_update'].includes(action.kind)) {
+        row.uploads = [];
+        for (const upload_id of action.upload_ids) {
+          const { bytes, ...meta } = await this.readUpload(upload_id);
+          row.uploads.push(meta);
+        }
+        const existing = row.previous_schedule?.attachments || [];
+        const removed = action.remove_attachment_ids || [];
+        if (removed.some(id => !existing.some(file => file.id === id))) throw new Error('Anexo não pertence a este agendamento.');
+        const retained = existing.filter(file => !removed.includes(file.id));
+        if (!action.content && !row.uploads.length && !retained.length) throw new Error('Escreva uma mensagem ou adicione um anexo.');
+        if (retained.length + row.uploads.length > 10) throw new Error('Adicione no máximo 10 anexos.');
+        if (retained.reduce((sum, file) => sum + file.byte_size, 0) + row.uploads.reduce((sum, file) => sum + file.size, 0) > 50 * 1024 * 1024) throw new Error('Os anexos juntos devem ter até 50 MB.');
       }
       if (action.kind === 'send_media') { const { bytes, ...meta } = await this.readUpload(action.upload_id); row.upload = meta; }
       if (action.kind === 'automation_set_active') row.previous_rule = await this.http.request(this.account(`/automation_rules/${action.rule_id}`));
@@ -150,8 +172,8 @@ export class Crm {
   }
   preview(row) {
     if (row.accountId !== this.config.accountId || row.baseUrl !== this.config.baseUrl) throw new Error('Ação pertence a outro CRM/conta.');
-    return { action_id: row.id, state: row.state, account_id: row.accountId, actor_id: row.actor_id, crm: row.baseUrl, action: row.action, recipient: row.snapshot?.recipient, inbox_id: row.snapshot?.inbox_id,
-      media: row.upload, previous_rule: row.previous_rule, previous_schedule: row.previous_schedule, expires_at: new Date(Date.parse(row.created_at) + 30 * 60_000).toISOString(),
+    return { action_id: row.id, state: row.state, account_id: row.accountId, actor_id: row.actor_id, integration_source: row.integration_source || null, crm: row.baseUrl, action: row.action, recipient: row.snapshot?.recipient, inbox_id: row.snapshot?.inbox_id,
+      media: row.upload, attachments: row.uploads, previous_rule: row.previous_rule, previous_schedule: row.previous_schedule, expires_at: new Date(Date.parse(row.created_at) + 30 * 60_000).toISOString(),
       requires_user_authorization: true, result: row.result,
       notice: row.action.kind.startsWith('automation_') ? 'Ativar uma regra pode disparar mensagens futuras. Confira evento, condições e ações.' : row.state === 'prepared' ? 'Preparação local; nenhuma alteração enviada ao CRM.' : 'Confira state e result para determinar se houve alteração no CRM.' };
   }
@@ -161,6 +183,7 @@ export class Crm {
     return this.store.lock(action_id, async () => {
       const row = await this.store.read(action_id);
       if (row.accountId !== this.config.accountId || row.baseUrl !== this.config.baseUrl) throw new Error('Ação pertence a outro CRM/conta.');
+      if ((row.integration_source || null) !== (this.config.integrationSource || null)) throw new Error('Ação pertence a outra origem de integração.');
       if (row.state === 'completed') return { action_id, state: row.state, result: row.result, replay: true };
       if (row.state !== 'prepared') throw new Error('Resultado incerto ou ação já despachada. Confira o CRM; não repita nem crie outra ação para contornar.');
       if (Date.now() - Date.parse(row.created_at) > 30 * 60_000) throw new Error('Prévia expirada. Leia o contexto novamente e prepare outra ação.');
@@ -199,16 +222,35 @@ export class Crm {
     const schedulesRoute = this.schedulesRoute(c);
     switch (a.kind) {
       case 'send_message': return { route: messagesRoute, options: { method: 'POST', body: { content: a.content, message_type: 'outgoing', private: a.private,
-        ...(a.reply_to ? { content_attributes: { in_reply_to: a.reply_to } } : {}) } } };
+        ...((a.reply_to || row.integration_source) ? { content_attributes: { ...(a.reply_to ? { in_reply_to: a.reply_to } : {}), ...(row.integration_source ? { cbn_integration_source: row.integration_source } : {}) } } : {}) } } };
       case 'send_media': {
         const media = await this.readUpload(a.upload_id);
         if (media.sha256 !== row.upload.sha256) throw new Error('Mídia alterada após aprovação.');
         const form = new FormData(); form.set('content', a.content); form.set('message_type', 'outgoing'); form.set('private', String(a.private));
+        if (row.integration_source) form.set('content_attributes[cbn_integration_source]', row.integration_source);
         form.append('attachments[]', new Blob([media.bytes], { type: media.mimeType }), media.filename);
         return { route: messagesRoute, options: { method: 'POST', body: form } };
       }
-      case 'schedule_create': return { route: schedulesRoute, options: { method: 'POST', body: { content: a.content, scheduled_local: a.scheduled_local, request_id: row.id } } };
-      case 'schedule_update': return { route: `${schedulesRoute}/${a.schedule_id}`, options: { method: 'PATCH', body: { content: a.content, scheduled_local: a.scheduled_local } } };
+      case 'schedule_create':
+      case 'schedule_update': {
+        const create = a.kind === 'schedule_create';
+        const route = create ? schedulesRoute : `${schedulesRoute}/${a.schedule_id}`;
+        const method = create ? 'POST' : 'PATCH';
+        const removed = a.remove_attachment_ids || [];
+        if (!a.upload_ids.length && !removed.length) return { route, options: { method, body: { content: a.content, scheduled_local: a.scheduled_local, ...(create ? { request_id: row.id } : {}) } } };
+        const form = new FormData();
+        form.set('content', a.content);
+        form.set('scheduled_local', a.scheduled_local);
+        if (create) form.set('request_id', row.id);
+        for (const upload_id of a.upload_ids) {
+          const media = await this.readUpload(upload_id);
+          const expected = row.uploads?.find(file => file.upload_id === upload_id);
+          if (!expected || media.sha256 !== expected.sha256) throw new Error('Anexo alterado após a prévia.');
+          form.append('attachments[]', new Blob([media.bytes], { type: media.mimeType }), media.filename);
+        }
+        for (const id of removed) form.append('remove_attachment_ids[]', String(id));
+        return { route, options: { method, body: form } };
+      }
       case 'schedule_cancel': return { route: `${schedulesRoute}/${a.schedule_id}`, options: { method: 'DELETE' } };
       case 'conversation_status': return { route: this.account(`/conversations/${c}/toggle_status`), options: { method: 'POST', body: { status: a.status } } };
       case 'automation_create': return { route: this.account('/automation_rules'), options: { method: 'POST', body: a.rule } };
