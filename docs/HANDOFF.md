@@ -1,5 +1,12 @@
 # Handoff — CBN Crédito
 
+## Bot após CPF e anúncios sem saudação — 05/11/2026
+
+- Corrigido vazamento de `Current.executed_by` pela regra do menu que fazia o listener nativo ignorar a continuação após salvar CPF. Criativo INSS não reconhecido incluído na regra nativa; anúncios sem regra correspondente têm menu de fallback, com proteção de pausa e coleta existente.
+- 9 testes/13 asserções e 7 regressões INSS/CLT aprovados; nove testes repetidos com sucesso após publicação. Quatro atendimentos ainda parados recuperados pelo serviço nativo: três confirmações e uma saudação inicial, sem repetir dados nem interferir nos assumidos/encerrados.
+- Web/worker atualizados via initializer persistente; sessão WhatsApp preservada. [Diagnóstico, evidências e retorno](CRM_BOT_CONTEXT_REPAIR_2026-11-05.md).
+- Releitura: quatro mensagens recuperadas entregues; novo atendimento orgânico completou CPF e confirmação sem intervenção, com mensagens lidas. Sem pendências `dados_recebidos`, erros novos ou retries na verificação.
+
 ## Luna e transcrição manual — 05/11/2026
 
 - Publicados `gpt-6-luna` no editor nativo e botão **Transcrever áudio** com `gpt-transcribe`, reutilizando a chave conectada. Modelos/recursos restantes preservados; nenhuma habilitação de licença paga.

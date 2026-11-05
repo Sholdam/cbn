@@ -28,9 +28,27 @@ module CbnGenericMenu
   end
 
   def self.existing_flow?(conversation, message)
-    conversation.additional_attributes[CbnLeadCapture::KEY].present? ||
-      (conversation.label_list & PRODUCT_LABELS).any? ||
-      message.content.to_s.match?(/AN[ÚU]NCIO DO FACEBOOK|Vim pelo an[úu]ncio|Receber oferta!/i)
+    return true if conversation.additional_attributes[CbnLeadCapture::KEY].present?
+    # Recognized campaign rules keep their own collection, including when
+    # paused. An unrecognized ad must not silently suppress the fallback menu.
+    return campaign_rule_matches?(conversation, message) if campaign_ad?(message)
+
+    (conversation.label_list & PRODUCT_LABELS).any?
+  end
+
+  def self.campaign_ad?(message)
+    message.content.to_s.match?(/AN[ÚU]NCIO DO FACEBOOK|Vim pelo an[úu]ncio|Receber oferta!/i)
+  end
+
+  def self.campaign_rule_matches?(conversation, message)
+    settings = CbnLeadCapture.config
+    ids = settings && settings.fetch('rules', {}).select { |_id, role| %w[clt cpf colatina].include?(role) }.keys
+    return false if ids.blank?
+
+    # Include inactive rules to preserve an operator's intentional pause.
+    conversation.account.automation_rules.where(id: ids).any? do |rule|
+      AutomationRules::ConditionsFilterService.new(rule, conversation, { message: message }).perform
+    end
   end
 
   def self.can_start?(conversation, message, settings)
@@ -44,10 +62,12 @@ module CbnGenericMenu
   def self.manual_candidate?(conversation)
     return false if conversation.additional_attributes[CbnLeadCapture::KEY].present?
     return true if conversation.additional_attributes[KEY].present?
-    return false if (conversation.label_list & PRODUCT_LABELS).any?
-    !conversation.messages.incoming.where(private: false).reorder(id: :desc).limit(100).any? do |message|
-      message.content.to_s.match?(/AN[ÚU]NCIO DO FACEBOOK|Vim pelo an[úu]ncio|Receber oferta!/i)
+    ads = conversation.messages.incoming.where(private: false).reorder(id: :desc).limit(100).select do |message|
+      campaign_ad?(message)
     end
+    return !ads.any? { |message| campaign_rule_matches?(conversation, message) } if ads.any?
+
+    (conversation.label_list & PRODUCT_LABELS).empty?
   end
 
   def self.resume!(conversation)
@@ -178,6 +198,13 @@ module CbnGenericMenu
   end
 
   module Actions
+    def initialize(*args)
+      # Native initialization changes Current.executed_by even when perform
+      # later skips this menu. Keep the caller's context for every exit path.
+      @cbn_menu_previous_executor = Current.executed_by
+      super
+    end
+
     def perform
       settings = CbnGenericMenu.config
       role = settings && settings.fetch('rules', {}).find { |_name, id| id.to_i == @rule.id }&.first
@@ -203,6 +230,8 @@ module CbnGenericMenu
       ensure
         @cbn_menu_sent = nil
       end
+    ensure
+      Current.executed_by = @cbn_menu_previous_executor if owned_rule
     end
 
     private

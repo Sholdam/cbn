@@ -1,5 +1,9 @@
 # Backlog — checkpoint oficial de 17/07/2026
 
+## Falha na continuação do bot — 05/11/2026
+
+- Corrigido contexto de automação vazando do menu e impedindo confirmação após CPF; saudação do criativo INSS e fallback de anúncios ajustados. Quatro pendências recuperadas com guardas e remetente automático. Testes sintéticos e publicação conferidos. [Registro](CRM_BOT_CONTEXT_REPAIR_2026-11-05.md).
+
 ## Editor Luna e áudio — 05/11/2026
 
 - Concluída publicação do editor `gpt-6-luna` e transcrição manual `gpt-transcribe`. Testes de código e chamadas reais com conteúdo sintético aprovados; botão conferido na interface. Primeiro uso em áudio de atendimento ainda não acompanhado. [Registro](CRM_LUNA_TRANSCRIPTION_2026-11-05.md).
