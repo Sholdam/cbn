@@ -1,5 +1,12 @@
 # Handoff — CBN Crédito
 
+## Classificação obrigatória ao resolver — 05/11/2026
+
+- Publicado fluxo de dois cliques: Resolver → escolher situação. Salva contato e resolução atomicamente; Cancelar não grava. Inclui **Sem oferta** por pedido do proprietário.
+- Validação Rails e trigger PostgreSQL impedem resolver sem situação válida, incluindo bots, integrações e atualização em lote. Etapa do anúncio acompanha a escolha; nenhuma classificação histórica presumida.
+- 20 verificações SQL sintéticas, 10 testes Ruby/48 asserções e cinco testes Vue aprovados; compilação concluída. CRM/portal HTTP 200, API privada 401 sem sessão. Navegador autenticado confirmou as sete opções e cancelamento, sem encerrar atendimento real.
+- Imagem web final `cbn/chatwoot:4.16.2-cbn-resolution-20261105t172321z-no-offer`; initializer persistente nos quatro serviços Rails. Fontes de coleta/menu/reabertura e WhatsApp preservados. [Operação, limites e retorno](CRM_RESOLUTION_CLASSIFICATION_2026-11-05.md).
+
 ## Coleta INSS — 30/10/2026
 
 - Correção complementar publicada após novo caso sem etiqueta: classificação pelo anúncio/cliente, etiqueta contato/conversa e retomada INSS no web. Sete verificações sintéticas passaram. Atendimento indicado retomado com CPF salvo e uma confirmação `sent`, sem nova pergunta de CPF. Web atual `cbn/chatwoot:4.16.2-cbn-inss-resume-20261030`; ciclo orgânico posterior e entrega ao dispositivo ainda não observados. [Registro](CRM_INSS_CAPTURE_2026-10-30.md).

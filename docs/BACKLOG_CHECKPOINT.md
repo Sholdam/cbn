@@ -1,5 +1,12 @@
 # Backlog — checkpoint oficial de 17/07/2026
 
+## Classificação obrigatória ao resolver — 05/11/2026
+
+- Publicado fluxo de dois cliques: Resolver → escolher situação. Salva contato e resolução atomicamente; Cancelar não grava. Inclui **Sem oferta** por pedido do proprietário.
+- Validação Rails e trigger PostgreSQL impedem resolver sem situação válida, incluindo bots, integrações e atualização em lote. Etapa do anúncio acompanha a escolha; nenhuma classificação histórica presumida.
+- 20 verificações SQL sintéticas, 10 testes Ruby/48 asserções e cinco testes Vue aprovados; compilação concluída. CRM/portal HTTP 200, API privada 401 sem sessão. Navegador autenticado confirmou as sete opções e cancelamento, sem encerrar atendimento real.
+- Imagem web final `cbn/chatwoot:4.16.2-cbn-resolution-20261105t172321z-no-offer`; initializer persistente nos quatro serviços Rails. Fontes de coleta/menu/reabertura e WhatsApp preservados. [Operação, limites e retorno](CRM_RESOLUTION_CLASSIFICATION_2026-11-05.md).
+
 ## CPF dos anúncios INSS — 30/10/2026
 
 - Fechada lacuna de anúncio sem etiqueta e botão sem suporte INSS: web/worker atualizados e atendimento indicado retomado; uma confirmação `sent`, cadastro/etiquetas/agente conferidos. Sete verificações sintéticas passaram. Acompanhar próximo fluxo orgânico; não confundir `sent` com entrega confirmada. [Registro](CRM_INSS_CAPTURE_2026-10-30.md).
