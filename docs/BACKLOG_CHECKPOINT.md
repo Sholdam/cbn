@@ -1,5 +1,9 @@
 # Backlog — checkpoint oficial de 17/07/2026
 
+## Editor Luna e áudio — 05/11/2026
+
+- Concluída publicação do editor `gpt-6-luna` e transcrição manual `gpt-transcribe`. Testes de código e chamadas reais com conteúdo sintético aprovados; botão conferido na interface. Primeiro uso em áudio de atendimento ainda não acompanhado. [Registro](CRM_LUNA_TRANSCRIPTION_2026-11-05.md).
+
 ## Classificação obrigatória ao resolver — 05/11/2026
 
 - Publicado fluxo de dois cliques: Resolver → escolher situação. Salva contato e resolução atomicamente; Cancelar não grava. Inclui **Sem oferta** por pedido do proprietário.

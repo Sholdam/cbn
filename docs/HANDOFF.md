@@ -1,5 +1,11 @@
 # Handoff — CBN Crédito
 
+## Luna e transcrição manual — 05/11/2026
+
+- Publicados `gpt-6-luna` no editor nativo e botão **Transcrever áudio** com `gpt-transcribe`, reutilizando a chave conectada. Modelos/recursos restantes preservados; nenhuma habilitação de licença paga.
+- 7 testes Ruby/35 asserções, 4 Vue, build, reescrita nativa sintética e transcrição sintética real aprovados. Acesso inicialmente recusado foi liberado e retestado. Navegador confirmou botão; nenhum áudio real de cliente usado no teste.
+- Web/worker atualizados, sessão WhatsApp preservada, CRM/portal 200. [Operação, evidências, limites e retorno](CRM_LUNA_TRANSCRIPTION_2026-11-05.md).
+
 ## Classificação obrigatória ao resolver — 05/11/2026
 
 - Publicado fluxo de dois cliques: Resolver → escolher situação. Salva contato e resolução atomicamente; Cancelar não grava. Inclui **Sem oferta** por pedido do proprietário.
