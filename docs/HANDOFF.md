@@ -1,5 +1,11 @@
 # Handoff — CBN Crédito
 
+## Recuperação em tempo real sem F5 — 05/11/2026
+
+- Publicados recuperação automática ao reconectar/voltar à aba, retentativa independente de lista/mensagens, conferência leve visível (mensagens 15s/lista 60s), mesclagem sem perder eventos concorrentes e limpeza do conector anterior. WebSocket continua sendo o transporte imediato.
+- 58 testes em cinco arquivos e build aprovados. Navegador confirmou assinatura/recuperação após interrupção de rede, sem navegação/F5, com rascunho preservado. Rascunho sintético removido e nenhuma mensagem de teste enviada.
+- Somente web atualizado para `cbn/chatwoot:4.16.2-cbn-realtime-20261105t232330z`; WhatsApp e bot mantidos ativos, fontes backend conferidas. [Evidências, intervalos e retorno](CRM_REALTIME_RECOVERY_2026-11-05.md).
+
 ## Bot após CPF e anúncios sem saudação — 05/11/2026
 
 - Corrigido vazamento de `Current.executed_by` pela regra do menu que fazia o listener nativo ignorar a continuação após salvar CPF. Criativo INSS não reconhecido incluído na regra nativa; anúncios sem regra correspondente têm menu de fallback, com proteção de pausa e coleta existente.
