@@ -166,7 +166,7 @@ class Cbn::LeadBotResumeService
     when 'concluido'
       { message: 'O CPF já foi cadastrado. O atendimento pode continuar com a equipe.' }
     when 'aguardando_cpf'
-      deliver(initial_rule)
+      deliver(cpf_retry_rule)
     when 'cpf_recebido', 'aguardando_matricula'
       set_stage('cpf_recebido')
       deliver(rule_for('matricula'))
@@ -178,6 +178,19 @@ class Cbn::LeadBotResumeService
     else
       raise Unavailable, 'Não foi possível identificar a etapa pendente. Revise este atendimento.'
     end
+  end
+
+  def cpf_retry_rule
+    invalid = eligible_incoming.find do |message|
+      message.created_at >= 7.days.ago &&
+        (message.id > state.fetch('prompt_id', 0) || message.id == state['invalid_cpf_reply_id']) &&
+        CbnLeadCapture.invalid_cpf_attempt?(CbnLeadCapture.customer_text(message.content))
+    end
+    if invalid && @settings.fetch('rules', {}).value?('cpf_invalido')
+      @initial_incoming = invalid
+      return rule_for('cpf_invalido')
+    end
+    initial_rule
   end
 
   def capture_pending_reply!

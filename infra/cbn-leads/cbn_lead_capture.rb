@@ -49,6 +49,39 @@ module CbnLeadCapture
     section ? section[:reply].strip : ''
   end
 
+  def self.invalid_cpf_attempt?(text)
+    cpf = extract_cpf(text)
+    return !valid_cpf?(cpf) if cpf
+    value = text.to_s.strip.sub(/\A(?:(?:meu\s+)?cpf\s*(?:é|e)?\s*[:\-]?\s*)/i, '')
+    value.match?(/\A[0-9.\-\s]+\z/) && value.gsub(/\D/, '').length.between?(8, 14)
+  end
+
+  def self.correctable_saved_cpf?(conversation, state, message, saved)
+    return false if saved.blank? || valid_cpf?(saved) || human_replied?(conversation, state['prompt_id'])
+    # Replace only an invalid value that this same client actually supplied
+    # earlier in this collection. Unrelated/valid registrations stay protected.
+    conversation.messages.incoming.where(private: false, sender_type: 'Contact', sender_id: conversation.contact_id)
+                .where('id >= ? AND id < ? AND created_at >= ?', state.fetch('trigger_id', state['prompt_id']), message.id, 7.days.ago)
+                .reorder(id: :desc).limit(100).any? do |previous|
+      extract_cpf(customer_text(previous.content)) == saved
+    end
+  end
+
+  def self.deliver_invalid_cpf_notice!(conversation, message, settings)
+    id = settings.fetch('rules', {}).find { |_id, role| role == 'cpf_invalido' }&.first
+    rule = id && conversation.account.automation_rules.find_by(id: id, active: true)
+    return unless rule
+    previous_actor = Current.executed_by
+    previous_message = Thread.current[:cbn_lead_message]
+    Thread.current[:cbn_lead_message] = message
+    AutomationRules::ActionService.new(rule, conversation.account, conversation).perform
+  ensure
+    if rule
+      Current.executed_by = previous_actor
+      Thread.current[:cbn_lead_message] = previous_message
+    end
+  end
+
   def self.extract_registration(text, cpf)
     match = text.to_s.strip.match(/\A(?:(?:minha?\s+)?(?:matr[ií]cula|benef[ií]cio|nb)\s*(?:é|e)?\s*[:\-]?\s*)?([0-9][0-9.\-\/ ]{0,23}[0-9])\z/i)
     return unless match
@@ -159,15 +192,19 @@ module CbnLeadCapture
       stage = conversation.custom_attributes[STAGE]
       if stage == 'aguardando_cpf'
         cpf = extract_cpf(reply_text)
-        next unless valid_cpf?(cpf)
+        unless valid_cpf?(cpf)
+          deliver_invalid_cpf_notice!(conversation, message, settings) if invalid_cpf_attempt?(reply_text)
+          next
+        end
         contact.with_lock do
           saved = contact.custom_attributes['cbn_cpf'].to_s.gsub(/\D/, '')
           conflict = Contact.where(account_id: 1).where.not(id: contact.id).where("regexp_replace(coalesce(custom_attributes->>'cbn_cpf',''), '[^0-9]', '', 'g') = ?", cpf).exists?
-          if conflict || (saved.present? && saved != cpf)
+          correction = saved != cpf && correctable_saved_cpf?(conversation, state, message, saved)
+          if conflict || (saved.present? && saved != cpf && !correction)
             stage!(conversation, state.merge('last_processed_id' => message.id), 'revisao_cpf')
             next
           end
-          contact.update!(custom_attributes: contact.custom_attributes.merge('cbn_cpf' => cpf)) if saved.blank?
+          contact.update!(custom_attributes: contact.custom_attributes.merge('cbn_cpf' => cpf)) if saved.blank? || correction
           mirror_labels!(conversation)
           next_stage = state['kind'] == 'inss' ? (!human_replied?(conversation, state['prompt_id']) && conversation.open? ? 'dados_recebidos' : 'concluido') : state['kind'] == 'colatina' && !human_replied?(conversation, state['prompt_id']) ? 'cpf_recebido' : 'concluido'
           stage!(conversation, state.merge('last_processed_id' => message.id), next_stage)
@@ -228,7 +265,19 @@ module CbnLeadCapture
       return super unless settings && settings['active'] && role && @conversation.account_id == 1 && @conversation.inbox_id == 5
       incoming = Thread.current[:cbn_lead_message]
       @conversation.with_lock do
-        if role == 'conclusao'
+        if role == 'cpf_invalido'
+          state = @conversation.additional_attributes[CbnLeadCapture::KEY]
+          next unless state && @conversation.custom_attributes[CbnLeadCapture::STAGE] == 'aguardando_cpf'
+          next unless CbnLeadCapture.eligible?(incoming, settings) && @conversation.open?
+          next unless CbnLeadCapture.invalid_cpf_attempt?(CbnLeadCapture.customer_text(incoming.content))
+          next if CbnLeadCapture.human_replied?(@conversation, state['prompt_id'])
+          manual = Thread.current[:cbn_manual_resume_conversation_id] == @conversation.id
+          next unless manual || incoming.id > state.fetch('last_processed_id', 0)
+          prompt = CbnLeadCapture.native_prompt!(super, @conversation, @rule)
+          CbnLeadCapture.stage!(@conversation, state.merge('prompt_id' => prompt.id,
+            'last_processed_id' => [incoming.id, state.fetch('last_processed_id', 0)].max,
+            'invalid_cpf_reply_id' => incoming.id), 'aguardando_cpf')
+        elsif role == 'conclusao'
           state = @conversation.additional_attributes[CbnLeadCapture::KEY]
           next unless state && %w[colatina inss].include?(state['kind']) && @conversation.custom_attributes[CbnLeadCapture::STAGE] == 'dados_recebidos'
           if @conversation.assignee_id.nil?

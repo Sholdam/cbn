@@ -1,5 +1,11 @@
 # Handoff — CBN Crédito
 
+## CPF inválido e retomada sem repetir saudação — 05/11/2026
+
+- Corrigidos silêncio após CPF inválido e repetição da saudação na retomada. Regra nativa 16 traz aviso específico; correção válida do próprio cliente pode substituir somente valor inválido comprovado, sem conflitos ou intervenção humana.
+- 9 testes/19 asserções e 7 verificações INSS/CLT aprovados antes/depois da publicação. Cadastro indicado corrigido com a resposta válida; operador já havia assumido, portanto nenhuma mensagem adicional foi enviada pelo bot.
+- Web/worker atualizados por fontes persistentes, mantendo imagem de tempo real. WhatsApp WORKING, fila crítica vazia e sem retries. [Causa, guardas e evidências](CRM_CPF_RETRY_CORRECTION_2026-11-05.md).
+
 ## Recuperação em tempo real sem F5 — 05/11/2026
 
 - Publicados recuperação automática ao reconectar/voltar à aba, retentativa independente de lista/mensagens, conferência leve visível (mensagens 15s/lista 60s), mesclagem sem perder eventos concorrentes e limpeza do conector anterior. WebSocket continua sendo o transporte imediato.

@@ -1,5 +1,9 @@
 # Backlog — checkpoint oficial de 17/07/2026
 
+## CPF inválido na coleta — 05/11/2026
+
+- Aviso específico e idempotente para tentativa inválida; retomada evita repetir apresentação. Correção de valor inválido exige prova da resposta do mesmo cliente e preserva conflitos/cadastros válidos. Atendimento indicado reparado sem envios porque já assumido pelo operador. Testes publicados e conferidos. [Registro](CRM_CPF_RETRY_CORRECTION_2026-11-05.md).
+
 ## Mensagens sem atualização manual — 05/11/2026
 
 - Publicadas reconexão/recuperação ao retornar à aba, sincronização independente com retentativa, conferência visível e mesclagem segura. 58 testes aprovados; teste de rede autenticado recuperou assinatura/mensagens sem F5 e preservou rascunho. [Registro](CRM_REALTIME_RECOVERY_2026-11-05.md).
