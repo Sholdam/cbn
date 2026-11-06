@@ -1,5 +1,9 @@
 # Backlog — checkpoint oficial de 17/07/2026
 
+## Recuperação do áudio — 06/11/2026
+
+- Publicada correção do player que ficava em 00:00 até F5: tratamento de reprodução, fonte reativa, metadados tardios, retentativas limitadas e recuperação manual. 38 testes e compilação aprovados; navegador recuperou áudio após bloqueio temporário sem navegar/recarregar. Transcrição e serviços de envio preservados. [Registro](CRM_AUDIO_PLAYER_RECOVERY_2026-11-06.md).
+
 ## CPF inválido na coleta — 05/11/2026
 
 - Aviso específico e idempotente para tentativa inválida; retomada evita repetir apresentação. Correção de valor inválido exige prova da resposta do mesmo cliente e preserva conflitos/cadastros válidos. Atendimento indicado reparado sem envios porque já assumido pelo operador. Testes publicados e conferidos. [Registro](CRM_CPF_RETRY_CORRECTION_2026-11-05.md).

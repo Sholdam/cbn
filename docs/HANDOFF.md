@@ -1,5 +1,11 @@
 # Handoff — CBN Crédito
 
+## Áudio preso em 00:00 sem F5 — 06/11/2026
+
+- Player passa a tratar `play()`, fonte tardia/atualizada, metadados e erros/espera; três retentativas limitadas e botão Tentar novamente. Pausa/troca/desmontagem cancelam reprodução pendente. Transcrição preservada.
+- 38 testes em quatro arquivos e compilação aprovados. Web publicado em `cbn/chatwoot:4.16.2-cbn-audio-player-20261106t185906z`; teste de mídia bloqueada no navegador recuperou duração automaticamente com zero navegações. Bloqueio/cache removidos; nenhuma mensagem enviada.
+- CRM/site 200, WebSocket 101, WhatsApp WORKING, fila/retries zero. [Evidências, limites e retorno](CRM_AUDIO_PLAYER_RECOVERY_2026-11-06.md).
+
 ## CPF inválido e retomada sem repetir saudação — 05/11/2026
 
 - Corrigidos silêncio após CPF inválido e repetição da saudação na retomada. Regra nativa 16 traz aviso específico; correção válida do próprio cliente pode substituir somente valor inválido comprovado, sem conflitos ou intervenção humana.
